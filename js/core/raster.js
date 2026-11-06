@@ -157,6 +157,32 @@ export function polygonMask(points, w, h) {
   return mask;
 }
 
+/**
+ * Variante pour un polygone dont les sommets sont des coins de pixels (grille
+ * aimantée) : un pixel est inclus si son centre est dans le polygone.
+ */
+export function polygonMaskCorners(points, w, h) {
+  const mask = new Uint8Array(w * h);
+  const n = points.length;
+  if (n < 3) return mask;
+  for (let y = 0; y < h; y++) {
+    const cy = y + 0.5;
+    const xs = [];
+    for (let i = 0; i < n; i++) {
+      const [ax, ay] = points[i];
+      const [bx, by] = points[(i + 1) % n];
+      if ((ay <= cy && by > cy) || (by <= cy && ay > cy)) xs.push(ax + ((cy - ay) / (by - ay)) * (bx - ax));
+    }
+    xs.sort((a, b) => a - b);
+    for (let k = 0; k + 1 < xs.length; k += 2) {
+      const xa = Math.max(0, Math.ceil(xs[k] - 0.5));
+      const xb = Math.min(w - 1, Math.floor(xs[k + 1] - 0.5));
+      for (let x = xa; x <= xb; x++) mask[y * w + x] = 1;
+    }
+  }
+  return mask;
+}
+
 export function maskBounds(mask, w, h) {
   let x0 = w, y0 = h, x1 = -1, y1 = -1;
   for (let y = 0; y < h; y++) {

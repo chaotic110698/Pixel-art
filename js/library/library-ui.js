@@ -200,11 +200,18 @@ export function openLibrary(app, initialCat = null) {
       grid.append(h('div', { class: 'card' },
         h('button', { style: { border: 0, background: 'none', padding: 0 }, title: 'Insérer', onclick: () => { insertUserPiece(app, it); app.toast(`« ${it.name} » ajouté`); } }, c),
         h('span', { class: 't' }, it.name),
+        h('div', { class: 'row', style: { justifyContent: 'center' } },
+          h('button', { class: 'icon-btn small', title: 'Renommer', 'aria-label': 'Renommer', onclick: async () => {
+            const name = (await promptDialog('Nom de la pièce', it.name, { title: 'Renommer la pièce' }))?.trim();
+            if (!name) return;
+            await db.put('library', { ...it, name });
+            renderGrid();
+          } }, icon('pencil')),
         h('button', { class: 'icon-btn small', title: 'Supprimer', 'aria-label': 'Supprimer', onclick: async () => {
           if (!(await confirmDialog(`Supprimer « ${it.name} » de votre bibliothèque ?`, { danger: true, ok: 'Supprimer' }))) return;
           await db.delete('library', it.id);
           renderGrid();
-        } }, icon('trash'))));
+        } }, icon('trash')))));
     }
   }
 

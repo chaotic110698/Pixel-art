@@ -9,9 +9,9 @@
 - **Canevas** : préréglages 16 à 512 px ou taille libre (largeur ≠ hauteur), fond transparent en damier, redimensionnement avec ancrage, mise à l'échelle, recadrage, miroir et rotation.
 - **Outils** : crayon (taille 1 à 64, carré ou rond), gomme, remplissage (contigu ou global, avec tolérance), pipette, ligne, rectangle, ellipse (contour ou plein), sélection rectangulaire, lasso, baguette magique (déplacer, copier, coller, rotation, miroir), symétrie (verticale, horizontale ou les deux), **tramage** (10 motifs, 2 couleurs).
 - **Couleurs** : palettes PICO-8, Endesga 32, Game Boy, Sweetie 16, DawnBringer 16, CGA, peaux & cheveux… Sélecteur TSV avec alpha, couleurs récentes, import/export (.hex, .gpl, .json, .pal), extraction d'une palette depuis une image.
-- **Historique** illimité en pratique (annuler/rétablir), économe en mémoire, valable pour toutes les actions : pixels, calques, variantes, expressions.
-- **Grille modulable** : cellules en largeur et hauteur séparées, décalage, lignes principales tous les N cellules, couleurs, épaisseurs, opacité, aimantation. Réglages enregistrés dans le projet.
-- **Calques** : groupes, opacité, verrouillage, fusion, glisser-déposer, calques de référence (semi-transparents, jamais exportés), import d'images.
+- **Historique** illimité en pratique (annuler/rétablir), économe en mémoire, valable pour toutes les actions : pixels, sélections, calques, variantes, expressions, palette, grille, nom du projet, réglages d'animation et PNGtuber.
+- **Grille modulable** : cellules en largeur et hauteur séparées, décalage, lignes principales tous les N cellules, couleurs, épaisseurs, opacité. Aimantation des lignes, formes, sélections (rectangle et lasso) et déplacements. Réglages enregistrés dans le projet.
+- **Calques** : groupes, opacité, verrouillage, fusion, glisser-déposer, import d'images, et **images de référence nettes** : affichées en pleine résolution au-dessus ou en dessous du dessin, déplaçables et redimensionnables, jamais exportées.
 - **Variantes et expressions** : un groupe de variantes n'affiche qu'un seul enfant à la fois (ex. bouche fermée / ouverte). Les expressions enregistrent une combinaison de variantes (ex. « Content »). On les applique en un clic ou avec une touche.
 - **Bibliothèque de pièces originales** : corps, têtes, 14 coiffures, yeux et bouches avec plusieurs états, sourcils, nez, lunettes, chapeaux, oreilles, boucles d'oreilles, vêtements. La recoloration se fait par échange de palette, les pièces restent modifiables pixel par pixel, et l'on peut garder ses propres pièces dans « Ma bibliothèque » (import/export).
 - **Nouveau personnage** : une base prête à l'emploi avec yeux, bouche et sourcils en variantes, plus 7 expressions associées aux touches 1 à 7.
@@ -25,7 +25,7 @@
   - pack PNGtuber complet avec `manifest.json` ;
   - spritesheet ou planche de tuiles (+ JSON), GIF animé, images séparées ;
   - au choix, recadrage commun (l'alignement est conservé) ou image par image.
-- **Projets** : sauvegarde automatique dans le navigateur (IndexedDB), liste avec miniatures, duplication, suppression, fichier projet `.pxa.json` sans perte (téléchargement et ouverture).
+- **Projets** : sauvegarde automatique et incrémentale dans le navigateur (IndexedDB), liste avec miniatures, renommage, duplication, suppression, fichier projet `.pxa.json` sans perte (téléchargement et ouverture).
 - Interface en français, tutoriel au premier lancement, thème clair ou sombre.
 
 ## Raccourcis principaux
@@ -61,7 +61,7 @@ python3 -m http.server 8000
 ## Déploiement sur GitHub Pages
 
 1. Sur GitHub : **Settings → Pages**.
-2. *Source* : « Deploy from a branch ». Choisir la branche (par ex. `main`) et le dossier `/ (root)`.
+2. *Source* : « Deploy from a branch ». Choisir la branche `main` et le dossier `/ (root)`.
 3. Le site est alors disponible à l'adresse `https://<utilisateur>.github.io/<dépôt>/`.
 
 Aucune étape de build n'est nécessaire. Le fichier `.nojekyll` désactive le traitement Jekyll.

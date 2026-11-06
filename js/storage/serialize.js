@@ -15,12 +15,12 @@ function nodeMeta(n) {
 }
 
 /** Objet clonable : { ...structure, cels: { 'layerId:frame': Uint32Array } } */
-export function docToRecord(doc) {
+export function docToRecord(doc, { withCels = true } = {}) {
   const nodes = [];
   const cels = {};
   for (const n of doc.nodes.values()) {
     nodes.push(nodeMeta(n));
-    if (n.type === 'layer') n.cels.forEach((c, f) => { if (c) cels[`${n.id}:${f}`] = c.slice(); });
+    if (withCels && n.type === 'layer') n.cels.forEach((c, f) => { if (c) cels[`${n.id}:${f}`] = c.slice(); });
   }
   return {
     format: FORMAT,

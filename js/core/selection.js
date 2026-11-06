@@ -34,8 +34,38 @@ export class Selection {
     this.app.emit('selection');
   }
 
+  /**
+   * Exécute fn et enregistre le changement de masque dans l'historique
+   * (annuler/rétablir s'applique aussi aux sélections).
+   */
+  _record(label, fn) {
+    const before = this.mask ? this.mask.slice() : null;
+    fn();
+    const after = this.mask ? this.mask.slice() : null;
+    if (!before && !after) return;
+    if (before && after && before.length === after.length && before.every((v, i) => v === after[i])) return;
+    const w = this.doc.width, h = this.doc.height;
+    const set = (m) => {
+      this.floating = null;
+      if (!m || m.length !== this.doc.width * this.doc.height || this.doc.width !== w) {
+        this.mask = null;
+        this.bounds = null;
+      } else {
+        this.mask = m.slice();
+        this.bounds = maskBounds(this.mask, w, h);
+        if (!this.bounds) this.mask = null;
+      }
+      this.changed();
+    };
+    this.app.history.push({ label, bytes: ((before?.length || 0) + (after?.length || 0)) + 64, undo: () => set(before), redo: () => set(after) });
+  }
+
   /** op : 'replace' | 'add' | 'subtract' */
   apply(newMask, op = 'replace') {
+    this._record(op === 'subtract' ? 'Retirer de la sélection' : op === 'add' ? 'Ajouter à la sélection' : 'Sélection', () => this._apply(newMask, op));
+  }
+
+  _apply(newMask, op) {
     const n = this.doc.width * this.doc.height;
     if (op === 'replace' || !this.mask) {
       if (op === 'subtract') return;
@@ -66,8 +96,10 @@ export class Selection {
 
   deselect() {
     this.commitFloating();
-    this.mask = null;
-    this.bounds = null;
+    this._record('Désélectionner', () => {
+      this.mask = null;
+      this.bounds = null;
+    });
     this.changed();
   }
 
@@ -183,32 +215,37 @@ export class Selection {
     const layer = doc.get(f.layerId);
     this.floating = null;
     const { width: w, height: h } = doc;
-    if (layer && layer.cels[doc.frame] === f.token.cel) {
-      const cel = f.token.cel;
+    // pixels + nouvelle position de la sélection = une seule entrée d'historique
+    this.app.history.group(label, () => {
+      if (layer && layer.cels[doc.frame] === f.token.cel) {
+        const cel = f.token.cel;
+        for (let y = 0; y < f.h; y++) {
+          const ty = f.y + y;
+          if (ty < 0 || ty >= h) continue;
+          for (let x = 0; x < f.w; x++) {
+            const tx = f.x + x;
+            if (tx < 0 || tx >= w) continue;
+            const c = f.data[y * f.w + x];
+            if (f.mask[y * f.w + x] && c >>> 24) cel[ty * w + tx] = c;
+          }
+        }
+        this.app.markLayerDirty(cel);
+        this.app.history.endPixels(f.token, label);
+      }
+      // la sélection suit le contenu déplacé
+      const m = new Uint8Array(w * h);
       for (let y = 0; y < f.h; y++) {
-        const ty = f.y + y;
-        if (ty < 0 || ty >= h) continue;
         for (let x = 0; x < f.w; x++) {
-          const tx = f.x + x;
-          if (tx < 0 || tx >= w) continue;
-          const c = f.data[y * f.w + x];
-          if (f.mask[y * f.w + x] && c >>> 24) cel[ty * w + tx] = c;
+          const tx = f.x + x, ty = f.y + y;
+          if (tx >= 0 && ty >= 0 && tx < w && ty < h && f.mask[y * f.w + x]) m[ty * w + tx] = 1;
         }
       }
-      this.app.markLayerDirty(cel);
-      this.app.history.endPixels(f.token, label);
-    }
-    // la sélection suit le contenu déplacé
-    const m = new Uint8Array(w * h);
-    for (let y = 0; y < f.h; y++) {
-      for (let x = 0; x < f.w; x++) {
-        const tx = f.x + x, ty = f.y + y;
-        if (tx >= 0 && ty >= 0 && tx < w && ty < h && f.mask[y * f.w + x]) m[ty * w + tx] = 1;
-      }
-    }
-    this.mask = m;
-    this.bounds = maskBounds(m, w, h);
-    if (!this.bounds) this.mask = null;
+      this._record(label, () => {
+        this.mask = m;
+        this.bounds = maskBounds(m, w, h);
+        if (!this.bounds) this.mask = null;
+      });
+    });
     this.changed();
     this.app.renderer?.invalidateAll();
   }

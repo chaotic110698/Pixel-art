@@ -60,9 +60,19 @@ export class LineTool extends ShapeTool {
   id = 'line';
   name = 'Ligne';
   key = 'L';
+  // avec l'aimantation, les extrémités se calent sur les intersections de la grille
+  snapped(p) {
+    const [x, y] = this.app.snapPoint(p.x, p.y);
+    const d = this.app.doc;
+    return [Math.max(0, Math.min(d.width - 1, x)), Math.max(0, Math.min(d.height - 1, y))];
+  }
+  startPoint(p) {
+    return this.app.gridSnapOn() ? this.snapped(p) : [p.ix, p.iy];
+  }
   endPoint(p) {
-    if (p.shift) return constrainLine(this.start[0], this.start[1], p.ix, p.iy);
-    return [p.ix, p.iy];
+    const [x, y] = this.app.gridSnapOn() ? this.snapped(p) : [p.ix, p.iy];
+    if (p.shift) return constrainLine(this.start[0], this.start[1], x, y);
+    return [x, y];
   }
   shape(painter, a, b) {
     painter.line(a[0], a[1], b[0], b[1]);

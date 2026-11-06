@@ -98,9 +98,10 @@ function init(app, el) {
   fpsIn.addEventListener('change', () => {
     const doc = app.doc;
     const fps = Math.max(1, Math.min(60, parseInt(fpsIn.value, 10) || 8));
-    doc.fps = fps;
-    for (const f of doc.frames) f.duration = Math.round(1000 / fps);
-    app.emit('changed');
+    app.history.transact('Images par seconde', () => {
+      doc.fps = fps;
+      for (const f of doc.frames) f.duration = Math.round(1000 / fps);
+    });
   });
   const onion = h('button', { class: 'icon-btn toggle', title: 'Onion skin (N)', 'aria-label': 'Onion skin', onclick: () => app.setState({ onion: !app.state.onion }) }, '🧅');
   const tb = (ic, title, fn) => h('button', { class: 'icon-btn small', title, 'aria-label': title, onclick: fn }, icon(ic));
@@ -134,8 +135,9 @@ function init(app, el) {
           const v = await promptDialog('Durée de cette image (ms)', String(f.duration), { title: `Image ${i + 1}` });
           const n = parseInt(v, 10);
           if (n > 0) {
-            f.duration = Math.min(10000, n);
-            app.emit('changed');
+            app.history.transact('Durée de l\'image', () => {
+              app.doc.frames[i].duration = Math.min(10000, n);
+            });
             render();
           }
         },

@@ -1,6 +1,7 @@
 // Sauvegarde automatique locale (IndexedDB) et gestion de la liste des projets.
 
-import { db } from './db.js';
+import { db, prefixRange } from './db.js';
+import { setDirtyHook } from '../render/celcache.js';
 import { docToRecord, recordToDoc } from './serialize.js';
 import { composeToCanvas } from '../render/compose.js';
 import { debounce } from '../util/dom.js';
@@ -23,9 +24,70 @@ export async function initStorage(app) {
   let dirty = false;
   let lastSaved = 0;
 
+  // Sauvegarde incrémentale : chaque cel (calque × image) est un enregistrement
+  // séparé, réécrit seulement s'il a changé depuis la dernière sauvegarde.
+  const savedKey = new WeakMap(); // cel -> clé sous laquelle elle est enregistrée
+  const dirtyCels = new WeakSet();
+  const knownKeys = new Map(); // id projet -> Set des clés enregistrées
+  setDirtyHook((cel) => dirtyCels.add(cel));
+
+  const celKey = (docId, layerId, f) => `${docId}|${layerId}|${f}`;
+
+  /** Copie d'une cel avec le contenu flottant (sélection en cours de déplacement) posé dessus. */
+  function withFloating(doc, cel) {
+    const f = app.selection.floating;
+    const out = cel.slice();
+    const { width: w, height: h } = doc;
+    for (let y = 0; y < f.h; y++) {
+      const ty = f.y + y;
+      if (ty < 0 || ty >= h) continue;
+      for (let x = 0; x < f.w; x++) {
+        const tx = f.x + x;
+        const c = f.data[y * f.w + x];
+        if (tx >= 0 && tx < w && f.mask[y * f.w + x] && c >>> 24) out[ty * w + tx] = c;
+      }
+    }
+    return out;
+  }
+
   async function save(doc = app.doc) {
     doc.updated = Date.now();
-    const rec = docToRecord(doc);
+    const rec = docToRecord(doc, { withCels: false });
+    const floating = doc === app.doc ? app.selection.floating : null;
+    const puts = [];
+    const written = [];
+    const keys = new Set();
+    for (const layer of doc.allLayers()) {
+      layer.cels.forEach((cel, f) => {
+        if (!cel) return;
+        const key = celKey(doc.id, layer.id, f);
+        keys.add(key);
+        const isFloat = floating && floating.layerId === layer.id && f === doc.frame;
+        if (isFloat) {
+          puts.push({ key, value: withFloating(doc, cel) });
+          return; // reste « sale » : sera réécrite après validation du déplacement
+        }
+        if (dirtyCels.has(cel) || savedKey.get(cel) !== key) {
+          puts.push({ key, value: cel.slice() });
+          written.push([cel, key]);
+          dirtyCels.delete(cel);
+          savedKey.set(cel, key);
+        }
+      });
+    }
+    rec.celKeys = [...keys];
+    const prev = knownKeys.get(doc.id);
+    const stale = prev ? [...prev].filter((k) => !keys.has(k)) : [];
+    try {
+      await db.batch('cels', puts, stale);
+    } catch (err) {
+      for (const [cel] of written) {
+        dirtyCels.add(cel);
+        savedKey.delete(cel);
+      }
+      throw err;
+    }
+    knownKeys.set(doc.id, keys);
     await db.put('projects', rec);
     let thumb = null;
     try {
@@ -68,7 +130,25 @@ export async function initStorage(app) {
   async function load(id) {
     const rec = await db.get('projects', id);
     if (!rec) throw new Error('Projet introuvable');
-    return recordToDoc(rec);
+    if (!rec.celKeys) return recordToDoc(rec); // ancien format : pixels dans l'enregistrement
+    const entries = await db.entries('cels', prefixRange(`${id}|`));
+    rec.cels = {};
+    for (const { key, value } of entries) {
+      const [, layerId, f] = key.split('|');
+      rec.cels[`${layerId}:${f}`] = value;
+    }
+    const doc = recordToDoc(rec);
+    // les cels chargées sont déjà à jour en base
+    const keys = new Set();
+    for (const layer of doc.allLayers()) {
+      layer.cels.forEach((cel, f) => {
+        const key = celKey(doc.id, layer.id, f);
+        keys.add(key);
+        if (rec.cels[`${layer.id}:${f}`] === cel) savedKey.set(cel, key);
+      });
+    }
+    knownKeys.set(doc.id, new Set(entries.map((e) => e.key)));
+    return doc;
   }
 
   async function restoreLast() {
@@ -89,10 +169,22 @@ export async function initStorage(app) {
     return metas.sort((a, b) => b.updated - a.updated);
   }
 
+  /** Renomme un projet enregistré sans le charger. */
+  async function rename(id, name) {
+    const rec = await db.get('projects', id);
+    const meta = await db.get('meta', id);
+    if (!rec) return;
+    rec.name = name;
+    await db.put('projects', rec);
+    if (meta) await db.put('meta', { ...meta, name });
+  }
+
   async function remove(id) {
     await db.delete('projects', id);
     await db.delete('meta', id);
+    await db.deleteRange('cels', prefixRange(`${id}|`));
+    knownKeys.delete(id);
   }
 
-  return { save, saveNow, load, restoreLast, list, remove, get lastSaved() { return lastSaved; } };
+  return { save, saveNow, load, restoreLast, list, remove, rename, get lastSaved() { return lastSaved; } };
 }

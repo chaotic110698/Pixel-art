@@ -229,6 +229,9 @@ export class Renderer {
         ctx.restore();
       }
     }
+    // images de référence nettes (pleine résolution) : sous ou sur le dessin
+    const refs = this.referenceImages();
+    this.drawRefs(ctx, refs.below, ox, oy, zd, dw, dh);
     if (st.onion && doc.frames.length > 1) {
       this.composeOnion();
       if (this.onion.prev) {
@@ -248,6 +251,7 @@ export class Renderer {
       }
     }
     ctx.globalAlpha = 1;
+    this.drawRefs(ctx, refs.above, ox, oy, zd, dw, dh);
     if (st.tileMode) {
       ctx.strokeStyle = 'rgba(255,90,180,0.7)';
       ctx.lineWidth = 1;
@@ -325,6 +329,54 @@ export class Renderer {
       ctx.strokeRect(x + 0.5, y + 0.5, s - 1, s - 1);
     }
     app.emit('rendered');
+  }
+
+  /**
+   * Calques de référence portant une image (refImg) : ceux placés sous le premier
+   * calque normal s'affichent sous le dessin, les autres par-dessus.
+   */
+  referenceImages() {
+    const below = [], above = [];
+    let seenNormal = false;
+    for (const { layer, opacity } of this.doc.renderList({ includeReference: true })) {
+      if (!layer.reference || !layer.refImg) {
+        seenNormal = true;
+        continue;
+      }
+      (seenNormal ? above : below).push({ ref: layer.refImg, opacity });
+    }
+    return { below, above };
+  }
+
+  refImage(src) {
+    if (!this._refCache) this._refCache = new Map();
+    let img = this._refCache.get(src);
+    if (!img) {
+      img = new Image();
+      img.onload = () => this.requestRender();
+      img.src = src;
+      this._refCache.set(src, img);
+      if (this._refCache.size > 12) this._refCache.delete(this._refCache.keys().next().value);
+    }
+    return img.complete && img.naturalWidth ? img : null;
+  }
+
+  drawRefs(ctx, list, ox, oy, zd, dw, dh) {
+    if (!list.length) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(ox, oy, dw, dh);
+    ctx.clip();
+    ctx.imageSmoothingEnabled = true; // une référence (photo, croquis) reste lisse
+    for (const { ref, opacity } of list) {
+      const img = this.refImage(ref.src);
+      if (!img) continue;
+      ctx.globalAlpha = opacity;
+      ctx.drawImage(img, ox + ref.x * zd, oy + ref.y * zd, ref.w * ref.scale * zd, ref.h * ref.scale * zd);
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+    ctx.imageSmoothingEnabled = false;
   }
 
   /** Dessine les lignes d'une grille (fillRect = net) ; major : filtre sur lignes principales. */

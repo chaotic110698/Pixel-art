@@ -1,7 +1,7 @@
 // Fenêtre « Mes projets » : miniatures, ouverture, duplication, suppression.
 
 import { h, clear } from '../util/dom.js';
-import { openDialog, confirmDialog } from '../ui/dialogs.js';
+import { openDialog, confirmDialog, promptDialog } from '../ui/dialogs.js';
 import { icon } from '../ui/icons.js';
 import { uid } from '../core/doc.js';
 
@@ -58,6 +58,16 @@ export async function openProjects(app) {
         h('div', { class: 't' }, m.name + (isCurrent ? ' (ouvert)' : '')),
         h('div', { class: 's' }, `${m.width}×${m.height} · ${fmtDate(m.updated)}`),
         h('div', { class: 'row', style: { justifyContent: 'center' } },
+          h('button', { class: 'icon-btn small', title: 'Renommer', 'aria-label': 'Renommer', onclick: async () => {
+            const name = (await promptDialog('Nom du projet', m.name, { title: 'Renommer le projet' }))?.trim();
+            if (!name) return;
+            if (isCurrent) {
+              app.history.transact('Renommer le projet', () => { app.doc.name = name; });
+              app.emit('meta');
+              await st.saveNow();
+            } else await st.rename(m.id, name);
+            render();
+          } }, icon('pencil')),
           h('button', { class: 'icon-btn small', title: 'Dupliquer', 'aria-label': 'Dupliquer', onclick: async () => {
             const doc = await st.load(m.id);
             doc.id = uid('p');

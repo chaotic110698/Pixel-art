@@ -675,3 +675,34 @@ button, .chip, .swatch, .card, .lrow, .menu-item { touch-action: manipulation; -
 #view { -webkit-touch-callout: none; }
 .newchar-grid { grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: start; }
 @media (max-width: 760px) { .newchar-grid { grid-template-columns: 1fr; justify-items: stretch; } }
+
+/* ---------- Zones tactiles ≥ 44 px sur écrans tactiles ---------- */
+@media (pointer: coarse) {
+  .icon-btn.small { min-width: 44px; height: 44px; }
+  .lrow { min-height: 50px; gap: 2px; }
+  .lrow .icon-btn { min-width: 40px; height: 44px; }
+  .lrow .drag-handle { min-width: 44px !important; font-size: 18px; }
+  .chip { min-height: 44px; }
+  .btn.small { min-height: 44px; }
+  .swatch { min-height: 32px; }
+  .swatches { grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); }
+  #variantbar .vb button { min-height: 44px; min-width: 40px; }
+}
+
+#update-banner {
+  position: fixed;
+  left: 50%;
+  top: calc(var(--top-h) + 8px);
+  transform: translateX(-50%);
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  max-width: calc(100vw - 16px);
+  font-size: 13px;
+}

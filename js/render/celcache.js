@@ -28,7 +28,14 @@ export function createCanvas(w, h) {
   return makeCanvas(w, h);
 }
 
+// Notifié à chaque modification de pixels (sauvegarde incrémentale).
+let dirtyHook = null;
+export function setDirtyHook(fn) {
+  dirtyHook = fn;
+}
+
 export function markDirty(cel, x0 = 0, y0 = 0, x1 = Infinity, y1 = Infinity) {
+  dirtyHook?.(cel);
   const e = cache.get(cel);
   if (!e) return;
   if (!e.dirty) e.dirty = [x0, y0, x1, y1];

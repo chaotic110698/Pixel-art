@@ -52,6 +52,18 @@ export function initLayersPanel(app) {
     const k = Math.min(c.width / doc.width, c.height / doc.height);
     const w = doc.width * k, hh = doc.height * k;
     let src;
+    if (node.type === 'layer' && node.refImg) {
+      // miniature de l'image de référence
+      const img = new Image();
+      img.onload = () => {
+        g.imageSmoothingEnabled = true;
+        const r = node.refImg;
+        const s = Math.min(c.width / r.w, c.height / r.h);
+        g.drawImage(img, (c.width - r.w * s) / 2, (c.height - r.h * s) / 2, r.w * s, r.h * s);
+      };
+      img.src = node.refImg.src;
+      return;
+    }
     if (node.type === 'layer') {
       const cel = node.cels[doc.frame];
       if (!cel) return;
@@ -183,6 +195,33 @@ export function initLayersPanel(app) {
           });
         } }),
         'Calque de référence (non exporté)'));
+      if (a.refImg) {
+        const r = a.refImg;
+        const fitScale = Math.min(app.doc.width / r.w, app.doc.height / r.h);
+        const start = r;
+        const pct = h('span', { class: 'small muted', style: { width: '52px', textAlign: 'right' } }, Math.round((r.scale / fitScale) * 100) + ' %');
+        const range = h('input', {
+          type: 'range', min: 10, max: 400, value: Math.round((r.scale / fitScale) * 100), class: 'grow',
+          oninput: (e) => {
+            // mise à l'échelle autour du centre de l'image
+            const s = (e.target.value / 100) * fitScale;
+            const cx = start.x + (start.w * start.scale) / 2, cy = start.y + (start.h * start.scale) / 2;
+            app.doc.get(a.id).refImg = { ...start, scale: s, x: cx - (start.w * s) / 2, y: cy - (start.h * s) / 2 };
+            pct.textContent = e.target.value + ' %';
+            app.renderer.requestRender();
+          },
+          onchange: () => {
+            const n = app.doc.get(a.id);
+            app.actions.setReference(n, { scale: n.refImg.scale, x: n.refImg.x, y: n.refImg.y }, start);
+          },
+        });
+        props.append(
+          h('div', { class: 'row nowrap', style: { marginTop: '6px' } }, h('span', { class: 'small muted' }, 'Taille'), range, pct),
+          h('div', { class: 'row' },
+            h('button', { class: 'btn small', onclick: () => app.actions.fitReference(app.doc.get(a.id)) }, 'Ajuster au canevas'),
+            h('button', { class: 'btn small', onclick: () => app.tools.select('move') }, 'Déplacer (outil V)')),
+          h('p', { class: 'hint' }, 'Image affichée en pleine résolution, jamais exportée. Placez ce calque tout en bas pour la voir sous le dessin, ou en haut pour décalquer par-dessus.'));
+      }
     }
     if (parent && parent.variant) props.append(h('p', { class: 'hint' }, `Variante du groupe « ${parent.name} ».`));
   }

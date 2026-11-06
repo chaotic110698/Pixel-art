@@ -64,6 +64,7 @@ export class History {
     this.app.emit('history');
     this.app.emit('changed');
     this.app.emit('structure');
+    this.app.emit('meta');
     return true;
   }
 
@@ -77,6 +78,7 @@ export class History {
     this.app.emit('history');
     this.app.emit('changed');
     this.app.emit('structure');
+    this.app.emit('meta');
     return true;
   }
 

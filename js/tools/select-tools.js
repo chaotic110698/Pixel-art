@@ -1,13 +1,36 @@
 // Sélection rectangulaire, lasso, baguette magique, déplacement, main.
 
 import { Tool } from './paint-tools.js';
-import { polygonMask, floodMask } from '../core/raster.js';
+import { polygonMask, polygonMaskCorners, floodMask } from '../core/raster.js';
 import { pixelAt } from '../render/compose.js';
 
 function selOp(app, p) {
   if (p.shift) return 'add';
   if (p.alt) return 'subtract';
   return app.state.selectMode;
+}
+
+/**
+ * Glisser un contenu flottant. Avec l'aimantation, le coin haut-gauche du
+ * contenu se cale sur les lignes de la grille.
+ */
+function startFloatDrag(app, p) {
+  const f = app.selection.floating;
+  return { sx: p.x, sy: p.y, fx: f.x, fy: f.y };
+}
+
+function floatDrag(app, d, p) {
+  const f = app.selection.floating;
+  if (!f) return;
+  let nx = d.fx + Math.round(p.x - d.sx);
+  let ny = d.fy + Math.round(p.y - d.sy);
+  if (app.gridSnapOn()) {
+    const g = app.doc.grid;
+    const cw = Math.max(1, g.cellW), ch = Math.max(1, g.cellH);
+    nx = Math.round((nx - g.offsetX) / cw) * cw + g.offsetX;
+    ny = Math.round((ny - g.offsetY) / ch) * ch + g.offsetY;
+  }
+  if (nx !== f.x || ny !== f.y) app.selection.moveFloating(nx - f.x, ny - f.y);
 }
 
 /** Comportement commun : glisser à l'intérieur de la sélection = déplacer. */
@@ -18,16 +41,11 @@ class SelectBase extends Tool {
     if (p.shift || p.alt || this.app.state.selectMode !== 'replace') return false;
     if (!sel.contains(p.ix, p.iy)) return false;
     if (!sel.floating && !sel.lift(p.ctrl)) return false;
-    this.moving = { last: [p.ix, p.iy] };
+    this.moving = startFloatDrag(this.app, p);
     return true;
   }
   moveDrag(p) {
-    const m = this.moving;
-    const dx = p.ix - m.last[0], dy = p.iy - m.last[1];
-    if (dx || dy) {
-      this.app.selection.moveFloating(dx, dy);
-      m.last = [p.ix, p.iy];
-    }
+    floatDrag(this.app, this.moving, p);
   }
   cancel() {
     this.moving = null;
@@ -102,13 +120,15 @@ export class LassoTool extends SelectBase {
   down(p) {
     if (this.tryStartMove(p)) return;
     this.app.selection.commitFloating();
-    this.drag = { pts: [[p.ix, p.iy]], op: selOp(this.app, p) };
+    const snap = this.app.gridSnapOn();
+    this.drag = { pts: [snap ? this.app.snapPoint(p.x, p.y) : [p.ix, p.iy]], op: selOp(this.app, p), snap };
   }
   move(p) {
     if (this.moving) return this.moveDrag(p);
     if (!this.drag) return;
     const last = this.drag.pts[this.drag.pts.length - 1];
-    if (last[0] !== p.ix || last[1] !== p.iy) this.drag.pts.push([p.ix, p.iy]);
+    const pt = this.drag.snap ? this.app.snapPoint(p.x, p.y) : [p.ix, p.iy];
+    if (last[0] !== pt[0] || last[1] !== pt[1]) this.drag.pts.push(pt);
     this.app.renderer.requestRender();
   }
   up() {
@@ -118,11 +138,11 @@ export class LassoTool extends SelectBase {
     }
     if (!this.drag) return;
     const sel = this.app.selection;
-    const { pts, op } = this.drag;
+    const { pts, op, snap } = this.drag;
     this.drag = null;
     if (pts.length < 3) {
       if (op === 'replace') sel.deselect();
-    } else sel.apply(polygonMask(pts, this.doc.width, this.doc.height), op);
+    } else sel.apply(snap ? polygonMaskCorners(pts, this.doc.width, this.doc.height) : polygonMask(pts, this.doc.width, this.doc.height), op);
     this.app.renderer.requestRender();
   }
   drawOverlay(ctx, { ox, oy, zd, dpr }) {
@@ -131,7 +151,8 @@ export class LassoTool extends SelectBase {
     ctx.strokeStyle = '#ff5ab4';
     ctx.beginPath();
     this.drag.pts.forEach(([x, y], i) => {
-      const sx = ox + (x + 0.5) * zd, sy = oy + (y + 0.5) * zd;
+      const k = this.drag.snap ? 0 : 0.5; // coins de grille ou centres de pixels
+      const sx = ox + (x + k) * zd, sy = oy + (y + k) * zd;
       if (i) ctx.lineTo(sx, sy);
       else ctx.moveTo(sx, sy);
     });
@@ -176,22 +197,49 @@ export class MoveTool extends Tool {
   key = 'V';
   cursor = 'move';
   down(p) {
+    const doc = this.doc;
+    const a = doc.active;
+    // calque de référence avec image : on déplace l'image (pas de pixels)
+    if (a?.type === 'layer' && a.refImg && doc.isShown(a)) {
+      this.refDrag = { id: a.id, sx: p.x, sy: p.y, start: a.refImg };
+      return;
+    }
     const sel = this.app.selection;
     if (!sel.floating && !sel.lift(p.ctrl || p.alt)) return;
-    this.last = [p.ix, p.iy];
+    this.last = startFloatDrag(this.app, p);
   }
   move(p) {
-    if (!this.last) return;
-    const dx = p.ix - this.last[0], dy = p.iy - this.last[1];
-    if (dx || dy) {
-      this.app.selection.moveFloating(dx, dy);
-      this.last = [p.ix, p.iy];
+    const r = this.refDrag;
+    if (r) {
+      const node = this.doc.get(r.id);
+      if (!node) return;
+      node.refImg = { ...r.start, x: r.start.x + (p.x - r.sx), y: r.start.y + (p.y - r.sy) };
+      this.app.renderer.requestRender();
+      return;
     }
+    if (!this.last) return;
+    floatDrag(this.app, this.last, p);
   }
   up() {
+    const r = this.refDrag;
+    if (r) {
+      this.refDrag = null;
+      const node = this.doc.get(r.id);
+      if (node && (node.refImg.x !== r.start.x || node.refImg.y !== r.start.y)) {
+        this.app.actions.setReference(node, { x: node.refImg.x, y: node.refImg.y }, r.start);
+      }
+      return;
+    }
     this.last = null;
   }
   cancel() {
+    const r = this.refDrag;
+    if (r) {
+      const node = this.doc.get(r.id);
+      if (node) node.refImg = r.start;
+      this.refDrag = null;
+      this.app.renderer.requestRender();
+    }
     this.last = null;
   }
 }

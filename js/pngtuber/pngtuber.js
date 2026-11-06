@@ -2,7 +2,7 @@
 // pilotée par le micro (Web Audio, 100 % local), clignement automatique,
 // expressions au clavier, petit rebond quand on parle.
 
-import { h, clear, pickFile } from '../util/dom.js';
+import { h, clear, pickFile, debounce } from '../util/dom.js';
 import { openDialog } from '../ui/dialogs.js';
 import { icon } from '../ui/icons.js';
 import { composeToCanvas } from '../render/compose.js';
@@ -24,7 +24,31 @@ export function openPngtuber(app) {
   const doc = app.doc;
   app.selection.commitFloating();
   autoPngtuber(doc);
-  const cfg = doc.pngtuber;
+  // Réglages lus en direct sur doc.pngtuber. Les modifications sont regroupées
+  // (après une courte pause) en une seule entrée d'historique annulable.
+  let pendingBefore = null;
+  const flushCfg = debounce(() => {
+    if (!pendingBefore) return;
+    const before = pendingBefore;
+    const after = { ...doc.pngtuber };
+    pendingBefore = null;
+    app.history.push({
+      label: 'Réglages PNGtuber',
+      bytes: 512,
+      undo: () => { doc.pngtuber = { ...before }; },
+      redo: () => { doc.pngtuber = { ...after }; },
+    });
+  }, 700);
+  const cfg = new Proxy({}, {
+    get: (_, k) => doc.pngtuber[k],
+    set: (_, k, v) => {
+      if (doc.pngtuber[k] === v) return true;
+      if (!pendingBefore) pendingBefore = { ...doc.pngtuber };
+      doc.pngtuber[k] = v;
+      flushCfg();
+      return true;
+    },
+  });
   const state = {
     talking: false,
     level: 0,
@@ -267,6 +291,7 @@ export function openPngtuber(app) {
     full: true,
     body: wrap,
     onClose: () => {
+      flushCfg.flush();
       cancelAnimationFrame(state.raf);
       stopMic();
       window.removeEventListener('keydown', onKey);

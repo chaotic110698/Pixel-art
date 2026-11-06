@@ -125,21 +125,22 @@ export class PickerTool extends Tool {
     this.pick(p);
   }
   move(p) {
-    this.pick(p);
+    this.pick(p, true);
   }
-  pick(p) {
+  pick(p, quiet = false) {
     const app = this.app;
     const doc = this.doc;
+    // hors du dessin : on ignore simplement
+    if (p.ix < 0 || p.iy < 0 || p.ix >= doc.width || p.iy >= doc.height) return;
     let c;
     if (app.state.pickerSampleAll) c = pixelAt(doc, p.ix, p.iy);
     else {
       const l = doc.activeLayer;
-      if (!l || p.ix < 0 || p.iy < 0 || p.ix >= doc.width || p.iy >= doc.height) return;
+      if (!l) return;
       c = doc.cel(l)[p.iy * doc.width + p.ix];
     }
-    if (p.ix < 0 || p.iy < 0 || p.ix >= doc.width || p.iy >= doc.height) return;
     if (!(c >>> 24)) {
-      app.toast('Pixel transparent', 700);
+      if (!quiet) app.toast('Pixel transparent', 700);
       return;
     }
     app.setColor(p.button === 2 ? 'secondary' : 'primary', u32ToHex(c));

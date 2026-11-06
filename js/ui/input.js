@@ -145,7 +145,7 @@ export class Input {
     }
     if (this.drawingId === e.pointerId) {
       if (this.altPick) {
-        app.tools.get('picker').pick(p);
+        app.tools.get('picker').pick(p, true);
         return;
       }
       const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [];

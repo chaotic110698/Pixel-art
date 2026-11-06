@@ -62,14 +62,16 @@ function setupTopbar() {
   const rename = async () => {
     const n = await promptDialog('Nom du projet', app.doc.name, { title: 'Renommer le projet' });
     if (n && n.trim()) {
-      app.doc.name = n.trim();
+      app.history.transact('Renommer le projet', () => {
+        app.doc.name = n.trim();
+      });
       syncTitle();
-      app.emit('changed');
     }
   };
   title.addEventListener('click', rename);
   title.addEventListener('keydown', (e) => e.key === 'Enter' && rename());
   app.on('doc', syncTitle);
+  app.on('meta', syncTitle);
   syncTitle();
 }
 
@@ -236,12 +238,13 @@ function setupVariantBar() {
 function setupGlobalToggles() {
   app.toggleGrid = () => {
     const g = app.doc.grid;
-    g.visible = !g.visible;
+    app.history.transact(g.visible ? 'Masquer la grille' : 'Afficher la grille', () => {
+      app.doc.grid.visible = !g.visible;
+    });
     app.emit('grid');
-    app.emit('changed');
     app.renderGridPanel?.();
     app.renderer.requestRender();
-    app.toast(g.visible ? 'Grille affichée' : 'Grille masquée', 900);
+    app.toast(app.doc.grid.visible ? 'Grille affichée' : 'Grille masquée', 900);
   };
   app.toggleTileMode = () => {
     app.setState({ tileMode: !app.state.tileMode });
@@ -322,10 +325,17 @@ async function boot() {
     const hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.register('./sw.js').then((reg) => reg.update()).catch((e) => console.warn('SW', e));
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      // nouvelle version installée : le projet est sauvegardé puis la page rechargée
-      if (!hadController) return;
-      app.toast('Nouvelle version installée : rechargement…', 2500);
-      Promise.resolve(app.storage?.saveNow()).finally(() => setTimeout(() => location.reload(), 1200));
+      // nouvelle version installée : on propose de recharger (sans interrompre le dessin)
+      if (!hadController || document.getElementById('update-banner')) return;
+      const banner = h('div', { id: 'update-banner', role: 'status' },
+        h('span', {}, 'Une nouvelle version de Pixel Atelier est disponible.'),
+        h('button', { class: 'btn small primary', onclick: async () => {
+          banner.querySelector('button').disabled = true;
+          await app.storage?.saveNow();
+          location.reload();
+        } }, 'Recharger'),
+        h('button', { class: 'icon-btn small', 'aria-label': 'Plus tard', title: 'Plus tard', onclick: () => banner.remove() }, '✕'));
+      document.body.append(banner);
     });
   }
 

@@ -177,9 +177,10 @@ export function initColorsPanel(app) {
   }
 
   function setPalette(colors, label = 'Palette modifiée') {
-    app.doc.palette = colors.slice(0, 256);
+    app.history.transact(label, () => {
+      app.doc.palette = colors.slice(0, 256);
+    });
     renderPalette();
-    app.emit('changed');
     app.toast(label);
   }
 
@@ -288,6 +289,7 @@ export function initColorsPanel(app) {
     renderPalette();
   });
   app.on('doc', renderPalette);
+  app.on('meta', renderPalette);
   app.on('recent', renderRecent);
   fromState();
   renderPalette();

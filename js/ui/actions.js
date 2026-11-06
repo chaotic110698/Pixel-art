@@ -12,6 +12,12 @@ import * as img from '../core/image-ops.js';
 
 export const SIZE_PRESETS = [16, 32, 64, 128, 256, 512];
 
+/** Position et échelle pour que l'image tienne dans le canevas, centrée. */
+export function fitReference(doc, w, h) {
+  const scale = Math.min(doc.width / w, doc.height / h);
+  return { scale, x: (doc.width - w * scale) / 2, y: (doc.height - h * scale) / 2 };
+}
+
 export function createActions(app) {
   const A = {};
 
@@ -155,6 +161,7 @@ export function createActions(app) {
     } catch (_) {
       return app.toast('Image illisible');
     }
+    if (as === 'reference') return A.addReference(image, file.name);
     const doc = app.doc;
     const iw = image.naturalWidth, ih = image.naturalHeight;
     let fit = 'center';
@@ -171,7 +178,6 @@ export function createActions(app) {
       if (!choice) return;
       fit = choice;
     }
-    if (as === 'reference') fit = 'fit';
     if (fit === 'grow') img.resizeCanvas(app, Math.max(doc.width, iw), Math.max(doc.height, ih), 'tl');
     const W = app.doc.width, H = app.doc.height;
     const raw = imageToRGBA(image);
@@ -184,8 +190,8 @@ export function createActions(app) {
       src = scaleNearest(src, iw, ih, sw, sh);
     }
     const name = file.name.replace(/\.[^.]+$/, '') || 'Image';
-    app.history.group(as === 'reference' ? 'Importer une référence' : 'Importer une image', () => {
-      const layer = ops.addLayer(app, as === 'reference' ? `Réf. ${name}` : name);
+    app.history.group('Importer une image', () => {
+      const layer = ops.addLayer(app, name);
       const token = app.history.beginPixels(layer);
       const dx = Math.floor((W - sw) / 2), dy = Math.floor((H - sh) / 2);
       for (let y = 0; y < sh; y++) {
@@ -198,17 +204,56 @@ export function createActions(app) {
       }
       app.markLayerDirty(token.cel);
       app.history.endPixels(token, 'Image');
-      if (as === 'reference') {
-        app.history.transact('Calque de référence', () => {
-          layer.reference = true;
-          layer.opacity = 0.45;
-          layer.locked = true;
-        });
-        // la référence va tout en bas
-        ops.dropNode(app, layer.id, app.doc.root.children[0], 'below');
-      }
     });
-    app.toast(as === 'reference' ? 'Référence importée (verrouillée, non exportée)' : 'Image importée comme calque');
+    app.toast('Image importée comme calque');
+  };
+
+  /**
+   * Calque de référence « net » : l'image est conservée en pleine résolution
+   * (réduite à 2048 px au plus) et affichée par-dessus la grille de pixels,
+   * jamais exportée. Elle se déplace avec l'outil Déplacer.
+   */
+  A.addReference = (image, filename = 'Image') => {
+    const max = 2048;
+    const k = Math.min(1, max / Math.max(image.naturalWidth, image.naturalHeight));
+    const w = Math.max(1, Math.round(image.naturalWidth * k));
+    const hh = Math.max(1, Math.round(image.naturalHeight * k));
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = hh;
+    const g = c.getContext('2d');
+    g.imageSmoothingQuality = 'high';
+    g.drawImage(image, 0, 0, w, hh);
+    let src = c.toDataURL('image/webp', 0.9);
+    if (!src.startsWith('data:image/webp')) src = c.toDataURL('image/png');
+    const doc = app.doc;
+    const ref = { src, w, h: hh, ...fitReference(doc, w, hh) };
+    const name = `Réf. ${filename.replace(/\.[^.]+$/, '') || 'image'}`;
+    app.selection.commitFloating();
+    app.history.transact('Importer une référence', () => {
+      const layer = doc.createLayer(name, { reference: true, opacity: 0.5, locked: true, refImg: ref });
+      doc.insert(layer, 'root', 0); // tout en bas : visible sous le dessin
+      doc.activeId = layer.id;
+    });
+    app.toast('Référence ajoutée (nette, non exportée). Outil Déplacer pour la placer ; taille dans le panneau Calques.', 3500);
+  };
+
+  /** Met à jour l'image d'un calque de référence (annulable). `live` : déjà appliqué. */
+  A.setReference = (layer, patch, startRef = null) => {
+    const node = app.doc.get(layer.id);
+    if (!node) return;
+    const before = startRef || node.refImg;
+    const after = { ...node.refImg, ...patch };
+    node.refImg = before;
+    app.history.transact('Référence', () => {
+      app.doc.get(layer.id).refImg = after;
+    });
+    app.renderer.requestRender();
+  };
+
+  A.fitReference = (layer) => {
+    const r = layer.refImg;
+    if (r) A.setReference(layer, fitReference(app.doc, r.w, r.h));
   };
 
   // ---------- Couleurs ----------

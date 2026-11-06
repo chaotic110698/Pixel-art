@@ -291,6 +291,12 @@ export class Doc {
       frame: this.frame,
       expressions: JSON.parse(JSON.stringify(this.expressions)),
       charColors: this.charColors ? { ...this.charColors } : null,
+      // métadonnées légères, annulables elles aussi
+      name: this.name,
+      fps: this.fps,
+      grid: { ...this.grid },
+      palette: this.palette ? [...this.palette] : null,
+      pngtuber: { ...this.pngtuber },
     };
   }
 
@@ -311,6 +317,11 @@ export class Doc {
     this.frame = Math.min(s.frame, this.frames.length - 1);
     this.expressions = JSON.parse(JSON.stringify(s.expressions));
     this.charColors = s.charColors ? { ...s.charColors } : null;
+    if (s.name !== undefined) this.name = s.name;
+    if (s.fps !== undefined) this.fps = s.fps;
+    if (s.grid) this.grid = { ...s.grid };
+    if (s.palette !== undefined) this.palette = s.palette ? [...s.palette] : null;
+    if (s.pngtuber) this.pngtuber = { ...s.pngtuber };
   }
 
   /** Premier calque éditable trouvé (pour définir un calque actif par défaut). */

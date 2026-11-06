@@ -9,12 +9,20 @@
 - Ne jamais lisser : `imageSmoothingEnabled = false`, CSS `image-rendering: pixelated`. Les exports passent par `js/export/png.js` (encodeur exact, alpha non prémultiplié). N'utilisez pas `canvas.toBlob` pour un export.
 - Toute modification du document doit être **annulable** :
   - pixels : `const t = app.history.beginPixels(layer)`, puis modification de `t.cel`, puis `app.markLayerDirty(t.cel, x0, y0, x1, y1)`, puis `app.history.endPixels(t, 'Libellé')` ;
-  - structure (calques, variantes, expressions, taille, frames, charColors) : `app.history.transact('Libellé', () => { ... })`. Les opérations qui changent les pixels « en masse » **remplacent** les tableaux de cels au lieu de les modifier sur place, car l'instantané de structure partage les cels par référence ;
+  - structure et métadonnées (calques, variantes, expressions, taille, frames, FPS, charColors, nom, grille, palette, réglages PNGtuber) : `app.history.transact('Libellé', () => { ... })`. Après annuler/rétablir, l'évènement `meta` invite les panneaux à se redessiner.
+  - les sélections passent par `selection.apply/deselect/commitFloating`, qui enregistrent elles-mêmes leur entrée d'historique (`Selection._record`) ;
+  - réglage « en direct » (curseur, couleur) : appliquer pendant le glissement, puis remettre l'ancienne valeur et faire une seule `transact` au relâchement (voir grid-panel.js ou `actions.setReference`). Les opérations qui changent les pixels « en masse » **remplacent** les tableaux de cels au lieu de les modifier sur place, car l'instantané de structure partage les cels par référence ;
   - plusieurs entrées regroupées : `app.history.group('Libellé', fn)`.
-- Évènements de `app` (Emitter) : `doc`, `structure`, `changed`, `pixels`, `history`, `tool`, `color`, `state`, `selection`, `frame`, `viewport`, `hover`, `grid`, `toast`. L'UI se met à jour en les écoutant.
+- Évènements de `app` (Emitter) : `doc`, `structure`, `meta`, `changed`, `pixels`, `history`, `tool`, `color`, `state`, `selection`, `frame`, `viewport`, `hover`, `grid`, `toast`.
+- Toute modification de pixels en place doit passer par `markDirty` (via `app.markLayerDirty`) : c'est ce qui déclenche aussi la sauvegarde incrémentale. L'UI se met à jour en les écoutant.
 - Préférences de l'éditeur : `app.state` (persistées dans localStorage via `app.setState(patch)`). Données du projet : `app.doc`.
 - Ergonomie : zones tactiles ≥ 44 px, `title` et `aria-label` sur les boutons d'icône, Pointer Events uniquement.
 - Après tout ajout, suppression ou renommage de fichier : `node scripts/sw-files.mjs --write` (liste de précache du service worker), et incrémenter `VERSION` dans `sw.js` avant une mise en ligne.
+
+## Mise en ligne
+
+- GitHub Pages publie la branche **`main`**. Travailler sur la branche de session, puis pousser aussi sur `main` (`git push origin HEAD:main`) une fois les tests passés.
+- Avant de pousser : `node scripts/sw-files.mjs` (liste à jour) et `VERSION` incrémentée dans `sw.js`, sinon les utilisateurs gardent l'ancienne version en cache.
 
 ## Architecture
 
@@ -45,7 +53,7 @@ js/library/
   library-ui.js       fenêtres Bibliothèque, Nouveau personnage, Recolorer, Ma bibliothèque
   parts/*.js          UN FICHIER PAR CATÉGORIE (bodies, heads, hair, eyes, brows, noses, mouths, accessories, tops)
 js/pngtuber/          mode PNGtuber (micro Web Audio local, clignement, expressions au clavier)
-js/storage/           db.js (IndexedDB), serialize.js, storage.js (autosave), project-file.js, projects-ui.js
+js/storage/           db.js (IndexedDB), serialize.js, storage.js (autosave incrémental), project-file.js, projects-ui.js
 scripts/sw-files.mjs  vérifie ou régénère la liste de précache de sw.js
 ```
 
@@ -56,6 +64,11 @@ scripts/sw-files.mjs  vérifie ou régénère la liste de précache de sw.js
 - Un groupe avec `variant: true` n'affiche que `active`. `role` vaut `eyes`, `mouth` ou `brows` pour les pièces de la bibliothèque.
 - Une expression a la forme `{ id, name, states: { groupId: childId }, key }`.
 - `doc.renderList({ overrides, includeReference, root, ignoreVisibility, frame })` donne les calques à composer.
+- Calque de référence « net » : `reference: true` + `refImg: { src (dataURL), w, h, x, y, scale }` (coordonnées en pixels du document). Il est dessiné par le renderer en pleine résolution, sous le dessin s'il est placé sous le premier calque normal, sinon par-dessus. Il n'est jamais exporté. `refImg` est remplacé (jamais modifié en place) pour rester compatible avec les instantanés d'historique.
+
+### Stockage
+
+IndexedDB `pixel-atelier` v2 : `projects` (structure sans pixels + `celKeys`), `cels` (un enregistrement par cel, clé `projet|calque|image`), `meta` (liste + miniature), `library`, `kv`. Seules les cels modifiées (`markDirty`) ou déplacées sont réécrites. Un contenu flottant non validé est inclus dans la sauvegarde. Les anciens enregistrements (pixels dans `projects`) restent lisibles.
 
 ### Bibliothèque : ajouter une pièce
 
@@ -78,4 +91,4 @@ Points à revérifier après une modification importante :
 
 ## Pistes pour la suite
 
-Carte de niveau (tilemap) en mode tuiles, rotation libre de la sélection, pinceau « pixel perfect », sélection de calques multiples, raccourcis personnalisables, plus de pièces (corps entiers, vêtements variés).
+Mode source OBS, bouche à 3 états, carte de niveau (tilemap) en mode tuiles, rotation libre de la sélection, pinceau « pixel perfect », sélection de calques multiples, raccourcis personnalisables, plus de pièces (corps entiers, vêtements variés).
