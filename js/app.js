@@ -52,6 +52,7 @@ export const DEFAULT_STATE = {
   recent: [],
   tutorialDone: false,
   exportScale: 8,
+  lang: 'fr', // anglais au choix : menu ☰ > Langue
   lastPalette: 'endesga32',
 };
 

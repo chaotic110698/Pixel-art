@@ -16,6 +16,7 @@
 - Évènements de `app` (Emitter) : `doc`, `structure`, `meta`, `changed`, `pixels`, `history`, `tool`, `color`, `state`, `selection`, `frame`, `viewport`, `hover`, `grid`, `toast`.
 - Toute modification de pixels en place doit passer par `markDirty` (via `app.markLayerDirty`) : c'est ce qui déclenche aussi la sauvegarde incrémentale. L'UI se met à jour en les écoutant.
 - Préférences de l'éditeur : `app.state` (persistées dans localStorage via `app.setState(patch)`). Données du projet : `app.doc`.
+- **Langues** : le code et l'interface sont écrits en français ; l'anglais est appliqué à la volée par `js/ui/i18n.js` (MutationObserver sur les textes, `title`, `aria-label`, `placeholder`). Tout nouveau texte d'interface doit être ajouté à `js/ui/i18n-en.js` (clé = texte français exact) ou couvert par un motif de `i18n.js` pour les textes dynamiques. Les contenus de l'utilisateur (noms de calques, expressions, projets…) doivent porter `translate: 'no'`. Les noms créés par l'application (calques par défaut, pièces) passent par `tr()`.
 - Ergonomie : zones tactiles ≥ 44 px, `title` et `aria-label` sur les boutons d'icône, Pointer Events uniquement.
 - Après tout ajout, suppression ou renommage de fichier : `node scripts/sw-files.mjs --write` (liste de précache du service worker), et incrémenter `VERSION` dans `sw.js` avant une mise en ligne.
 
@@ -58,7 +59,9 @@ js/pngtuber/
   pngtuber.js         fenêtre PNGtuber de l'éditeur ; capture.js + capture.html : fenêtre de capture OBS
   standalone.js       export de l'avatar .html autonome
 capture.html          page de capture (lit IndexedDB, suit l'éditeur via BroadcastChannel « pixel-atelier »)
-js/storage/           db.js (IndexedDB), serialize.js, storage.js (autosave incrémental), project-file.js, projects-ui.js
+js/storage/           db.js (IndexedDB), serialize.js, storage.js (autosave incrémental), project-file.js (fichiers, File System Access), aseprite.js (import .ase), projects-ui.js
+js/export/psd.js      export Photoshop (calques, dossiers « lsct », noms Unicode « luni »)
+js/ui/history-panel.js, js/ui/i18n.js + i18n-en.js, shortcuts.js (touches simples personnalisables : singleKeyActions)
 scripts/sw-files.mjs  vérifie ou régénère la liste de précache de sw.js
 ```
 

@@ -1,7 +1,7 @@
 // Menu principal (bouton ☰).
 
 import { popupMenu } from './dialogs.js';
-import { showShortcuts } from './shortcuts.js';
+import { showShortcuts, openKeymapDialog } from './shortcuts.js';
 import * as img from '../core/image-ops.js';
 
 export function openMainMenu(app, anchor) {
@@ -12,9 +12,10 @@ export function openMainMenu(app, anchor) {
     { label: 'Nouveau dessin…', icon: 'plus', action: A.newDocument },
     { label: 'Nouveau personnage (PNGtuber)…', icon: 'user', action: A.newCharacter },
     { label: 'Mes projets…', icon: 'folder', hint: 'Ctrl+O', action: A.openProjects },
-    { label: 'Enregistrer maintenant', icon: 'save', hint: 'Ctrl+S', action: () => app.storage?.saveNow(true) },
-    { label: 'Ouvrir un fichier projet…', icon: 'upload', action: A.openProjectFile },
-    { label: 'Télécharger le fichier projet', icon: 'download', hint: 'Ctrl+Maj+S', action: A.saveProjectFile },
+    { label: 'Enregistrer maintenant', icon: 'save', hint: 'Ctrl+S', action: A.saveAll },
+    { label: 'Ouvrir un fichier (projet, Aseprite)…', icon: 'upload', action: A.openProjectFile },
+    { label: 'Enregistrer dans un fichier (ordinateur)…', icon: 'save', hint: 'Ctrl+Maj+S', action: () => A.saveToComputer(true) },
+    { label: 'Télécharger le fichier projet', icon: 'download', action: A.saveProjectFile },
     { label: 'Importer une image comme calque…', icon: 'image', action: () => A.importImage('layer') },
     { label: 'Importer une image de référence…', icon: 'ref', action: () => A.importImage('reference') },
     { label: 'Exporter…', icon: 'download', hint: 'Ctrl+Maj+E', action: () => A.exportDialog() },
@@ -44,8 +45,10 @@ export function openMainMenu(app, anchor) {
     { label: 'Grille de pixels au fort zoom', icon: 'grid', checked: st.showPixelGrid, action: () => app.setState({ showPixelGrid: !st.showPixelGrid }) },
     { label: 'Molette = déplacer (sinon zoom)', icon: 'hand', checked: st.wheelPans, action: () => app.setState({ wheelPans: !st.wheelPans }) },
     { label: st.theme === 'dark' ? 'Thème clair' : 'Thème sombre', icon: st.theme === 'dark' ? 'sun' : 'moon', action: () => app.setTheme(st.theme === 'dark' ? 'light' : 'dark') },
+    { label: 'Langue : English', icon: 'help', action: () => { app.setState({ lang: st.lang === 'en' ? 'fr' : 'en' }); app.savePrefs.flush(); app.storage?.saveNow().finally(() => location.reload()); } },
     { heading: 'Aide' },
-    { label: 'Raccourcis clavier et gestes', icon: 'keyboard', hint: '?', action: showShortcuts },
+    { label: 'Raccourcis clavier et gestes', icon: 'keyboard', hint: '?', action: () => showShortcuts(app) },
+    { label: 'Personnaliser les raccourcis…', icon: 'key', action: () => openKeymapDialog(app) },
     { label: 'Revoir le tutoriel', icon: 'help', action: () => app.startTutorial() },
   ]);
 }

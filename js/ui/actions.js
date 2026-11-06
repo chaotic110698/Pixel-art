@@ -5,6 +5,7 @@ import { openDialog, confirmDialog } from './dialogs.js';
 import { Doc } from '../core/doc.js';
 import { hexToU32, u32ToHex, normHex } from '../util/color.js';
 import { scaleNearest, outlineMask } from '../core/raster.js';
+import { tr } from './i18n.js';
 import { composePixels } from '../render/compose.js';
 import { extractPalette } from '../core/palettes.js';
 import * as ops from '../core/layer-ops.js';
@@ -78,7 +79,7 @@ export function createActions(app) {
   A.newDocument = async () => {
     const wIn = h('input', { type: 'number', class: 'input wide', value: app.doc.width, min: 1, max: 2048 });
     const hIn = h('input', { type: 'number', class: 'input wide', value: app.doc.height, min: 1, max: 2048 });
-    const nameIn = h('input', { type: 'text', class: 'input wide', value: 'Sans titre' });
+    const nameIn = h('input', { type: 'text', class: 'input wide', value: tr('Sans titre') });
     const presets = h('div', { class: 'row' }, SIZE_PRESETS.map((s) =>
       h('button', { class: 'btn small', onclick: () => { wIn.value = s; hIn.value = s; } }, `${s}×${s}`)));
     const bg = h('select', { class: 'input wide' },
@@ -101,14 +102,14 @@ export function createActions(app) {
     const w = Math.max(1, Math.min(2048, parseInt(wIn.value, 10) || 32));
     const hh = Math.max(1, Math.min(2048, parseInt(hIn.value, 10) || 32));
     await app.storage?.saveNow();
-    const doc = new Doc(w, hh, nameIn.value.trim() || 'Sans titre');
+    const doc = new Doc(w, hh, nameIn.value.trim() || tr('Sans titre'));
     doc.palette = [...app.doc.palette];
     if (bg.value !== 'transparent') {
-      const fond = doc.createLayer('Fond');
+      const fond = doc.createLayer(tr('Fond'));
       fond.cels[0].fill(bg.value === 'white' ? hexToU32('#ffffff') : app.colorU32('secondary'));
       doc.insert(fond, 'root');
     }
-    const l = doc.createLayer('Calque 1');
+    const l = doc.createLayer(tr('Calque 1'));
     doc.insert(l, 'root');
     doc.activeId = l.id;
     app.setDoc(doc);
@@ -383,6 +384,11 @@ export function createActions(app) {
   A.openPngtuber = lazy('Mode PNGtuber', async () => (await import('../pngtuber/pngtuber.js')).openPngtuber(app));
   A.openProjects = lazy('Mes projets', async () => (await import('../storage/projects-ui.js')).openProjects(app));
   A.saveProjectFile = lazy('Fichier projet', async () => (await import('../storage/project-file.js')).downloadProject(app));
+  A.saveToComputer = lazy('Fichier projet', async (saveAs = false) => (await import('../storage/project-file.js')).saveToFile(app, { saveAs }));
+  A.saveAll = lazy('Enregistrer', async () => {
+    await app.storage?.saveNow(true);
+    await (await import('../storage/project-file.js')).saveLinkedFile(app);
+  });
   A.openProjectFile = lazy('Fichier projet', async () => (await import('../storage/project-file.js')).openProjectFile(app));
   A.toggleAnimation = lazy('Animation', async () => (await import('./timeline.js')).toggleTimeline(app));
 

@@ -12,6 +12,7 @@ import { pixelsToCanvas } from '../render/compose.js';
 import { uid } from '../core/doc.js';
 import { normHex } from '../util/color.js';
 import { resizeCanvas } from '../core/image-ops.js';
+import { tr } from '../ui/i18n.js';
 
 const COLOR_FIELDS = [
   ['skin', 'Peau'],
@@ -199,7 +200,7 @@ export function openLibrary(app, initialCat = null) {
       }
       grid.append(h('div', { class: 'card' },
         h('button', { style: { border: 0, background: 'none', padding: 0 }, title: 'Insérer', onclick: () => { insertUserPiece(app, it); app.toast(`« ${it.name} » ajouté`); } }, c),
-        h('span', { class: 't' }, it.name),
+        h('span', { class: 't', translate: 'no' }, it.name),
         h('div', { class: 'row', style: { justifyContent: 'center' } },
           h('button', { class: 'icon-btn small', title: 'Renommer', 'aria-label': 'Renommer', onclick: async () => {
             const name = (await promptDialog('Nom de la pièce', it.name, { title: 'Renommer la pièce' }))?.trim();
@@ -240,7 +241,7 @@ export function openLibrary(app, initialCat = null) {
 export function openNewCharacter(app) {
   let colors = { ...DEFAULT_COLORS, ...(app.state.charColors || {}) };
   const sel = { ...DEFAULT_CHARACTER, accessories: [...DEFAULT_CHARACTER.accessories] };
-  const nameIn = h('input', { class: 'input wide', value: 'Mon personnage' });
+  const nameIn = h('input', { class: 'input wide', value: tr('Mon personnage') });
   const sizeSel = h('select', { class: 'input wide' },
     h('option', { value: '64x64' }, '64 × 64 (recommandé)'),
     h('option', { value: '64x80' }, '64 × 80 (plus de place au-dessus)'),
@@ -327,7 +328,7 @@ export function openNewCharacter(app) {
         label: 'Créer le personnage', primary: true, value: true, action: async () => {
           const [w, hh] = sizeSel.value.split('x').map(Number);
           await app.storage?.saveNow();
-          const doc = buildCharacter({ width: w, height: hh, colors, sel, name: nameIn.value.trim() || 'Mon personnage' });
+          const doc = buildCharacter({ width: w, height: hh, colors, sel, name: nameIn.value.trim() || tr('Mon personnage') });
           app.setState({ charColors: colors });
           app.setDoc(doc);
           app.toast('Personnage créé ! Essayez le mode PNGtuber 📺');

@@ -55,7 +55,7 @@ export async function openProjects(app) {
       const card = h('div', { class: 'card', style: isCurrent ? { borderColor: 'var(--accent)' } : {} },
         h('button', { style: { border: 0, background: 'none', padding: 0 }, onclick: open, title: 'Ouvrir' },
           url ? h('img', { src: url, alt: m.name }) : h('canvas', { width: 1, height: 1 })),
-        h('div', { class: 't' }, m.name + (isCurrent ? ' (ouvert)' : '')),
+        h('div', { class: 't' }, h('span', { translate: 'no' }, m.name), isCurrent ? ' (ouvert)' : ''),
         h('div', { class: 's' }, `${m.width}×${m.height} · ${fmtDate(m.updated)}`),
         h('div', { class: 'row', style: { justifyContent: 'center' } },
           h('button', { class: 'icon-btn small', title: 'Renommer', 'aria-label': 'Renommer', onclick: async () => {

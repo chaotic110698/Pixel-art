@@ -92,14 +92,14 @@ export function openPngtuber(app) {
 
   function groupSelect(key, label, onChange) {
     const sel = h('select', { class: 'input wide' }, h('option', { value: '' }, '— Aucun —'),
-      doc.variantGroups().map((g) => h('option', { value: g.id, selected: cfg[key] === g.id }, g.name)));
+      doc.variantGroups().map((g) => h('option', { value: g.id, selected: cfg[key] === g.id, translate: 'no' }, g.name)));
     sel.addEventListener('change', () => { cfg[key] = sel.value || null; onChange(); });
     return h('label', { class: 'field' }, h('span', {}, label), sel);
   }
   function variantSelect(groupKey, key, label, optional = false) {
     const g = doc.get(cfg[groupKey]);
     const sel = h('select', { class: 'input wide' }, h('option', { value: '' }, optional ? '— Aucune —' : '—'),
-      (g ? g.children : []).map((cid) => h('option', { value: cid, selected: cfg[key] === cid }, doc.get(cid).name)));
+      (g ? g.children : []).map((cid) => h('option', { value: cid, selected: cfg[key] === cid, translate: 'no' }, doc.get(cid).name)));
     sel.addEventListener('change', () => { cfg[key] = sel.value || null; });
     return h('label', { class: 'field' }, h('span', {}, label), sel);
   }
@@ -116,7 +116,7 @@ export function openPngtuber(app) {
     }
     exprBox.append(h('div', { class: 'chips' },
       h('button', { class: 'chip' + (!cur ? ' on' : ''), onclick: () => engine.setExpression(null) }, 'Actuel'),
-      doc.expressions.map((e) => h('button', { class: 'chip' + (cur === e.id ? ' on' : ''), title: e.hold ? 'Expression temporaire (touche maintenue)' : '', onclick: () => engine.setExpression(e.id) },
+      doc.expressions.map((e) => h('button', { class: 'chip' + (cur === e.id ? ' on' : ''), translate: 'no', title: e.hold ? 'Expression temporaire (touche maintenue)' : '', onclick: () => engine.setExpression(e.id) },
         e.name, e.key ? h('kbd', { style: { marginLeft: '6px' } }, e.key + (e.hold ? ' ⏳' : '')) : null))));
   }
 

@@ -19,12 +19,12 @@ export function initExpressionsPanel(app) {
     }
     for (const g of groups) {
       panel.append(h('div', { class: 'vgroup' },
-        h('div', { class: 'vname' }, h('span', { class: 'grow' }, g.name),
+        h('div', { class: 'vname' }, h('span', { class: 'grow', translate: 'no' }, g.name),
           h('button', { class: 'icon-btn small', title: 'Variante précédente', 'aria-label': 'Précédente', onclick: () => ops.cycleVariant(app, g.id, -1) }, '‹'),
           h('button', { class: 'icon-btn small', title: 'Variante suivante', 'aria-label': 'Suivante', onclick: () => ops.cycleVariant(app, g.id, 1) }, '›')),
         h('div', { class: 'chips' }, [...g.children].reverse().map((cid) => {
           const c = doc.get(cid);
-          return h('button', { class: 'chip' + (g.active === cid ? ' on' : ''), onclick: () => ops.setActiveVariant(app, g.id, cid) }, c.name);
+          return h('button', { class: 'chip' + (g.active === cid ? ' on' : ''), translate: 'no', onclick: () => ops.setActiveVariant(app, g.id, cid) }, c.name);
         }))));
     }
 
@@ -56,7 +56,7 @@ export function initExpressionsPanel(app) {
       panel.append(h('div', { class: 'expr-row', style: isCur ? { outline: '2px solid var(--accent)' } : {} },
         thumb,
         h('button', { class: 'btn small grow', style: { justifyContent: 'flex-start' }, title: 'Appliquer', onclick: () => ops.applyExpression(app, e.id) },
-          h('span', { class: 'name' }, e.name)),
+          h('span', { class: 'name', translate: 'no' }, e.name)),
         e.key ? h('kbd', { title: e.hold ? 'Touche associée (temporaire : tant qu\'elle est maintenue)' : 'Touche associée (mode PNGtuber)' }, e.key + (e.hold ? ' ⏳' : '')) : null,
         more));
     }

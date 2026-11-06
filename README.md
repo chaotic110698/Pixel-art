@@ -30,7 +30,8 @@
   - spritesheet ou planche de tuiles (+ JSON), GIF animé, images séparées ;
   - au choix, recadrage commun (l'alignement est conservé) ou image par image.
 - **Projets** : sauvegarde automatique et incrémentale dans le navigateur (IndexedDB), liste avec miniatures, renommage, duplication, suppression, fichier projet `.pxa.json` sans perte (téléchargement et ouverture).
-- Interface en français, tutoriel au premier lancement, thème clair ou sombre.
+- **Confort** : raccourcis personnalisables, panneau **Historique** (revenir à n'importe quelle étape), enregistrement direct dans un fichier de l'ordinateur (Chrome/Edge), import de fichiers **Aseprite** (.ase), export **PSD** (calques et groupes), interface en **français ou anglais** (menu ☰).
+- Tutoriel au premier lancement, thème clair ou sombre.
 
 ## Raccourcis principaux
 

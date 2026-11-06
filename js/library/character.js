@@ -3,6 +3,7 @@
 import { Doc, uid } from '../core/doc.js';
 import { insertPiece, pieceById } from './library.js';
 import { presetById } from '../core/palettes.js';
+import { tr } from '../ui/i18n.js';
 
 export const DEFAULT_CHARACTER = {
   body: 'body-moyen',
@@ -63,7 +64,7 @@ export function addDefaultExpressions(doc) {
       const c = childByState(doc, groups[role], p[role]);
       if (c) states[groups[role].id] = c.id;
     }
-    if (Object.keys(states).length) doc.expressions.push({ id: uid('x'), name: p.name, states, key: p.key });
+    if (Object.keys(states).length) doc.expressions.push({ id: uid('x'), name: tr(p.name), states, key: p.key });
   }
 }
 
@@ -84,7 +85,7 @@ export function buildCharacter({ width = 64, height = 64, name = 'Mon personnage
   addDefaultExpressions(doc);
   autoPngtuber(doc, true);
   // calque libre pour dessiner par-dessus
-  const free = doc.createLayer('Dessin libre');
+  const free = doc.createLayer(tr('Dessin libre'));
   doc.insert(free, 'root');
   doc.activeId = free.id;
   return doc;

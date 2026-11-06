@@ -15,6 +15,7 @@ export const EXPORT_KINDS = [
   { id: 'pack', name: 'Pack PNGtuber complet (ZIP)', desc: 'Image, calques, variantes, expressions et manifest.json réunis.', zip: true },
   { id: 'pngtuber', name: 'Images pour logiciels PNGtuber (ZIP)', desc: 'Par expression : repos, parle, entrouverte, avec et sans clignement (veadotube, PNGTuber Plus…).', zip: true },
   { id: 'obs', name: 'Avatar OBS (.html)', desc: 'Un fichier à ajouter dans OBS comme source navigateur : fond transparent, micro, clignement, expressions.', zip: false },
+  { id: 'psd', name: 'Photoshop (PSD)', desc: 'Calques et groupes conservés, pour Photoshop, GIMP, Krita, Photopea… (taille réelle, image actuelle).', zip: false },
   { id: 'layers', name: 'Calque par calque (ZIP)', desc: 'Un PNG par calque, tous à la taille du canevas pour un alignement parfait.', zip: true },
   { id: 'variants', name: 'Par variante (ZIP)', desc: 'Un PNG par variante de chaque groupe de variantes.', zip: true },
   { id: 'expressions', name: 'Par expression (ZIP)', desc: 'Un PNG composé par expression enregistrée.', zip: true },
@@ -253,6 +254,11 @@ export async function runExport(app, kind, opts) {
     if (kind === 'frames') return { blob: makeZip(files), filename: `${base}_images.zip`, count: files.length };
     if (files.length === 1) return { blob: new Blob([files[0].data], { type: files[0].type }), filename: files[0].name, count: 1 };
     return { blob: makeZip(files), filename: `${base}_sheet.zip`, count: files.length };
+  }
+
+  if (kind === 'psd') {
+    const { encodePSD } = await import('./psd.js');
+    return { blob: new Blob([encodePSD(doc)], { type: 'image/vnd.adobe.photoshop' }), filename: `${base}.psd`, count: 1 };
   }
 
   if (kind === 'obs') {

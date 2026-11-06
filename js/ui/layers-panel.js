@@ -119,7 +119,7 @@ export function initLayersPanel(app) {
     thumbs.set(node.id, th);
     drawThumb(node, th);
     el.append(th);
-    el.append(h('span', { class: 'name', title: doc.pathName(node) }, node.name));
+    el.append(h('span', { class: 'name', title: doc.pathName(node), translate: 'no' }, node.name));
     if (node.variant) el.append(h('span', { class: 'badge', title: 'Groupe de variantes : une seule visible à la fois' }, 'variantes'));
     if (node.reference) el.append(h('span', { class: 'badge ref', title: 'Calque de référence : non exporté' }, 'réf.'));
     if (node.opacity < 1) el.append(h('span', { class: 'small muted' }, Math.round(node.opacity * 100) + '%'));
@@ -225,7 +225,7 @@ export function initLayersPanel(app) {
     const opLbl = h('span', { class: 'small muted', style: { width: '44px', textAlign: 'right' } }, Math.round(a.opacity * 100) + ' %');
     props.append(
       h('div', { class: 'row nowrap' },
-        h('strong', { class: 'grow', style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, a.name),
+        h('strong', { class: 'grow', translate: 'no', style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, a.name),
         h('button', { class: 'btn small', onclick: () => renameNode(a) }, 'Renommer')),
       h('div', { class: 'row nowrap', style: { marginTop: '6px' } }, h('span', { class: 'small muted' }, 'Opacité'), op, opLbl));
     if (a.type === 'group') {

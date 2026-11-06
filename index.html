@@ -17,10 +17,10 @@
   <div id="app">
     <header id="topbar">
       <button class="icon-btn" id="btn-menu" title="Menu" aria-label="Menu principal"></button>
-      <div id="doc-title" title="Renommer le projet" role="button" tabindex="0">Sans titre</div>
+      <div id="doc-title" title="Renommer le projet" role="button" tabindex="0" translate="no">Sans titre</div>
       <div class="spacer"></div>
       <div class="top-actions">
-        <button class="icon-btn" id="btn-undo" title="Annuler (Ctrl+Z)" aria-label="Annuler"></button>
+        <button class="icon-btn" id="btn-undo" title="Annuler (Ctrl+Z)" aria-label="Annuler la dernière action"></button>
         <button class="icon-btn" id="btn-redo" title="Rétablir (Ctrl+Y)" aria-label="Rétablir"></button>
         <span class="sep-v"></span>
         <button class="icon-btn toggle" id="btn-grid" title="Afficher/masquer la grille (#)" aria-label="Grille"></button>
@@ -49,6 +49,7 @@
         <section class="panel" id="panel-layers" data-title="Calques"></section>
         <section class="panel" id="panel-expressions" data-title="Expressions"></section>
         <section class="panel" id="panel-grid" data-title="Grille"></section>
+        <section class="panel" id="panel-history" data-title="Historique"></section>
       </aside>
     </main>
     <div id="timeline" hidden></div>

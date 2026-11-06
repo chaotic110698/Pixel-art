@@ -2,6 +2,7 @@
 
 import { blendOver } from '../util/color.js';
 import { uid } from './doc.js';
+import { tr } from '../ui/i18n.js';
 
 function fresh(app) {
   app.selection.commitFloating();
@@ -18,6 +19,7 @@ function insertionPoint(doc) {
 }
 
 export function uniqueName(doc, base) {
+  base = tr(base);
   const names = new Set([...doc.nodes.values()].map((n) => n.name));
   if (!names.has(base)) return base;
   for (let i = 2; ; i++) if (!names.has(`${base} ${i}`)) return `${base} ${i}`;
@@ -41,7 +43,7 @@ export function addGroup(app, { variant = false, name = null } = {}) {
     const g = doc.createGroup(name || uniqueName(doc, variant ? 'Variantes' : 'Groupe'), { variant });
     doc.insert(g, p, i);
     if (variant) {
-      const a = doc.createLayer('Variante 1');
+      const a = doc.createLayer(tr('Variante 1'));
       doc.insert(a, g.id);
       g.active = a.id;
       doc.activeId = a.id;

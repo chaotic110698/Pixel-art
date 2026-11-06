@@ -259,6 +259,7 @@ function init(app, el) {
         title: `${t.name} (images ${t.from + 1}–${t.to + 1}) — clic : lire en boucle, double-clic : modifier`,
         onclick: () => { range = active ? null : { from: t.from, to: t.to }; if (!active) setFrame(app, t.from); render(); },
         ondblclick: () => tagDialog(app, t),
+        translate: 'no',
       }, t.name));
     }
     tagsRow.style.height = Math.max(0, lanes.length) * 22 + 'px';

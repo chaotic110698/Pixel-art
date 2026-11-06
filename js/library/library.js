@@ -12,6 +12,7 @@ import accessories from './parts/accessories.js';
 import tops from './parts/tops.js';
 import { TEMPLATE, roleColors, rasterize, DEFAULT_COLORS } from './builder.js';
 import { uid } from '../core/doc.js';
+import { tr } from '../ui/i18n.js';
 
 export const CATEGORIES = [
   { id: 'body', name: 'Corps', pieces: bodies, exclusive: true },
@@ -68,6 +69,16 @@ export function nodesOfKind(doc, piece) {
   return out;
 }
 
+/** Nom de calque « Catégorie (pièce) » traduit morceau par morceau (interface anglaise). */
+const LAYER_HEADS = { 'Cheveux arrière': 'Hair back', 'Cheveux avant': 'Hair front', Cheveux: 'Hair', Corps: 'Body', 'Tête': 'Head', Haut: 'Top', Nez: 'Nose' };
+function trName(name) {
+  if (tr('Calque') === 'Calque') return name; // interface en français
+  const m = name.match(/^(.+?) \((.+)\)$/);
+  if (!m) return tr(name);
+  const cap = m[2].charAt(0).toUpperCase() + m[2].slice(1);
+  return `${LAYER_HEADS[m[1]] || tr(m[1])} (${tr(cap).toLowerCase()})`;
+}
+
 /** Index d'insertion dans la racine selon l'ordre z des pièces. */
 function zIndex(doc, z) {
   const ch = doc.root.children;
@@ -103,9 +114,9 @@ export function insertPiece(doc, piece, { colors = doc.charColors || DEFAULT_COL
   for (const L of layers) {
     let node;
     if (L.variants) {
-      node = doc.createGroup(L.name, { variant: true, role: L.role || null, part: partMeta({ z: L.z }) });
+      node = doc.createGroup(tr(L.name), { variant: true, role: L.role || null, part: partMeta({ z: L.z }) });
       for (const v of L.variants) {
-        const layer = doc.createLayer(v.name, { part: partMeta({ z: L.z, state: v.state }) });
+        const layer = doc.createLayer(tr(v.name), { part: partMeta({ z: L.z, state: v.state }) });
         layer.cels[0] = rasterize(v.grid, rc, doc.width, doc.height, ox, oy);
         for (let f = 1; f < layer.cels.length; f++) layer.cels[f] = layer.cels[0].slice();
         doc.adopt(node, layer);
@@ -114,7 +125,7 @@ export function insertPiece(doc, piece, { colors = doc.charColors || DEFAULT_COL
       node.children.reverse();
       node.active = node.children[node.children.length - 1];
     } else {
-      node = doc.createLayer(L.name, { part: partMeta({ z: L.z }) });
+      node = doc.createLayer(trName(L.name), { part: partMeta({ z: L.z }) });
       node.cels[0] = rasterize(L.grid, rc, doc.width, doc.height, ox, oy);
       for (let f = 1; f < node.cels.length; f++) node.cels[f] = node.cels[0].slice();
     }

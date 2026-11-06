@@ -253,7 +253,7 @@ button { cursor: pointer; }
 #panel-tabs button[data-tab='colors'] { display: none; }
 .panel { padding: 10px; overflow-y: auto; min-height: 0; }
 #panel-colors { order: 1; flex: none; max-height: 46%; border-bottom: 1px solid var(--line); }
-#panel-layers, #panel-expressions, #panel-grid { order: 3; flex: 1; display: none; }
+#panel-layers, #panel-expressions, #panel-grid, #panel-history { order: 3; flex: 1; display: none; }
 .panel.tab-on { display: block !important; }
 
 .panel h3 {
@@ -714,3 +714,11 @@ button, .chip, .swatch, .card, .lrow, .menu-item { touch-action: manipulation; -
   padding: 0 6px; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; opacity: .85; cursor: pointer; }
 .tag-band.on { opacity: 1; box-shadow: 0 0 0 2px var(--text); }
 .frame-cell.in-range { border-color: var(--accent2); }
+
+/* ---------- Historique ---------- */
+.hist-list { display: flex; flex-direction: column; gap: 2px; }
+.hist-row { display: flex; gap: 8px; align-items: center; text-align: left; border: 0; border-radius: 8px; padding: 6px 8px; min-height: 36px; background: var(--panel); }
+.hist-row .n { color: var(--muted); font-size: 11px; width: 30px; font-variant-numeric: tabular-nums; }
+.hist-row.undone { opacity: .45; font-style: italic; }
+.hist-row.current { outline: 2px solid var(--accent); }
+#panel-tabs button { padding: 8px 2px; font-size: 13px; }

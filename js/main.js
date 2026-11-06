@@ -10,10 +10,12 @@ import { initColorsPanel } from './ui/colors-panel.js';
 import { initLayersPanel } from './ui/layers-panel.js';
 import { initExpressionsPanel } from './ui/expressions-panel.js';
 import { initGridPanel } from './ui/grid-panel.js';
+import { initHistoryPanel } from './ui/history-panel.js';
 import { initShortcuts } from './ui/shortcuts.js';
 import { openMainMenu } from './ui/menu.js';
 import { createActions } from './ui/actions.js';
 import { startTutorial } from './ui/tutorial.js';
+import { setLanguage, tr } from './ui/i18n.js';
 import { composeToCanvas } from './render/compose.js';
 import * as ops from './core/layer-ops.js';
 
@@ -84,6 +86,7 @@ function setupPanels() {
     ['layers', 'Calques', 'layers'],
     ['expressions', 'Expressions', 'face'],
     ['grid', 'Grille', 'grid'],
+    ['history', 'Historique', 'undo'],
   ];
   let current = 'layers';
   let mobileCurrent = 'colors';
@@ -109,6 +112,7 @@ function setupPanels() {
     if (mobile()) mobileCurrent = id;
     else if (id !== 'colors') current = id;
     apply();
+    if (id === 'history') app.renderHistoryPanel?.();
   }
   app.showPanel = (id) => {
     show(id);
@@ -225,7 +229,7 @@ function setupVariantBar() {
       const act = doc.get(g.active);
       bar.append(h('div', { class: 'vb' },
         h('button', { title: `${g.name} : variante précédente`, 'aria-label': 'Précédente', onclick: () => ops.cycleVariant(app, g.id, -1) }, '‹'),
-        h('span', { class: 'lbl' }, `${g.name} : `, h('b', {}, act ? act.name : '—')),
+        h('span', { class: 'lbl', translate: 'no' }, `${g.name} : `, h('b', {}, act ? act.name : '—')),
         h('button', { title: `${g.name} : variante suivante`, 'aria-label': 'Suivante', onclick: () => ops.cycleVariant(app, g.id, 1) }, '›')));
     }
   };
@@ -278,9 +282,10 @@ async function boot() {
   app.init(canvas);
 
   // document de départ (remplacé par le dernier projet si disponible)
-  const doc = new Doc(64, 64, 'Sans titre');
+  setLanguage(app.state.lang);
+  const doc = new Doc(64, 64, tr('Sans titre'));
   doc.palette = app.doc.palette;
-  const l = doc.createLayer('Calque 1');
+  const l = doc.createLayer(tr('Calque 1'));
   doc.insert(l, 'root');
   doc.activeId = l.id;
   app.doc = doc;
@@ -292,6 +297,7 @@ async function boot() {
   initLayersPanel(app);
   initExpressionsPanel(app);
   initGridPanel(app);
+  initHistoryPanel(app);
   setupPanels();
   setupStatus();
   setupMinimap();

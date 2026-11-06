@@ -63,6 +63,12 @@ export function initToolbar(app, { openColorEditor }) {
     renderOptions(app);
   });
   app.on('color', refresh);
+  app.on('keymap', () => {
+    for (const [id, b] of buttons) {
+      const t = app.tools.get(id);
+      b.title = `${t.name} (${t.key})`;
+    }
+  });
   refresh();
   renderOptions(app);
 }
