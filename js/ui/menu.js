@@ -38,6 +38,7 @@ export function openMainMenu(app, anchor) {
     { label: 'Ajuster à l\'écran', icon: 'fit', hint: '0', action: () => app.viewport.fit() },
     { label: 'Taille réelle (100 %)', icon: 'one', hint: '1', action: () => app.viewport.actualSize() },
     { label: 'Aperçu taille réelle', icon: 'image', checked: st.showMinimap !== false, action: () => app.setState({ showMinimap: st.showMinimap === false }) },
+    { label: 'Barre de variantes sur le canevas', icon: 'variants', checked: st.showVariantBar !== false, action: () => app.setState({ showVariantBar: st.showVariantBar === false }) },
     { label: 'Grille de pixels au fort zoom', icon: 'grid', checked: st.showPixelGrid, action: () => app.setState({ showPixelGrid: !st.showPixelGrid }) },
     { label: 'Molette = déplacer (sinon zoom)', icon: 'hand', checked: st.wheelPans, action: () => app.setState({ wheelPans: !st.wheelPans }) },
     { label: st.theme === 'dark' ? 'Thème clair' : 'Thème sombre', icon: st.theme === 'dark' ? 'sun' : 'moon', action: () => app.setTheme(st.theme === 'dark' ? 'light' : 'dark') },

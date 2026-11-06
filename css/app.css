@@ -625,3 +625,29 @@ table.keys td:first-child { white-space: nowrap; width: 1%; }
 @media (max-width: 760px) and (orientation: landscape) and (max-height: 500px) {
   #sidebar { height: 70vh; }
 }
+
+/* ---------- Barre de variantes rapide (sur le canevas) ---------- */
+#variantbar {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: calc(100% - 200px);
+  z-index: 2;
+}
+#variantbar .vb {
+  display: inline-flex;
+  align-items: center;
+  background: color-mix(in srgb, var(--bg2) 88%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+#variantbar .vb button { border: 0; background: transparent; min-height: 36px; min-width: 32px; padding: 0 8px; }
+#variantbar .vb button:hover { background: var(--panel2); }
+#variantbar .vb .lbl { font-size: 12px; padding: 0 2px; white-space: nowrap; }
+#variantbar .vb .lbl b { color: var(--accent); font-weight: 650; }
+@media (max-width: 760px) { #variantbar { max-width: calc(100% - 16px); } #variantbar .vb .lbl { font-size: 11px; } }

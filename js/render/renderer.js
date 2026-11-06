@@ -179,9 +179,9 @@ export class Renderer {
       c.width = c.height = s * 2;
       const g = c.getContext('2d');
       const dark = this.app.state.theme === 'dark';
-      g.fillStyle = dark ? '#3a3a46' : '#ffffff';
+      g.fillStyle = dark ? '#6a6a78' : '#ffffff';
       g.fillRect(0, 0, s * 2, s * 2);
-      g.fillStyle = dark ? '#2c2c36' : '#d9dbe4';
+      g.fillStyle = dark ? '#575764' : '#d9dbe4';
       g.fillRect(0, 0, s, s);
       g.fillRect(s, s, s, s);
       this.checker = c;

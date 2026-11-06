@@ -15,6 +15,7 @@ import { openMainMenu } from './ui/menu.js';
 import { createActions } from './ui/actions.js';
 import { startTutorial } from './ui/tutorial.js';
 import { composeToCanvas } from './render/compose.js';
+import * as ops from './core/layer-ops.js';
 
 const app = new App();
 window.pixelAtelier = app; // pratique pour le débogage
@@ -209,6 +210,27 @@ function setupMinimap() {
   draw();
 }
 
+function setupVariantBar() {
+  const bar = document.getElementById('variantbar');
+  const render = () => {
+    const doc = app.doc;
+    bar.replaceChildren();
+    if (app.state.showVariantBar === false) return;
+    for (const g of doc.variantGroups()) {
+      if (!doc.isShown(g) && g.visible === false) continue;
+      const act = doc.get(g.active);
+      bar.append(h('div', { class: 'vb' },
+        h('button', { title: `${g.name} : variante précédente`, 'aria-label': 'Précédente', onclick: () => ops.cycleVariant(app, g.id, -1) }, '‹'),
+        h('span', { class: 'lbl' }, `${g.name} : `, h('b', {}, act ? act.name : '—')),
+        h('button', { title: `${g.name} : variante suivante`, 'aria-label': 'Suivante', onclick: () => ops.cycleVariant(app, g.id, 1) }, '›')));
+    }
+  };
+  app.on('structure', render);
+  app.on('doc', render);
+  app.on('state', render);
+  render();
+}
+
 function setupGlobalToggles() {
   app.toggleGrid = () => {
     const g = app.doc.grid;
@@ -252,6 +274,7 @@ async function boot() {
   setupPanels();
   setupStatus();
   setupMinimap();
+  setupVariantBar();
   initShortcuts(app);
   app.on('selection', () => {
     if (['select', 'lasso', 'wand', 'move'].includes(app.tools.current.id)) renderOptions(app);
