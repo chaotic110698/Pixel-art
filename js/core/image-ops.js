@@ -35,6 +35,7 @@ export function resizeCanvas(app, nw, nh, anchor = 'c') {
     });
     doc.width = nw;
     doc.height = nh;
+    if (doc.charTemplate) doc.charTemplate = { ...doc.charTemplate, ox: doc.charTemplate.ox + dx, oy: doc.charTemplate.oy + dy };
   });
   app.renderer.ensureBuffers();
   app.viewport.fit();
@@ -97,6 +98,7 @@ export function cropTo(app, x0, y0, x1, y1) {
     });
     doc.width = nw;
     doc.height = nh;
+    if (doc.charTemplate) doc.charTemplate = { ...doc.charTemplate, ox: doc.charTemplate.ox - x0, oy: doc.charTemplate.oy - y0 };
   });
   app.renderer.ensureBuffers();
   app.viewport.fit();

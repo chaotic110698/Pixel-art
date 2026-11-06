@@ -71,6 +71,7 @@ export class Doc {
     this.grid = defaultGrid();
     this.palette = null; // tableau de hex, initialisé par l'app
     this.charColors = null; // couleurs de personnage (bibliothèque)
+    this.charTemplate = null; // origine du gabarit de pièces { ox, oy, scale }
     this.pngtuber = defaultPngtuber();
     this.created = Date.now();
     this.updated = Date.now();
@@ -298,6 +299,7 @@ export class Doc {
       tags: this.tags.map((t) => ({ ...t })),
       expressions: JSON.parse(JSON.stringify(this.expressions)),
       charColors: this.charColors ? { ...this.charColors } : null,
+      charTemplate: this.charTemplate ? { ...this.charTemplate } : null,
       // métadonnées légères, annulables elles aussi
       name: this.name,
       fps: this.fps,
@@ -325,6 +327,7 @@ export class Doc {
     if (s.tags) this.tags = s.tags.map((t) => ({ ...t }));
     this.expressions = JSON.parse(JSON.stringify(s.expressions));
     this.charColors = s.charColors ? { ...s.charColors } : null;
+    if (s.charTemplate !== undefined) this.charTemplate = s.charTemplate ? { ...s.charTemplate } : null;
     if (s.name !== undefined) this.name = s.name;
     if (s.fps !== undefined) this.fps = s.fps;
     if (s.grid) this.grid = { ...s.grid };

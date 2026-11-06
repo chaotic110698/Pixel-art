@@ -247,6 +247,73 @@ const STYLES = [
     noOutline: true,
   },
   {
+    id: 'wavy', name: 'Longue ondulée',
+    back: () => {
+      const g = cap(G());
+      g.rect(17, 21, 46, 50, 'h');
+      // bords ondulés
+      for (let y = 24; y <= 50; y += 6) { g.ell(16, y, 2.5, 3, 'h'); g.ell(47, y + 3, 2.5, 3, 'h'); }
+      for (let x = 19; x <= 45; x += 5) g.ell(x, 51, 2.5, 2.5, 'h');
+      return g;
+    },
+    front: () => {
+      const g = crown(G(), 15);
+      g.poly([[17, 14], [36, 10], [30, 18], [21, 21]], 'h');
+      g.poly([[46, 15], [36, 10], [42, 19]], 'h');
+      sideLocks(g, 15, 44, 16, 20);
+      for (let y = 22; y <= 42; y += 6) { g.px(17, y, 'H'); g.px(46, y + 3, 'H'); }
+      return g;
+    },
+  },
+  {
+    id: 'undercut', name: 'Undercut',
+    back: () => G(),
+    front: () => {
+      const g = G();
+      g.ell(31.5, 14, 13, 8, 'h').clear((x, y) => y > 15);
+      g.poly([[18, 12], [45, 8], [44, 15], [27, 18], [20, 17]], 'h');
+      // côtés rasés (tramage)
+      const side = G();
+      cap(side).clear((x, y) => y < 15 || y > 24 || (x > 21 && x < 42));
+      side.clear((x, y) => (x + y) % 2 === 0);
+      side.recolor('h', 'H');
+      g.stamp(side, 0, 0);
+      return g;
+    },
+  },
+  {
+    id: 'spacebuns', name: 'Double chignon',
+    back: () => {
+      const g = cap(G()).clear((x, y) => y > 30);
+      g.ell(19, 9, 5.5, 5, 'h');
+      g.ell(44, 9, 5.5, 5, 'h');
+      return g;
+    },
+    front: () => {
+      const g = crown(G(), 16);
+      bangs(g, [22.5, 27, 31.5, 36, 40.5], 16, 4);
+      sideLocks(g, 16, 25, 17, 20);
+      g.ell(19, 9, 3, 2, 'j');
+      return g;
+    },
+  },
+  {
+    id: 'curly', name: 'Bouclée courte',
+    back: () => {
+      const g = cap(G(), { rx: 15, ry: 13.5 }).clear((x, y) => y > 32);
+      for (let a = Math.PI; a <= Math.PI * 2; a += Math.PI / 6) g.ell(31.5 + Math.cos(a) * 14, 21 + Math.sin(a) * 12, 3.2, 3.2, 'h');
+      return g;
+    },
+    front: () => {
+      const g = crown(G(), 15);
+      for (let a = Math.PI; a <= Math.PI * 2; a += Math.PI / 6) g.ell(31.5 + Math.cos(a) * 14, 21 + Math.sin(a) * 12, 3.2, 3.2, 'h');
+      for (const x of [22, 27, 32, 37, 42]) g.ell(x, 16, 2.6, 2.6, 'h');
+      g.clear((x, y) => y > 18);
+      for (const [x, y] of [[24, 12], [30, 10], [36, 12], [41, 14]]) g.px(x, y, 'H');
+      return g;
+    },
+  },
+  {
     id: 'bald', name: 'Chauve (aucune)',
     back: () => G(),
     front: () => G(),

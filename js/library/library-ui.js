@@ -3,9 +3,10 @@
 import { h, clear, debounce, pickFile, downloadBlob, bytesToBase64, base64ToBytes, slugify } from '../util/dom.js';
 import { openDialog, confirmDialog, promptDialog } from '../ui/dialogs.js';
 import { icon } from '../ui/icons.js';
-import { CATEGORIES, pieceById, insertPiece, previewPixels, docBodyType, templateOffset } from './library.js';
+import { CATEGORIES, pieceById, insertPiece, previewPixels, docBodyType, templateOffset, templateOrigin } from './library.js';
 import { DEFAULT_COLORS, recolorMap, TEMPLATE } from './builder.js';
 import { ACCESSORY_SUBS } from './parts/accessories.js';
+import { BODY_TYPES } from './parts/bodies.js';
 import { buildCharacter, DEFAULT_CHARACTER, autoPngtuber } from './character.js';
 import { db } from '../storage/db.js';
 import { pixelsToCanvas } from '../render/compose.js';
@@ -36,11 +37,11 @@ function cropFor(cat) {
   return [0, 0, 64, 64];
 }
 
-function layered(ids, piece, colors, bodyType, state) {
+function layered(ids, piece, colors, bodyType, state, height = TEMPLATE) {
   // composition dans l'ordre z des couches
   const entries = [];
   const add = (p, st = null) => {
-    const px = previewPixels(p, { colors, bodyType, state: st });
+    const px = previewPixels(p, { colors, bodyType, state: st, height });
     const z = Math.min(...p.build({ bodyType }).map((l) => l.z));
     entries.push({ z, px, p });
   };
@@ -50,9 +51,8 @@ function layered(ids, piece, colors, bodyType, state) {
   }
   add(piece, state);
   entries.sort((a, b) => a.z - b.z);
-  const out = new Uint32Array(TEMPLATE * TEMPLATE);
+  const out = new Uint32Array(TEMPLATE * height);
   for (const e of entries) for (let i = 0; i < out.length; i++) if (e.px[i] >>> 24) out[i] = e.px[i];
-  // couches arrière des cheveux : composer correctement (arrière sous la tête)
   return out;
 }
 
@@ -70,11 +70,21 @@ function previewCanvas(piece, colors, { bodyType = 'moyen', size = 96, state = n
     parts.sort((a, b) => a.z - b.z);
     for (const e of parts) for (let i = 0; i < px.length; i++) if (e.px[i] >>> 24) px[i] = e.px[i];
   } else if (['body', 'top', 'head'].includes(piece.category)) {
-    px = layered(piece.category === 'top' ? ['body-' + bodyType] : piece.category === 'head' ? ['body-moyen'] : [], piece, colors, bodyType, state);
+    // corps entiers : aperçu en pied (64×96)
+    const tall = piece.tall || (piece.category === 'top' && BODY_TYPES[bodyType]?.tall);
+    const H = tall ? 96 : TEMPLATE;
+    px = layered(piece.category === 'top' ? ['body-' + bodyType] : piece.category === 'head' ? ['body-moyen'] : [], piece, colors, bodyType, state, H);
+    if (tall) return drawPreview(px, 0, 0, 64, 96, size);
+  } else if (piece.category === 'hands') {
+    px = layered(['body-moyen', 'head-round', 'top-tshirt', ...FACE], piece, colors, 'moyen', state);
   } else {
     px = layered([...MANNEQUIN, ...FACE], piece, colors, bodyType, state);
   }
   const [x0, y0, x1, y1] = cropFor(piece.category);
+  return drawPreview(px, x0, y0, x1, y1, size);
+}
+
+function drawPreview(px, x0, y0, x1, y1, size) {
   const cw = x1 - x0, ch = y1 - y0;
   const crop = new Uint32Array(cw * ch);
   for (let y = 0; y < ch; y++) crop.set(px.subarray((y0 + y) * TEMPLATE + x0, (y0 + y) * TEMPLATE + x1), y * cw);
@@ -138,15 +148,27 @@ export function openLibrary(app, initialCat = null) {
   function renderTabs() {
     clear(tabs);
     for (const c of CATEGORIES) tabs.append(h('button', { class: 'chip' + (c.id === cat ? ' on' : ''), onclick: () => { cat = c.id; app.setState({ libraryCat: cat }); renderTabs(); renderGrid(); } }, c.name));
+    tabs.append(h('button', { class: 'chip' + (cat === 'fav' ? ' on' : ''), onclick: () => { cat = 'fav'; renderTabs(); renderGrid(); } }, `★ Favoris (${favs().size})`));
     tabs.append(h('button', { class: 'chip' + (cat === 'user' ? ' on' : ''), onclick: () => { cat = 'user'; renderTabs(); renderGrid(); } }, '★ Ma bibliothèque'));
   }
 
   const insert = (piece) => {
     app.selection.commitFloating();
     const d0 = app.doc;
-    if (d0.width < TEMPLATE || d0.height < TEMPLATE) {
-      // les pièces sont dessinées sur un gabarit 64×64 : on agrandit le canevas (ancré en bas)
-      resizeCanvas(app, Math.max(d0.width, TEMPLATE), Math.max(d0.height, TEMPLATE), 'b');
+    const o = templateOrigin(d0, { tall: !!piece.tall });
+    const s = o.scale;
+    const pieceH = (piece.tall ? 96 : TEMPLATE) * s;
+    let grown = false;
+    if (!d0.charTemplate && (d0.width < TEMPLATE * s || d0.height < pieceH)) {
+      // pas encore de personnage : canevas trop petit pour le gabarit -> on l'agrandit (ancré en bas)
+      resizeCanvas(app, Math.max(d0.width, TEMPLATE * s), Math.max(d0.height, pieceH), 'b');
+      grown = true;
+    } else if (d0.charTemplate && piece.tall && o.oy + pieceH > d0.height) {
+      // corps entier ajouté à un buste : on ajoute des lignes en bas (la tête ne bouge pas)
+      resizeCanvas(app, d0.width, o.oy + pieceH, 't');
+      grown = true;
+    }
+    if (grown) {
       warn?.remove();
       app.toast(`Canevas agrandi à ${app.doc.width}×${app.doc.height} pour accueillir les pièces`, 2600);
     }
@@ -166,22 +188,58 @@ export function openLibrary(app, initialCat = null) {
     app.toast(node ? `« ${piece.name} » ajouté${addedBase ? ' (avec une tête et un corps de base)' : ''}` : `« ${piece.name} » : pièce retirée`, addedBase ? 2800 : 1800);
   };
 
+  const favs = () => new Set(app.state.libFavorites || []);
+  const toggleFav = (id) => {
+    const f = favs();
+    if (f.has(id)) f.delete(id);
+    else f.add(id);
+    app.setState({ libFavorites: [...f] });
+    renderTabs();
+    renderGrid();
+  };
+  const norm = (s) => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+  function card(p, bodyType, showCat = false) {
+    const fav = favs().has(p.id);
+    const catName = CATEGORIES.find((c) => c.id === p.category)?.name || '';
+    return h('div', { class: 'card lib-card' },
+      h('button', { class: 'lib-pick', title: `Ajouter « ${p.name} »`, onclick: () => insert(p) },
+        previewCanvas(p, colors, { bodyType }),
+        h('span', { class: 't' }, p.name),
+        showCat ? h('span', { class: 's' }, catName) : null),
+      h('button', { class: 'fav' + (fav ? ' on' : ''), title: fav ? 'Retirer des favoris' : 'Ajouter aux favoris', 'aria-label': fav ? 'Retirer des favoris' : 'Ajouter aux favoris', onclick: () => toggleFav(p.id) }, fav ? '★' : '☆'));
+  }
+
   async function renderGrid() {
     clear(grid);
-    if (cat === 'user') return renderUser();
-    const c = CATEGORIES.find((x) => x.id === cat);
     const bodyType = docBodyType(app.doc);
+    const q = norm(search.value.trim());
+    if (q) {
+      // recherche dans toutes les catégories (noms français et anglais)
+      const hits = CATEGORIES.flatMap((c) => c.pieces).filter((p) => norm(p.name).includes(q) || norm(tr(p.name)).includes(q) || norm(ACCESSORY_SUBS[p.sub] || '').includes(q) || norm(CATEGORIES.find((c) => c.id === p.category)?.name || '').includes(q));
+      if (!hits.length) grid.append(h('p', { class: 'hint', style: { gridColumn: '1 / -1' } }, 'Aucune pièce ne correspond.'));
+      for (const p of hits) grid.append(card(p, bodyType, true));
+      return;
+    }
+    if (cat === 'user') return renderUser();
+    if (cat === 'fav') {
+      const list = [...favs()].map(pieceById).filter(Boolean);
+      if (!list.length) grid.append(h('p', { class: 'hint', style: { gridColumn: '1 / -1' } }, 'Aucun favori : touchez ☆ sur une pièce pour la retrouver ici.'));
+      for (const p of list) grid.append(card(p, bodyType, true));
+      return;
+    }
+    const c = CATEGORIES.find((x) => x.id === cat) || CATEGORIES[0];
     let lastSub = null;
     for (const p of c.pieces) {
       if (p.sub && p.sub !== lastSub) {
         grid.append(h('h3', { style: { gridColumn: '1 / -1', margin: '6px 0 0' } }, ACCESSORY_SUBS[p.sub] || p.sub));
         lastSub = p.sub;
       }
-      grid.append(h('button', { class: 'card', title: `Ajouter « ${p.name} »`, onclick: () => insert(p) },
-        previewCanvas(p, colors, { bodyType }),
-        h('span', { class: 't' }, p.name)));
+      grid.append(card(p, bodyType));
     }
   }
+  const search = h('input', { type: 'search', class: 'input wide', placeholder: 'Rechercher une pièce…', 'aria-label': 'Rechercher une pièce…' });
+  search.addEventListener('input', debounce(() => renderGrid(), 150));
 
   async function renderUser() {
     const items = (await db.getAll('library').catch(() => [])).sort((a, b) => b.created - a.created);
@@ -228,6 +286,7 @@ export function openLibrary(app, initialCat = null) {
       h('div', { class: 'row' }, replaceChk,
         h('button', { class: 'btn small', onclick: () => { d.close(); openNewCharacter(app); } }, icon('user'), 'Nouveau personnage…')),
       warn,
+      search,
       tabs,
       grid,
     ],
@@ -247,18 +306,21 @@ export function openNewCharacter(app) {
     h('option', { value: '64x80' }, '64 × 80 (plus de place au-dessus)'),
     h('option', { value: '96x96' }, '96 × 96 (marges autour)'),
     h('option', { value: '128x128' }, '128 × 128 (grandes marges)'));
+  const scaleChk = h('input', { type: 'checkbox' });
+  scaleChk.addEventListener('change', () => redraw());
   const preview = h('canvas', { width: 256, height: 256, style: { width: '192px', height: '192px', imageRendering: 'pixelated', borderRadius: '10px', background: 'repeating-conic-gradient(#777 0% 25%, #aaa 0% 50%) 0 0 / 16px 16px' } });
   const pickers = h('div');
   const colorsBox = h('div');
 
   function drawPreview() {
-    const doc = buildCharacter({ width: 64, height: 64, colors, sel });
+    const doc = buildCharacter({ width: 64, height: 64, colors, sel, scale: scaleChk.checked ? 2 : 1 });
     autoPngtuber(doc, true);
     import('../render/compose.js').then(({ composeToCanvas }) => {
       const g = preview.getContext('2d');
       g.imageSmoothingEnabled = false;
       g.clearRect(0, 0, 256, 256);
-      g.drawImage(composeToCanvas(doc, { includeReference: false }), 0, 0, 256, 256);
+      const k = Math.min(256 / doc.width, 256 / doc.height);
+      g.drawImage(composeToCanvas(doc, { includeReference: false }), (256 - doc.width * k) / 2, (256 - doc.height * k) / 2, doc.width * k, doc.height * k);
     });
   }
   const redraw = debounce(drawPreview, 60);
@@ -277,7 +339,8 @@ export function openNewCharacter(app) {
     const acc = CATEGORIES.find((x) => x.id === 'accessory').pieces;
     pickers.append(h('div', { class: 'fields' },
       picker('body', 'Corps'), picker('head', 'Tête'), picker('hair', 'Coiffure'), picker('eyes', 'Yeux'),
-      picker('brows', 'Sourcils', { optional: true }), picker('nose', 'Nez', { optional: true }), picker('mouth', 'Bouche'), picker('top', 'Vêtement', { optional: true })),
+      picker('brows', 'Sourcils', { optional: true }), picker('nose', 'Nez', { optional: true }), picker('mouth', 'Bouche'), picker('top', 'Vêtement', { optional: true }),
+      picker('hands', 'Mains', { optional: true })),
     h('h3', {}, 'Accessoires'),
     h('div', { class: 'chips' }, acc.map((p) => h('button', {
       class: 'chip' + (sel.accessories.includes(p.id) ? ' on' : ''),
@@ -320,6 +383,8 @@ export function openNewCharacter(app) {
         h('p', { class: 'hint', style: { maxWidth: '200px' } }, 'Les yeux, la bouche et les sourcils sont créés en groupes de variantes, avec des expressions prêtes (Neutre, Parle, Content…).')),
       h('div', {},
         h('div', { class: 'fields' }, h('label', { class: 'field' }, h('span', {}, 'Nom'), nameIn), h('label', { class: 'field' }, h('span', {}, 'Taille du canevas'), sizeSel)),
+        h('label', { class: 'chk', title: 'Pièces agrandies ×2 avec lissage des diagonales (Scale2x), pour un personnage plus grand à retoucher' }, scaleChk, 'Gabarit détaillé ×2 (128 × 128)'),
+        h('p', { class: 'hint' }, 'Les corps entiers agrandissent automatiquement la hauteur du canevas (gabarit 64 × 96).'),
         h('h3', {}, 'Couleurs'), colorsBox,
         h('h3', {}, 'Pièces'), pickers)),
     buttons: [
@@ -328,7 +393,8 @@ export function openNewCharacter(app) {
         label: 'Créer le personnage', primary: true, value: true, action: async () => {
           const [w, hh] = sizeSel.value.split('x').map(Number);
           await app.storage?.saveNow();
-          const doc = buildCharacter({ width: w, height: hh, colors, sel, name: nameIn.value.trim() || tr('Mon personnage') });
+          const s = scaleChk.checked ? 2 : 1;
+          const doc = buildCharacter({ width: w * s, height: hh * s, colors, sel, scale: s, name: nameIn.value.trim() || tr('Mon personnage') });
           app.setState({ charColors: colors });
           app.setDoc(doc);
           app.toast('Personnage créé ! Essayez le mode PNGtuber 📺');

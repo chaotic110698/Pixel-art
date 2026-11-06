@@ -52,7 +52,7 @@ js/library/
   library.js          registre des catégories, insertion dans un doc (ordre z, remplacement)
   character.js        « Nouveau personnage », expressions par défaut, réglage PNGtuber automatique
   library-ui.js       fenêtres Bibliothèque, Nouveau personnage, Recolorer, Ma bibliothèque
-  parts/*.js          UN FICHIER PAR CATÉGORIE (bodies, heads, hair, eyes, brows, noses, mouths, accessories, tops)
+  parts/*.js          UN FICHIER PAR CATÉGORIE (bodies, heads, hair, eyes, brows, noses, mouths, accessories, tops, hands)
 js/pngtuber/
   engine.js           moteur d'avatar AUTONOME (copié par toString dans l'avatar .html : aucune dépendance)
   assets.js           overrides (expression, bouche closed/half/open, clignement), images, réglages
@@ -87,6 +87,7 @@ Une pièce est `{ id, name, category, build(ctx) => [{ name, z, grid } | { name,
 - Rôles de couleur, convertis par `roleColors()` : `s S k r` (peau), `h H j q` (cheveux), `w e E p l` (yeux et encre), `m t T` (bouche), `c C x` (vêtements), `a A y` (accessoires), `g` (verre).
 - Les états de variantes reconnus par le PNGtuber et les expressions par défaut sont : yeux `open/closed/happy/surprised`, bouche `closed/open/smile/sad/surprised`, sourcils `normal/high/angry/sad`.
 - L'ordre d'empilement suit `Z` dans `builder.js`. Les coiffures produisent un calque arrière (sous la tête) et un calque avant.
+- Origine du gabarit mémorisée par projet : `doc.charTemplate = { ox, oy, scale }` (fixée à la première pièce, décalée par les redimensionnements/recadrages). Les **corps entiers** (`tall: true`) utilisent une grille 64×96 dont les 64 premières lignes coïncident avec le buste ; la bibliothèque ajoute des lignes en bas du canevas si besoin. `scale: 2` = gabarit détaillé (grilles agrandies par Scale2x, `scaleGrid`). Changer de corps recrée le vêtement (`fitsBody`).
 
 ## Tests manuels et automatiques
 
@@ -100,4 +101,4 @@ Points à revérifier après une modification importante :
 
 ## Pistes pour la suite
 
-Mode source OBS, bouche à 3 états, carte de niveau (tilemap) en mode tuiles, rotation libre de la sélection, pinceau « pixel perfect », sélection de calques multiples, raccourcis personnalisables, plus de pièces (corps entiers, vêtements variés).
+Carte de niveau (tilemap) en mode tuiles, pièces dessinées à la main pour le gabarit ×2, vêtements spécifiques aux corps entiers (pantalons, jupes), plus de langues.

@@ -220,7 +220,101 @@ const ITEMS = [
       return g;
     },
   },
+  // ----- barbes et moustaches (couleur des cheveux) -----
+  {
+    id: 'mustache', name: 'Moustache', sub: 'beard', z: Z.beard,
+    draw: () => {
+      const g = G();
+      g.poly([[26, 31.5], [31.5, 30], [37.5, 31.5], [37, 33], [31.5, 32], [26.5, 33]], 'h');
+      g.shade('h', 'H', 0, 1, 1);
+      g.outline('q');
+      return g;
+    },
+  },
+  {
+    id: 'mustache-curly', name: 'Moustache en guidon', sub: 'beard', z: Z.beard,
+    draw: () => {
+      const g = G();
+      g.rect(27, 31, 36, 32, 'h');
+      g.px(26, 31, 'h').px(25, 30, 'h').px(25, 29, 'h').px(37, 31, 'h').px(38, 30, 'h').px(38, 29, 'h');
+      g.outline('q');
+      return g;
+    },
+  },
+  {
+    id: 'goatee', name: 'Bouc', sub: 'beard', z: Z.beard,
+    draw: () => {
+      const g = G();
+      g.ell(31.5, 37, 3.5, 3, 'h');
+      g.rect(28, 31, 35, 31, 'h');
+      g.shade('h', 'H', 1, 1, 1);
+      g.outline('q');
+      return g;
+    },
+  },
+  {
+    id: 'beard-short', name: 'Barbe courte', sub: 'beard', z: Z.beard,
+    draw: () => {
+      const g = G();
+      g.ell(31.5, 31, 12.5, 7.5, 'h');
+      g.clear((x, y) => y < 28);
+      g.ell(31.5, 33.5, 5.5, 2.6, 'x'); // espace pour la bouche
+      g.clear((x, y) => g.get(x, y) === 'x'.charCodeAt(0));
+      g.clear((x, y) => (x + y) % 2 === 0 && y < 31); // bord tramé vers les joues
+      g.recolor('h', 'H', (x, y) => y > 36);
+      g.outline('q', { skipBottom: false });
+      return g;
+    },
+  },
+  {
+    id: 'beard-full', name: 'Barbe fournie', sub: 'beard', z: Z.beard,
+    draw: () => {
+      const g = G();
+      g.ell(31.5, 32, 13.5, 10, 'h');
+      g.clear((x, y) => y < 26);
+      g.ell(31.5, 33.5, 5.5, 2.6, 'x');
+      g.clear((x, y) => g.get(x, y) === 'x'.charCodeAt(0));
+      g.rect(26, 30, 37, 31, 'h');
+      g.shade('h', 'H', 1, 1, 1);
+      g.outline('q');
+      return g;
+    },
+  },
+  // ----- maquillage -----
+  {
+    id: 'eyeliner', name: 'Eye-liner', sub: 'makeup', z: Z.eyeliner,
+    draw: () => pair(['p.....', '.p....'], 21, 22, { flip: true }),
+  },
+  {
+    id: 'eyeshadow', name: 'Fard à paupières', sub: 'makeup', z: Z.makeup,
+    draw: () => pair(['.aaaa.', 'aAAAAa'], 23, 20, { flip: true }),
+  },
+  {
+    id: 'sparkles', name: 'Paillettes', sub: 'makeup', z: Z.makeup,
+    draw: () => pair(['.l.', 'l.l', '.l.'], 20, 28, { flip: true }),
+  },
+  {
+    id: 'cheek-hearts', name: 'Cœurs sur les joues', sub: 'makeup', z: Z.makeup,
+    draw: () => pair(['r.r', 'rrr', '.r.'], 22, 29, { flip: true }),
+  },
   // ----- détails du visage -----
+  {
+    id: 'scar', name: 'Cicatrice', sub: 'blush', z: Z.blush,
+    draw: () => {
+      const g = G();
+      g.line(37, 26, 41, 31, 'k');
+      g.px(38, 28, 'S').px(40, 29, 'S').px(37, 29, 'S').px(41, 28, 'S');
+      return g;
+    },
+  },
+  {
+    id: 'tattoo-star', name: 'Tatouage étoile', sub: 'blush', z: Z.blush,
+    draw: () => place(['.a.', 'aaa', '.a.'], 39, 29),
+  },
+  {
+    id: 'tattoo-tear', name: 'Larme tatouée', sub: 'blush', z: Z.blush,
+    draw: () => place(['.p', 'pp', 'pp'], 25, 29),
+  },
   {
     id: 'blush', name: 'Joues roses', sub: 'blush', z: Z.blush,
     draw: () => pair(['rrr'], 23, 29, { flip: true }),
@@ -240,6 +334,8 @@ const ITEMS = [
 ];
 
 export const ACCESSORY_SUBS = {
+  beard: 'Barbes et moustaches',
+  makeup: 'Maquillage',
   glasses: 'Lunettes',
   hat: 'Chapeaux',
   animalEars: 'Oreilles',
@@ -252,6 +348,6 @@ export default ITEMS.map((it) => ({
   name: it.name,
   category: 'accessory',
   sub: it.sub,
-  exclusiveKey: it.sub === 'blush' ? null : it.sub,
+  exclusiveKey: it.sub === 'blush' || it.sub === 'makeup' ? null : it.sub,
   build: () => [{ name: it.name, z: it.z, grid: it.draw() }],
 }));

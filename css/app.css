@@ -722,3 +722,8 @@ button, .chip, .swatch, .card, .lrow, .menu-item { touch-action: manipulation; -
 .hist-row.undone { opacity: .45; font-style: italic; }
 .hist-row.current { outline: 2px solid var(--accent); }
 #panel-tabs button { padding: 8px 2px; font-size: 13px; }
+.lib-card { position: relative; padding: 0; }
+.lib-card .lib-pick { border: 0; background: none; padding: 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; color: inherit; }
+.lib-card .fav { position: absolute; top: 2px; right: 2px; border: 0; background: color-mix(in srgb, var(--bg2) 80%, transparent); border-radius: 8px; min-width: 34px; min-height: 34px; font-size: 18px; color: var(--muted); }
+.lib-card .fav.on { color: #ffcf33; }
+input[type='search'] { margin-bottom: 8px; }

@@ -58,6 +58,7 @@ export function docToRecord(doc, { withCels = true } = {}) {
     grid: doc.grid,
     palette: doc.palette,
     charColors: doc.charColors,
+    charTemplate: doc.charTemplate,
     pngtuber: doc.pngtuber,
     created: doc.created,
     updated: doc.updated,
@@ -102,6 +103,7 @@ export function recordToDoc(r) {
   doc.grid = { ...defaultGrid(), ...(r.grid || {}) };
   doc.palette = r.palette || null;
   doc.charColors = r.charColors || null;
+  doc.charTemplate = r.charTemplate || null;
   doc.pngtuber = { ...defaultPngtuber(), ...(r.pngtuber || {}) };
   doc.created = r.created || Date.now();
   doc.updated = r.updated || Date.now();

@@ -10,6 +10,7 @@ import noses from './parts/noses.js';
 import mouths from './parts/mouths.js';
 import accessories from './parts/accessories.js';
 import tops from './parts/tops.js';
+import hands from './parts/hands.js';
 import { TEMPLATE, roleColors, rasterize, DEFAULT_COLORS } from './builder.js';
 import { uid } from '../core/doc.js';
 import { tr } from '../ui/i18n.js';
@@ -24,6 +25,7 @@ export const CATEGORIES = [
   { id: 'mouth', name: 'Bouches', pieces: mouths, exclusive: true },
   { id: 'top', name: 'Vêtements', pieces: tops, exclusive: true },
   { id: 'accessory', name: 'Accessoires', pieces: accessories, exclusive: false },
+  { id: 'hands', name: 'Mains', pieces: hands, exclusive: true },
 ];
 
 export function allPieces() {
@@ -43,8 +45,50 @@ export function buildPiece(piece, ctx = {}) {
 }
 
 /** Décalage du gabarit 64×64 dans le canevas : centré, aligné en bas. */
+/**
+ * Origine du gabarit 64×64 (coin haut-gauche de la tête « standard ») dans le canevas,
+ * mémorisée par projet dans doc.charTemplate = { ox, oy, scale } dès la première pièce.
+ * Les corps entiers utilisent un gabarit 64×96 dont les 64 premières lignes coïncident.
+ */
+export function templateOrigin(doc, { tall = false, scale = null } = {}) {
+  const t = doc.charTemplate;
+  if (t && Number.isFinite(t.ox) && Number.isFinite(t.oy)) return { ox: t.ox, oy: t.oy, scale: t.scale || 1 };
+  const s = scale || 1;
+  const h = (tall ? 96 : TEMPLATE) * s;
+  return { ox: Math.floor((doc.width - TEMPLATE * s) / 2), oy: doc.height - h, scale: s };
+}
+
 export function templateOffset(doc) {
-  return [Math.floor((doc.width - TEMPLATE) / 2), doc.height - TEMPLATE];
+  const o = templateOrigin(doc);
+  return [o.ox, o.oy];
+}
+
+/** Agrandissement « Scale2x » d'une grille de rôles (lisse les diagonales). */
+export function scaleGrid(grid, s) {
+  if (s <= 1) return grid;
+  let a = grid.a, w = grid.w, h = grid.h;
+  for (let k = 1; k < s; k *= 2) {
+    const W = w * 2;
+    const out = new Uint8Array(W * h * 2);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const E = a[y * w + x];
+        const B = y > 0 ? a[(y - 1) * w + x] : E, H = y < h - 1 ? a[(y + 1) * w + x] : E;
+        const D = x > 0 ? a[y * w + x - 1] : E, F = x < w - 1 ? a[y * w + x + 1] : E;
+        let e0 = E, e1 = E, e2 = E, e3 = E;
+        if (B !== H && D !== F) {
+          if (D === B) e0 = D;
+          if (B === F) e1 = F;
+          if (D === H) e2 = D;
+          if (H === F) e3 = F;
+        }
+        const o = y * 2 * W + x * 2;
+        out[o] = e0; out[o + 1] = e1; out[o + W] = e2; out[o + W + 1] = e3;
+      }
+    }
+    a = out; w = W; h *= 2;
+  }
+  return { a, w, h };
 }
 
 /** Type de corps présent dans le document (pour ajuster les vêtements). */
@@ -70,7 +114,7 @@ export function nodesOfKind(doc, piece) {
 }
 
 /** Nom de calque « Catégorie (pièce) » traduit morceau par morceau (interface anglaise). */
-const LAYER_HEADS = { 'Cheveux arrière': 'Hair back', 'Cheveux avant': 'Hair front', Cheveux: 'Hair', Corps: 'Body', 'Tête': 'Head', Haut: 'Top', Nez: 'Nose' };
+const LAYER_HEADS = { 'Corps entier': 'Full body', 'Cheveux arrière': 'Hair back', 'Cheveux avant': 'Hair front', Cheveux: 'Hair', Corps: 'Body', 'Tête': 'Head', Haut: 'Top', Nez: 'Nose', Main: 'Hand' };
 function trName(name) {
   if (tr('Calque') === 'Calque') return name; // interface en français
   const m = name.match(/^(.+?) \((.+)\)$/);
@@ -100,7 +144,10 @@ export function insertPiece(doc, piece, { colors = doc.charColors || DEFAULT_COL
   const ctx = { bodyType: docBodyType(doc) };
   const layers = buildPiece(piece, ctx);
   const rc = roleColors(colors);
-  const [ox, oy] = templateOffset(doc);
+  const origin = templateOrigin(doc, { tall: !!piece.tall });
+  const { ox, oy, scale } = origin;
+  if (!doc.charTemplate) doc.charTemplate = { ox, oy, scale };
+  const raster = (grid) => rasterize(scaleGrid(grid, scale), rc, doc.width, doc.height, ox, oy);
   if (!doc.charColors) doc.charColors = { ...colors };
   if (replace) for (const n of nodesOfKind(doc, piece)) doc.remove(n.id);
   const partMeta = (extra = {}) => ({
@@ -117,7 +164,7 @@ export function insertPiece(doc, piece, { colors = doc.charColors || DEFAULT_COL
       node = doc.createGroup(tr(L.name), { variant: true, role: L.role || null, part: partMeta({ z: L.z }) });
       for (const v of L.variants) {
         const layer = doc.createLayer(tr(v.name), { part: partMeta({ z: L.z, state: v.state }) });
-        layer.cels[0] = rasterize(v.grid, rc, doc.width, doc.height, ox, oy);
+        layer.cels[0] = raster(v.grid);
         for (let f = 1; f < layer.cels.length; f++) layer.cels[f] = layer.cels[0].slice();
         doc.adopt(node, layer);
       }
@@ -126,22 +173,28 @@ export function insertPiece(doc, piece, { colors = doc.charColors || DEFAULT_COL
       node.active = node.children[node.children.length - 1];
     } else {
       node = doc.createLayer(trName(L.name), { part: partMeta({ z: L.z }) });
-      node.cels[0] = rasterize(L.grid, rc, doc.width, doc.height, ox, oy);
+      node.cels[0] = raster(L.grid);
       for (let f = 1; f < node.cels.length; f++) node.cels[f] = node.cels[0].slice();
     }
     doc.insert(node, 'root', zIndex(doc, L.z));
     if (!first) first = node;
   }
+  // changement de corps : le vêtement (ajusté au corps) est recréé à la bonne forme
+  if (piece.category === 'body') {
+    const top = [...doc.nodes.values()].find((n) => n.part?.category === 'top' && doc.get(n.parent)?.id === 'root');
+    const topPiece = top && pieceById(top.part.pieceId);
+    if (topPiece?.fitsBody) insertPiece(doc, topPiece, { colors, replace: true });
+  }
   return first;
 }
 
 /** Aperçu d'une pièce : Uint32Array 64×64 (avec mannequin optionnel). */
-export function previewPixels(piece, { colors = DEFAULT_COLORS, bodyType = 'moyen', state = null } = {}) {
+export function previewPixels(piece, { colors = DEFAULT_COLORS, bodyType = 'moyen', state = null, height = TEMPLATE } = {}) {
   const rc = roleColors(colors);
-  const out = new Uint32Array(TEMPLATE * TEMPLATE);
+  const out = new Uint32Array(TEMPLATE * height);
   for (const L of buildPiece(piece, { bodyType })) {
     const grid = L.variants ? (L.variants.find((v) => v.state === state) || L.variants[0]).grid : L.grid;
-    const px = rasterize(grid, rc, TEMPLATE, TEMPLATE);
+    const px = rasterize(grid, rc, TEMPLATE, height);
     for (let i = 0; i < px.length; i++) if (px[i] >>> 24) out[i] = px[i];
   }
   return out;

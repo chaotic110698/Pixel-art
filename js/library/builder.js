@@ -19,7 +19,7 @@ export const TEMPLATE = 64;
 // Ordre d'empilement (z) des catégories : plus grand = au-dessus.
 export const Z = {
   hairBack: 10, body: 20, top: 30, head: 40, earrings: 45, blush: 48, nose: 50,
-  mouth: 52, eyes: 54, brows: 56, hairFront: 60, animalEars: 66, glasses: 70, hat: 80, extra: 90,
+  beard: 51, mouth: 52, makeup: 53, eyes: 54, eyeliner: 55, brows: 56, hairFront: 60, animalEars: 66, glasses: 70, hat: 80, hands: 85, extra: 90,
 };
 
 export class Grid {

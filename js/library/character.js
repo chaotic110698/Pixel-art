@@ -69,11 +69,16 @@ export function addDefaultExpressions(doc) {
 }
 
 /** Construit un nouveau document personnage. sel : { body, head, ... , accessories[] } */
-export function buildCharacter({ width = 64, height = 64, name = 'Mon personnage', colors, sel = DEFAULT_CHARACTER }) {
+export function buildCharacter({ width = 64, height = 64, name = 'Mon personnage', colors, sel = DEFAULT_CHARACTER, scale = 1 }) {
+  // corps entier : gabarit 64×96 ; gabarit détaillé : ×2
+  const tall = !!pieceById(sel.body)?.tall;
+  width = Math.max(width, 64 * scale);
+  height = Math.max(height, (tall ? 96 : 64) * scale);
   const doc = new Doc(width, height, name);
+  doc.charTemplate = { ox: Math.floor((width - 64 * scale) / 2), oy: height - (tall ? 96 : 64) * scale, scale };
   doc.palette = [...presetById('skin').colors];
   doc.charColors = { ...colors };
-  const order = ['body', 'top', 'head', 'nose', 'mouth', 'eyes', 'brows', 'hair'];
+  const order = ['body', 'top', 'head', 'nose', 'mouth', 'eyes', 'brows', 'hair', 'hands'];
   for (const k of order) {
     const p = sel[k] && pieceById(sel[k]);
     if (p) insertPiece(doc, p, { colors });
