@@ -21,7 +21,7 @@
   - un **avatar autonome `.html`** à ajouter comme source navigateur (fond transparent, paramètres `?bg=`, `?mic=1`, `?ui=0`, `?scale=`) ;
   - des **images prêtes pour les logiciels PNGtuber** (repos / parle / entrouverte / clignement, par expression).
 - **Mode tuiles** : aperçu en mosaïque 3×3 et dessin enroulé sur les bords.
-- **Animation** : images multiples, lecture, FPS, durée par image, onion skin.
+- **Animation** : images multiples, lecture, FPS, durée par image, onion skin, **balises** (« Marche », « Saut »…) avec lecture en boucle d'une balise ou d'une plage (Maj+clic), **images liées** (mêmes pixels, modifiés ensemble), export d'**une animation par balise** (GIF, planche + JSON avec frameTags, images).
 - **Export** sans aucun lissage et avec la transparence préservée, à l'échelle ×1 à ×64 :
   - image PNG ;
   - calque par calque (ZIP, toutes les images à la taille du canevas) ;

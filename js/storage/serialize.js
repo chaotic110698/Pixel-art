@@ -15,12 +15,31 @@ function nodeMeta(n) {
 }
 
 /** Objet clonable : { ...structure, cels: { 'layerId:frame': Uint32Array } } */
+/** Images liées : { 'calque:image': 'calque:imageSource' } quand deux images partagent la même cel. */
+export function celLinksOf(doc) {
+  const links = {};
+  for (const l of doc.allLayers()) {
+    const seen = new Map();
+    l.cels.forEach((c, f) => {
+      if (!c) return;
+      if (seen.has(c)) links[`${l.id}:${f}`] = `${l.id}:${seen.get(c)}`;
+      else seen.set(c, f);
+    });
+  }
+  return links;
+}
+
 export function docToRecord(doc, { withCels = true } = {}) {
   const nodes = [];
   const cels = {};
+  const celLinks = celLinksOf(doc);
   for (const n of doc.nodes.values()) {
     nodes.push(nodeMeta(n));
-    if (withCels && n.type === 'layer') n.cels.forEach((c, f) => { if (c) cels[`${n.id}:${f}`] = c.slice(); });
+    if (withCels && n.type === 'layer') {
+      n.cels.forEach((c, f) => {
+        if (c && !(celLinks[`${n.id}:${f}`])) cels[`${n.id}:${f}`] = c.slice();
+      });
+    }
   }
   return {
     format: FORMAT,
@@ -33,6 +52,8 @@ export function docToRecord(doc, { withCels = true } = {}) {
     frame: doc.frame,
     fps: doc.fps,
     activeId: doc.activeId,
+    tags: doc.tags,
+    celLinks,
     expressions: doc.expressions,
     grid: doc.grid,
     palette: doc.palette,
@@ -64,6 +85,14 @@ export function recordToDoc(r) {
     } else n.children = [...(n.children || [])];
     doc.nodes.set(n.id, n);
   }
+  // images liées : la même cel est partagée
+  for (const [k, src] of Object.entries(r.celLinks || {})) {
+    const [lid, f] = k.split(':');
+    const [, f0] = src.split(':');
+    const l = doc.nodes.get(lid);
+    if (l?.type === 'layer' && l.cels[f0]) l.cels[+f] = l.cels[+f0];
+  }
+  doc.tags = (r.tags || []).filter((t) => t.from <= t.to && t.to < doc.frames.length);
   doc.root = doc.nodes.get('root');
   if (!doc.root) throw new Error('Projet corrompu (racine absente)');
   // nettoyage : enfants manquants

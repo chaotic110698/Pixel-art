@@ -708,3 +708,9 @@ button, .chip, .swatch, .card, .lrow, .menu-item { touch-action: manipulation; -
 }
 .meter .thr2 { background: var(--accent2); }
 .lrow.multi { outline: 2px solid var(--accent2); outline-offset: -2px; background: color-mix(in srgb, var(--accent2) 18%, var(--panel)); }
+.frame-strip { display: flex; flex-direction: column; gap: 4px; }
+.tags-row { position: relative; min-height: 0; }
+.tag-band { position: absolute; height: 20px; border: 0; border-radius: 6px; color: #fff; font-size: 11px; font-weight: 650;
+  padding: 0 6px; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; opacity: .85; cursor: pointer; }
+.tag-band.on { opacity: 1; box-shadow: 0 0 0 2px var(--text); }
+.frame-cell.in-range { border-color: var(--accent2); }

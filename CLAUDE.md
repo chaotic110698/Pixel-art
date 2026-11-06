@@ -67,7 +67,8 @@ scripts/sw-files.mjs  vérifie ou régénère la liste de précache de sw.js
 - `doc.nodes : Map<id, node>`, racine `root`. Les enfants d'un groupe sont rangés **du bas vers le haut** ; le panneau les affiche dans l'ordre inverse.
 - Un calque contient `cels[frame]` (un `Uint32Array` de taille w×h par frame, créé dès le départ), `opacity`, `visible`, `locked`, `reference`, `part` (métadonnées de bibliothèque : `pieceId`, `category`, `z`, `state`).
 - Un groupe avec `variant: true` n'affiche que `active`. `role` vaut `eyes`, `mouth` ou `brows` pour les pièces de la bibliothèque.
-- Une expression a la forme `{ id, name, states: { groupId: childId }, key }`.
+- Une expression a la forme `{ id, name, states: { groupId: childId }, key, hold }` (`hold` : expression temporaire tant que la touche est maintenue).
+- Animation : `doc.tags = [{ id, name, from, to, color }]` (indices d'images inclus). Les **images liées** partagent le même `Uint32Array` dans `layer.cels` ; la sérialisation les décrit par `celLinks` (`'calque:image' -> 'calque:imageSource'`) et ne stocke que la cel source. Toute opération d'image doit décaler les balises (voir timeline.js).
 - `doc.renderList({ overrides, includeReference, root, ignoreVisibility, frame })` donne les calques à composer.
 - Calque de référence « net » : `reference: true` + `refImg: { src (dataURL), w, h, x, y, scale }` (coordonnées en pixels du document). Il est dessiné par le renderer en pleine résolution, sous le dessin s'il est placé sous le premier calque normal, sinon par-dessus. Il n'est jamais exporté. `refImg` est remplacé (jamais modifié en place) pour rester compatible avec les instantanés d'historique.
 

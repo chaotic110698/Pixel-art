@@ -51,6 +51,7 @@ export function openExportDialog(app, preset = null) {
   const colsIn = h('input', { type: 'number', class: 'input num', min: 1, max: 256, value: Math.min(doc.frames.length, 8) });
   const spIn = h('input', { type: 'number', class: 'input num', min: 0, max: 64, value: 0 });
   const jsonChk = h('input', { type: 'checkbox', checked: false });
+  const perTagChk = h('input', { type: 'checkbox', checked: false });
   const opts = h('div');
 
   function scale() {
@@ -69,6 +70,7 @@ export function openExportDialog(app, preset = null) {
       h('label', { class: 'field' }, h('span', {}, 'Recadrage'), cropSel),
       kind === 'pack' ? h('label', { class: 'chk' }, comboChk, `Inclure toutes les combinaisons (${nCombos})`) : null,
       zipKind ? h('label', { class: 'chk' }, projChk, 'Inclure le fichier projet (.pxa.json) dans le ZIP') : null,
+      anim && doc.tags.length ? h('label', { class: 'chk' }, perTagChk, `Une animation par balise (${doc.tags.length})`) : null,
       kind === 'sheet' ? h('div', { class: 'row' }, h('span', {}, 'Colonnes'), colsIn, h('span', {}, 'Espacement (px)'), spIn, h('label', { class: 'chk' }, jsonChk, 'Avec fichier JSON')) : null,
       anim && doc.frames.length < 2 ? h('p', { class: 'hint' }, 'Astuce : ajoutez des images dans la timeline (menu ☰ > Animation).') : null,
       zipKind ? h('p', { class: 'hint' }, 'Le ZIP contient un manifest.json décrivant calques, groupes, variantes et expressions.') : null,
@@ -91,7 +93,7 @@ export function openExportDialog(app, preset = null) {
           if (kind === 'combos' || (kind === 'pack' && comboChk.checked)) {
             if (nCombos > COMBO_WARN && !(await confirmDialog(`Cela va générer ${nCombos} images. Continuer ?`, { ok: 'Générer' }))) return false;
           }
-          const o = { scale: scale(), crop: cropSel.value, includeProject: projChk.checked, includeCombos: comboChk.checked, sheetCols: parseInt(colsIn.value, 10), spacing: parseInt(spIn.value, 10), sheetJson: jsonChk.checked };
+          const o = { scale: scale(), crop: cropSel.value, includeProject: projChk.checked, includeCombos: comboChk.checked, sheetCols: parseInt(colsIn.value, 10), spacing: parseInt(spIn.value, 10), sheetJson: jsonChk.checked, perTag: perTagChk.checked };
           app.setState({ exportScale: o.scale, exportCrop: o.crop, exportIncludeProject: o.includeProject, lastExportKind: kind });
           status.textContent = 'Export en cours…';
           try {

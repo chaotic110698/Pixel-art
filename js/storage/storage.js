@@ -74,12 +74,13 @@ export async function initStorage(app) {
     const puts = [];
     const written = [];
     const keys = new Set();
+    const links = rec.celLinks || {};
     for (const layer of doc.allLayers()) {
       layer.cels.forEach((cel, f) => {
-        if (!cel) return;
+        if (!cel || links[`${layer.id}:${f}`]) return; // image liée : la cel source suffit
         const key = celKey(doc.id, layer.id, f);
         keys.add(key);
-        const isFloat = floating && floating.layerId === layer.id && f === doc.frame;
+        const isFloat = floating && floating.layerId === layer.id && layer.cels[doc.frame] === cel;
         if (isFloat) {
           puts.push({ key, value: withFloating(doc, cel) });
           return; // reste « sale » : sera réécrite après validation du déplacement

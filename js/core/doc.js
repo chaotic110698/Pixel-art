@@ -65,6 +65,7 @@ export class Doc {
     this.frames = [{ duration: 100 }];
     this.frame = 0;
     this.fps = 8;
+    this.tags = []; // balises d'animation : { id, name, from, to, color }
     this.activeId = null;
     this.expressions = [];
     this.grid = defaultGrid();
@@ -294,6 +295,7 @@ export class Doc {
       activeId: this.activeId,
       frames: this.frames.map((f) => ({ ...f })),
       frame: this.frame,
+      tags: this.tags.map((t) => ({ ...t })),
       expressions: JSON.parse(JSON.stringify(this.expressions)),
       charColors: this.charColors ? { ...this.charColors } : null,
       // métadonnées légères, annulables elles aussi
@@ -320,6 +322,7 @@ export class Doc {
     this.activeId = s.activeId;
     this.frames = s.frames.map((f) => ({ ...f }));
     this.frame = Math.min(s.frame, this.frames.length - 1);
+    if (s.tags) this.tags = s.tags.map((t) => ({ ...t }));
     this.expressions = JSON.parse(JSON.stringify(s.expressions));
     this.charColors = s.charColors ? { ...s.charColors } : null;
     if (s.name !== undefined) this.name = s.name;

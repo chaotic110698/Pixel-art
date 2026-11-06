@@ -198,37 +198,61 @@ export async function runExport(app, kind, opts) {
   }
 
   if (kind === 'gif' || kind === 'sheet' || kind === 'frames') {
-    const frames = doc.frames.map((fr, i) => ({ pixels: compositeImage(doc, { frame: i }), delay: fr.duration || Math.round(1000 / doc.fps) }));
-    const items = finalize(doc, frames.map((f, i) => ({ path: `${base}_${String(i + 1).padStart(3, '0')}.png`, pixels: f.pixels, delay: f.delay })), { ...o, crop: o.crop === 'each' ? 'common' : o.crop });
-    if (kind === 'gif') {
-      const w = items[0].w, h = items[0].h;
-      const gif = encodeGIF(items.map((it) => ({ data: it.out, delay: it.delay })), w, h);
-      return { blob: new Blob([gif], { type: 'image/gif' }), filename: `${base}.gif`, count: 1 };
+    const allFrames = doc.frames.map((_, i) => i);
+    const cropAnim = { ...o, crop: o.crop === 'each' ? 'common' : o.crop };
+    // produit les fichiers d'une animation (liste d'indices d'images)
+    const animFiles = async (idxs, name) => {
+      const items = finalize(doc, idxs.map((i, k) => ({
+        path: `${name}_${String(k + 1).padStart(3, '0')}.png`,
+        pixels: compositeImage(doc, { frame: i }),
+        delay: doc.frames[i].duration || Math.round(1000 / doc.fps),
+      })), cropAnim);
+      if (kind === 'gif') {
+        const gif = encodeGIF(items.map((it) => ({ data: it.out, delay: it.delay })), items[0].w, items[0].h);
+        return [{ name: `${name}.gif`, data: gif, type: 'image/gif' }];
+      }
+      if (kind === 'frames') return (await encodeItems(items)).map((f) => ({ name: f.name, data: f.data }));
+      // planche
+      const n = items.length;
+      const cols = Math.max(1, Math.min(n, opts.sheetCols || n));
+      const rows = Math.ceil(n / cols);
+      const sp = Math.max(0, (opts.spacing | 0) * scale);
+      const fw = items[0].w, fh = items[0].h;
+      const SW = cols * fw + (cols - 1) * sp, SH = rows * fh + (rows - 1) * sp;
+      const sheet = new Uint32Array(SW * SH);
+      const frameMeta = [];
+      items.forEach((it, i) => {
+        const cx = (i % cols) * (fw + sp), cy = Math.floor(i / cols) * (fh + sp);
+        for (let y = 0; y < fh; y++) sheet.set(it.out.subarray(y * fw, y * fw + fw), (cy + y) * SW + cx);
+        frameMeta.push({ index: i, x: cx, y: cy, w: fw, h: fh, duration: it.delay });
+      });
+      const png = await encodePNG(sheet, SW, SH);
+      const out = [{ name: `${name}_sheet.png`, data: png, type: 'image/png' }];
+      if (opts.sheetJson) {
+        // balises comprises dans cette planche, indices relatifs (format proche d'Aseprite « frameTags »)
+        const tags = doc.tags
+          .filter((t) => idxs.includes(t.from) && idxs.includes(t.to))
+          .map((t) => ({ name: t.name, from: idxs.indexOf(t.from), to: idxs.indexOf(t.to), color: t.color }));
+        out.push({ name: `${name}_sheet.json`, data: JSON.stringify({ generator: 'Pixel Atelier', image: `${name}_sheet.png`, size: { w: SW, h: SH }, frameSize: { w: fw, h: fh }, columns: cols, spacing: sp, frames: frameMeta, frameTags: tags }, null, 2) });
+      }
+      return out;
+    };
+    if (opts.perTag && doc.tags.length) {
+      const all = [];
+      const used = new Set();
+      for (const t of doc.tags) {
+        const idxs = allFrames.slice(t.from, t.to + 1);
+        const name = uniqueFile(used, `${base}_${slug(t.name, 'balise')}`, '');
+        const files = await animFiles(idxs, name);
+        all.push(...files.map((f) => ({ name: kind === 'frames' ? `${slug(t.name, 'balise')}/${f.name}` : f.name, data: f.data })));
+      }
+      const suffix = { gif: 'gifs', sheet: 'planches', frames: 'images' }[kind];
+      return { blob: makeZip(all), filename: `${base}_${suffix}_par_balise.zip`, count: all.length };
     }
-    if (kind === 'frames') {
-      const files = await encodeItems(items);
-      return { blob: makeZip(files), filename: `${base}_images.zip`, count: files.length };
-    }
-    // planche
-    const n = items.length;
-    const cols = Math.max(1, Math.min(n, opts.sheetCols || n));
-    const rows = Math.ceil(n / cols);
-    const sp = Math.max(0, (opts.spacing | 0) * scale);
-    const fw = items[0].w, fh = items[0].h;
-    const SW = cols * fw + (cols - 1) * sp, SH = rows * fh + (rows - 1) * sp;
-    const sheet = new Uint32Array(SW * SH);
-    const frameMeta = [];
-    items.forEach((it, i) => {
-      const cx = (i % cols) * (fw + sp), cy = Math.floor(i / cols) * (fh + sp);
-      for (let y = 0; y < fh; y++) sheet.set(it.out.subarray(y * fw, y * fw + fw), (cy + y) * SW + cx);
-      frameMeta.push({ index: i, x: cx, y: cy, w: fw, h: fh, duration: it.delay });
-    });
-    const png = await encodePNG(sheet, SW, SH);
-    if (opts.sheetJson) {
-      const json = JSON.stringify({ generator: 'Pixel Atelier', image: `${base}_sheet.png`, size: { w: SW, h: SH }, frameSize: { w: fw, h: fh }, columns: cols, spacing: sp, frames: frameMeta }, null, 2);
-      return { blob: makeZip([{ name: `${base}_sheet.png`, data: png }, { name: `${base}_sheet.json`, data: json }]), filename: `${base}_sheet.zip`, count: 2 };
-    }
-    return { blob: new Blob([png], { type: 'image/png' }), filename: `${base}_sheet.png`, count: 1 };
+    const files = await animFiles(allFrames, base);
+    if (kind === 'frames') return { blob: makeZip(files), filename: `${base}_images.zip`, count: files.length };
+    if (files.length === 1) return { blob: new Blob([files[0].data], { type: files[0].type }), filename: files[0].name, count: 1 };
+    return { blob: makeZip(files), filename: `${base}_sheet.zip`, count: files.length };
   }
 
   if (kind === 'obs') {
