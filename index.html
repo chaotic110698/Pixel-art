@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Pixel Atelier — éditeur de pixel art & PNGtuber</title>
+  <meta name="description" content="Éditeur de pixel art complet, gratuit et hors ligne, pensé pour créer des personnages PNGtuber. Fonctionne sur téléphone et ordinateur.">
+  <meta name="theme-color" content="#1b1b24">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="app">
+    <header id="topbar">
+      <button class="icon-btn" id="btn-menu" title="Menu" aria-label="Menu principal"></button>
+      <div id="doc-title" title="Renommer le projet" role="button" tabindex="0">Sans titre</div>
+      <div class="spacer"></div>
+      <div class="top-actions">
+        <button class="icon-btn" id="btn-undo" title="Annuler (Ctrl+Z)" aria-label="Annuler"></button>
+        <button class="icon-btn" id="btn-redo" title="Rétablir (Ctrl+Y)" aria-label="Rétablir"></button>
+        <span class="sep-v"></span>
+        <button class="icon-btn toggle" id="btn-grid" title="Afficher/masquer la grille (#)" aria-label="Grille"></button>
+        <button class="icon-btn" id="btn-fit" title="Ajuster à l'écran (0)" aria-label="Ajuster à l'écran"></button>
+        <button class="icon-btn hide-sm" id="btn-zoomout" title="Zoom arrière (-)" aria-label="Zoom arrière"></button>
+        <button class="icon-btn hide-sm" id="btn-zoomin" title="Zoom avant (+)" aria-label="Zoom avant"></button>
+        <span class="sep-v hide-sm"></span>
+        <button class="icon-btn" id="btn-library" title="Bibliothèque de pièces" aria-label="Bibliothèque"></button>
+        <button class="icon-btn" id="btn-pngtuber" title="Mode PNGtuber" aria-label="Mode PNGtuber"></button>
+        <button class="icon-btn hide-sm" id="btn-export" title="Exporter (Ctrl+E)" aria-label="Exporter"></button>
+      </div>
+    </header>
+    <div id="optionsbar" aria-label="Options de l'outil"></div>
+    <main id="workspace">
+      <nav id="toolbar" aria-label="Outils"></nav>
+      <div id="stage">
+        <canvas id="view" aria-label="Zone de dessin"></canvas>
+        <div id="minimap" title="Aperçu taille réelle"></div>
+        <div id="statusbar"></div>
+      </div>
+      <aside id="sidebar" aria-label="Panneaux">
+        <div class="drawer-handle" aria-hidden="true"></div>
+        <div id="panel-tabs" role="tablist"></div>
+        <section class="panel" id="panel-colors" data-title="Couleurs"></section>
+        <section class="panel" id="panel-layers" data-title="Calques"></section>
+        <section class="panel" id="panel-expressions" data-title="Expressions"></section>
+        <section class="panel" id="panel-grid" data-title="Grille"></section>
+      </aside>
+    </main>
+    <div id="timeline" hidden></div>
+    <nav id="mobilenav" aria-label="Panneaux"></nav>
+  </div>
+  <noscript>Pixel Atelier nécessite JavaScript.</noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
