@@ -1,6 +1,6 @@
 // Sélection (masque) et contenu flottant (déplacement / collage / transformations).
 
-import { maskBounds, rotateCW, rotateCCW, flipHGeneric, flipVGeneric } from './raster.js';
+import { maskBounds, rotateCW, rotateCCW, flipHGeneric, flipVGeneric, rotateScale } from './raster.js';
 
 export class Selection {
   constructor(app) {
@@ -207,9 +207,54 @@ export class Selection {
     this.app.renderer?.invalidateAll();
   }
 
+  /**
+   * Transformation libre (rotation quelconque + échelle) à partir de l'état
+   * mémorisé au début de la transformation (pas d'accumulation de pertes).
+   */
+  beginFreeTransform() {
+    if (!this.floating && !this.lift()) return false;
+    const f = this.floating;
+    // le masque devient l'alpha : les pixels hors sélection restent transparents
+    const src = new Uint32Array(f.w * f.h);
+    for (let i = 0; i < src.length; i++) src[i] = f.mask[i] ? f.data[i] : 0;
+    this._free = { src, w: f.w, h: f.h, cx: f.x + f.w / 2, cy: f.y + f.h / 2, data: f.data, mask: f.mask, x: f.x, y: f.y };
+    return true;
+  }
+
+  previewFreeTransform(angle, sx, sy, smooth = true) {
+    const t = this._free;
+    if (!t || !this.floating) return;
+    const r = rotateScale(t.src, t.w, t.h, angle, sx, sy, smooth);
+    const f = this.floating;
+    f.data = r.data;
+    f.w = r.w;
+    f.h = r.h;
+    f.mask = new Uint8Array(r.w * r.h);
+    for (let i = 0; i < r.data.length; i++) if (r.data[i] >>> 24) f.mask[i] = 1;
+    f.x = Math.round(t.cx - r.w / 2);
+    f.y = Math.round(t.cy - r.h / 2);
+    this.changed();
+    this.app.renderer?.invalidateAll();
+  }
+
+  endFreeTransform(cancel = false) {
+    const t = this._free;
+    this._free = null;
+    if (!t || !this.floating) return;
+    if (cancel) {
+      Object.assign(this.floating, { data: t.data, mask: t.mask, w: t.w, h: t.h, x: t.x, y: t.y });
+      this.changed();
+      this.app.renderer?.invalidateAll();
+    }
+  }
+
   /** Pose le contenu flottant sur le calque et enregistre UNE entrée d'historique. */
   commitFloating(label = 'Transformer la sélection') {
     const f = this.floating;
+    if (this._free) {
+      this._free = null; // la transformation libre en cours est conservée telle quelle
+      this.app.freeTransform = null;
+    }
     if (!f) return;
     const doc = this.doc;
     const layer = doc.get(f.layerId);
@@ -252,6 +297,8 @@ export class Selection {
 
   /** Annule le flottant (rétablit les pixels d'origine). */
   cancelFloating() {
+    this._free = null;
+    this.app.freeTransform = null;
     const f = this.floating;
     if (!f) return;
     this.floating = null;

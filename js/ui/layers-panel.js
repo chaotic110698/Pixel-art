@@ -20,8 +20,20 @@ export function initLayersPanel(app) {
     tb('merge', 'Fusionner vers le bas', () => ops.mergeDown(app)),
     tb('up', 'Monter', () => ops.moveNode(app, app.doc.activeId, 1)),
     tb('down', 'Descendre', () => ops.moveNode(app, app.doc.activeId, -1)),
-    tb('trash', 'Supprimer', () => ops.removeNode(app)),
+    tb('trash', 'Supprimer', () => (multi.size > 1 ? ops.removeNodes(app, [...multi]) : ops.removeNode(app))),
     moreBtn);
+  // sélection de plusieurs calques (Ctrl/Maj + clic, ou mode tactile)
+  const multi = new Set();
+  let multiMode = false;
+  app.layerSelection = multi;
+  const multiBtn = h('button', { class: 'icon-btn small', title: 'Sélection multiple (ou Ctrl/Maj + clic)', 'aria-label': 'Sélection multiple', onclick: () => {
+    multiMode = !multiMode;
+    multiBtn.classList.toggle('active', multiMode);
+    if (!multiMode) multi.clear();
+    else if (app.doc.activeId) multi.add(app.doc.activeId);
+    render();
+  } }, icon('check'));
+  tools.append(multiBtn);
   const tree = h('div', { class: 'layer-tree', role: 'tree' });
   const props = h('div', { class: 'layer-props' });
   panel.append(tools, tree, props);
@@ -77,7 +89,7 @@ export function initLayersPanel(app) {
     const isActive = doc.activeId === node.id;
     const inVariant = parent && parent.variant;
     const el = h('div', {
-      class: `lrow ${node.type} ${isActive ? 'active' : ''} ${doc.isShown(node) ? '' : 'hidden-eff'}`,
+      class: `lrow ${node.type} ${isActive ? 'active' : ''} ${multi.has(node.id) ? 'multi' : ''} ${doc.isShown(node) ? '' : 'hidden-eff'}`,
       role: 'treeitem',
       'aria-selected': isActive,
       dataset: { id: node.id },
@@ -116,7 +128,26 @@ export function initLayersPanel(app) {
       style: { opacity: node.locked ? 1 : 0.35 },
       onclick: (e) => { e.stopPropagation(); ops.toggleLock(app, node.id); },
     }, icon(node.locked ? 'lock' : 'unlock')));
-    el.addEventListener('click', () => {
+    el.addEventListener('click', (e) => {
+      if (e.ctrlKey || e.metaKey || multiMode) {
+        if (multi.size === 0 && doc.activeId) multi.add(doc.activeId);
+        if (multi.has(node.id) && multi.size > 1) multi.delete(node.id);
+        else multi.add(node.id);
+        render();
+        return;
+      }
+      if (e.shiftKey && doc.activeId) {
+        const order = ops.displayOrder(doc);
+        const [a, b] = [order.indexOf(doc.activeId), order.indexOf(node.id)].sort((x, y) => x - y);
+        multi.clear();
+        for (let i = a; i <= b; i++) multi.add(order[i]);
+        render();
+        return;
+      }
+      if (multi.size) {
+        multi.clear();
+        render();
+      }
       if (doc.activeId !== node.id) {
         app.selection.commitFloating();
         doc.activeId = node.id;
@@ -155,6 +186,24 @@ export function initLayersPanel(app) {
     const doc = app.doc;
     const a = doc.active;
     clear(props);
+    for (const id of [...multi]) if (!doc.get(id)) multi.delete(id);
+    if (multi.size > 1) {
+      const ids = [...multi];
+      const anyVisible = ids.some((id) => doc.get(id)?.visible);
+      props.append(
+        h('strong', {}, `${multi.size} éléments sélectionnés`),
+        h('div', { class: 'row', style: { marginTop: '6px' } },
+          h('button', { class: 'btn small', onclick: () => { ops.groupNodes(app, ids); multi.clear(); } }, icon('folderPlus'), 'Grouper'),
+          h('button', { class: 'btn small', onclick: () => { ops.groupNodes(app, ids, { variant: true }); multi.clear(); } }, icon('variants'), 'En variantes'),
+          h('button', { class: 'btn small', onclick: () => { ops.mergeNodes(app, ids); multi.clear(); } }, icon('merge'), 'Fusionner'),
+          h('button', { class: 'btn small', onclick: () => ops.duplicateNodes(app, ids) }, icon('copy'), 'Dupliquer'),
+          h('button', { class: 'btn small', onclick: () => ops.setVisibleMany(app, ids, !anyVisible) }, icon(anyVisible ? 'eyeOff' : 'eye'), anyVisible ? 'Masquer' : 'Afficher'),
+          h('button', { class: 'btn small danger', onclick: async () => {
+            if (await confirmDialog(`Supprimer ${ids.length} éléments ?`, { danger: true, ok: 'Supprimer' })) { ops.removeNodes(app, ids); multi.clear(); }
+          } }, icon('trash'), 'Supprimer'),
+          h('button', { class: 'btn small', onclick: () => { multi.clear(); render(); } }, 'Annuler la sélection')));
+      return;
+    }
     if (!a) return;
     const parent = doc.get(a.parent);
     const op = h('input', {

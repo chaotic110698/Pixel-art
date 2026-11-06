@@ -369,3 +369,112 @@ export function moveExpression(app, id, dir) {
     [list[i], list[j]] = [list[j], list[i]];
   });
 }
+
+// ---------- Plusieurs calques à la fois ----------
+/** Garde seulement les nœuds dont aucun ancêtre n'est aussi sélectionné. */
+function topLevel(doc, ids) {
+  const set = new Set(ids.filter((id) => doc.get(id) && id !== 'root'));
+  return [...set].filter((id) => !doc.ancestors(doc.get(id)).some((a) => set.has(a.id)));
+}
+
+/** Ordre d'affichage (haut -> bas) de tous les nœuds. */
+export function displayOrder(doc) {
+  const out = [];
+  const visit = (g) => {
+    for (let i = g.children.length - 1; i >= 0; i--) {
+      const n = doc.get(g.children[i]);
+      if (!n) continue;
+      out.push(n.id);
+      if (n.type === 'group') visit(n);
+    }
+  };
+  visit(doc.root);
+  return out;
+}
+
+function sortTopFirst(doc, ids) {
+  const order = displayOrder(doc);
+  return [...ids].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+}
+
+export function groupNodes(app, ids, { variant = false } = {}) {
+  const doc = fresh(app);
+  const list = sortTopFirst(doc, topLevel(doc, ids));
+  if (!list.length) return null;
+  return app.history.transact(variant ? 'Grouper en variantes' : 'Grouper les calques', () => {
+    const top = doc.get(list[0]);
+    const parent = doc.get(top.parent);
+    const g = doc.createGroup(uniqueName(doc, variant ? 'Variantes' : 'Groupe'), { variant });
+    doc.insert(g, parent.id, parent.children.indexOf(top.id) + 1);
+    // du bas vers le haut pour conserver l'ordre d'empilement
+    for (const id of [...list].reverse()) doc.move(id, g.id, g.children.length);
+    if (variant) g.active = g.children[g.children.length - 1];
+    doc.activeId = g.id;
+    return g;
+  });
+}
+
+export function removeNodes(app, ids) {
+  const doc = fresh(app);
+  const list = topLevel(doc, ids);
+  if (!list.length) return;
+  app.history.transact(`Supprimer ${list.length} éléments`, () => {
+    for (const id of list) doc.remove(id);
+    if (!doc.get(doc.activeId)) doc.activeId = doc.firstLayer()?.id || null;
+  });
+}
+
+export function duplicateNodes(app, ids) {
+  const doc = fresh(app);
+  const list = sortTopFirst(doc, topLevel(doc, ids));
+  app.history.transact(`Dupliquer ${list.length} éléments`, () => {
+    for (const id of list) {
+      const node = doc.get(id);
+      const parent = doc.get(node.parent);
+      const nodes = cloneNode(doc, node, parent.id);
+      for (const n of nodes) doc.nodes.set(n.id, n);
+      parent.children.splice(parent.children.indexOf(id) + 1, 0, nodes[0].id);
+    }
+  });
+}
+
+export function setVisibleMany(app, ids, visible) {
+  const doc = fresh(app);
+  app.history.transact(visible ? 'Afficher' : 'Masquer', () => {
+    for (const id of ids) {
+      const n = doc.get(id);
+      if (n) n.visible = visible;
+    }
+  });
+}
+
+/** Fusionne les calques sélectionnés (et le contenu des groupes sélectionnés) en un seul. */
+export function mergeNodes(app, ids) {
+  const doc = fresh(app);
+  const list = sortTopFirst(doc, topLevel(doc, ids));
+  const inSet = new Set();
+  for (const id of list) {
+    const n = doc.get(id);
+    if (n.type === 'layer') inSet.add(n.id);
+    else doc.walk((c) => c.type === 'layer' && inSet.add(c.id), n);
+  }
+  const layers = doc.renderList({ ignoreVisibility: true, includeReference: false }).filter((x) => inSet.has(x.layer.id));
+  if (layers.length < 2) return app.toast('Sélectionnez au moins deux calques visibles à fusionner');
+  app.history.transact('Fusionner les calques', () => {
+    const top = doc.get(list[0]);
+    const parent = doc.get(top.parent);
+    const merged = doc.createLayer(uniqueName(doc, 'Fusion'));
+    merged.cels = doc.frames.map((_, f) => {
+      const out = doc.newCel();
+      for (const { layer, opacity } of layers) {
+        const c = layer.cels[f];
+        if (!c || !doc.get(layer.id).visible) continue;
+        for (let k = 0; k < out.length; k++) if (c[k] >>> 24) out[k] = blendOver(out[k], c[k], opacity);
+      }
+      return out;
+    });
+    doc.insert(merged, parent.id, parent.children.indexOf(top.id) + 1);
+    for (const id of list) doc.remove(id);
+    doc.activeId = merged.id;
+  });
+}

@@ -298,3 +298,84 @@ export function blit(src, sw, sh, dst, dw, dh, dx, dy, { overwrite = true } = {}
     }
   }
 }
+
+/** Scale2x (EPX) : agrandissement ×2 qui lisse les diagonales sans ajouter de couleur. */
+export function scale2x(src, w, h) {
+  const W = w * 2;
+  const out = new Uint32Array(W * h * 2);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const E = src[y * w + x];
+      const B = y > 0 ? src[(y - 1) * w + x] : E;
+      const H = y < h - 1 ? src[(y + 1) * w + x] : E;
+      const D = x > 0 ? src[y * w + x - 1] : E;
+      const F = x < w - 1 ? src[y * w + x + 1] : E;
+      let e0 = E, e1 = E, e2 = E, e3 = E;
+      if (B !== H && D !== F) {
+        if (D === B) e0 = D;
+        if (B === F) e1 = F;
+        if (D === H) e2 = D;
+        if (H === F) e3 = F;
+      }
+      const o = y * 2 * W + x * 2;
+      out[o] = e0; out[o + 1] = e1; out[o + W] = e2; out[o + W + 1] = e3;
+    }
+  }
+  return out;
+}
+
+/**
+ * Rotation + mise à l'échelle d'un tampon (inverse mapping). Avec `smooth`,
+ * l'image est d'abord agrandie par Scale2x (×2, ×4 ou ×8 selon sa taille) :
+ * méthode proche de RotSprite, adaptée au pixel art.
+ * Retourne { data, w, h }.
+ */
+export function rotateScale(src, w, h, angleDeg, sx = 1, sy = 1, smooth = true) {
+  let up = src, uw = w, uh = h, k = 1;
+  if (smooth) {
+    const passes = w * h <= 128 * 128 ? 3 : w * h <= 256 * 256 ? 2 : 1;
+    for (let i = 0; i < passes; i++) {
+      up = scale2x(up, uw, uh);
+      uw *= 2; uh *= 2; k *= 2;
+    }
+  }
+  const a = (angleDeg * Math.PI) / 180;
+  const cos = Math.cos(a), sin = Math.sin(a);
+  // boîte englobante de la source transformée
+  const hw = (w * Math.abs(sx)) / 2, hh = (h * Math.abs(sy)) / 2;
+  const bw = Math.abs(hw * cos) + Math.abs(hh * sin);
+  const bh = Math.abs(hw * sin) + Math.abs(hh * cos);
+  const ow = Math.max(1, Math.round(bw * 2)), oh = Math.max(1, Math.round(bh * 2));
+  const out = new Uint32Array(ow * oh);
+  for (let y = 0; y < oh; y++) {
+    for (let x = 0; x < ow; x++) {
+      // centre du pixel de sortie, relatif au centre
+      const px = x + 0.5 - ow / 2, py = y + 0.5 - oh / 2;
+      // rotation inverse puis échelle inverse
+      const rx = (px * cos + py * sin) / sx;
+      const ry = (-px * sin + py * cos) / sy;
+      const srcX = rx + w / 2, srcY = ry + h / 2;
+      if (srcX < 0 || srcY < 0 || srcX >= w || srcY >= h) continue;
+      const ux = Math.min(uw - 1, Math.floor(srcX * k)), uy = Math.min(uh - 1, Math.floor(srcY * k));
+      out[y * ow + x] = up[uy * uw + ux];
+    }
+  }
+  return { data: out, w: ow, h: oh };
+}
+
+/** Contour d'une image : pixels transparents voisins (extérieur) ou pixels de bord (intérieur). */
+export function outlineMask(data, w, h, { inside = false, diagonal = false } = {}) {
+  const m = new Uint8Array(w * h);
+  const filled = (x, y) => x >= 0 && y >= 0 && x < w && y < h && (data[y * w + x] >>> 24) > 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const f = filled(x, y);
+      if (inside ? !f : f) continue;
+      const test = inside ? (a, b) => !filled(a, b) : filled;
+      let hit = test(x - 1, y) || test(x + 1, y) || test(x, y - 1) || test(x, y + 1);
+      if (!hit && diagonal) hit = test(x - 1, y - 1) || test(x + 1, y - 1) || test(x - 1, y + 1) || test(x + 1, y + 1);
+      if (hit) m[y * w + x] = 1;
+    }
+  }
+  return m;
+}

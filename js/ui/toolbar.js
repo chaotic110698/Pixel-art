@@ -6,9 +6,9 @@ import { DITHER_PATTERNS, ditherFn } from '../core/raster.js';
 
 const TOOL_ICONS = {
   pencil: 'pencil', eraser: 'eraser', fill: 'fill', picker: 'picker', line: 'line', rect: 'rect',
-  ellipse: 'ellipse', select: 'select', lasso: 'lasso', wand: 'wand', move: 'move', hand: 'hand',
+  ellipse: 'ellipse', select: 'select', lasso: 'lasso', wand: 'wand', move: 'move', hand: 'hand', shade: 'shade', gradient: 'gradient',
 };
-const ORDER = ['pencil', 'eraser', 'fill', 'picker', '|', 'line', 'rect', 'ellipse', '|', 'select', 'lasso', 'wand', 'move', '|', 'hand'];
+const ORDER = ['pencil', 'eraser', 'fill', 'picker', 'shade', 'gradient', '|', 'line', 'rect', 'ellipse', '|', 'select', 'lasso', 'wand', 'move', '|', 'hand'];
 
 export function initToolbar(app, { openColorEditor }) {
   const bar = document.getElementById('toolbar');
@@ -119,9 +119,23 @@ export function renderOptions(app) {
   clear(bar);
   bar.append(h('span', { class: 'opt-title' }, t.name));
   const paint = ['pencil', 'eraser', 'line', 'rect', 'ellipse'].includes(t.id);
-  if (['pencil', 'eraser'].includes(t.id)) {
+  if (['pencil', 'eraser', 'shade'].includes(t.id)) {
     bar.append(numberStepper('Taille', st.brushSize, 1, 64, (v) => set({ brushSize: v })));
     bar.append(seg([['square', '■', 'Pinceau carré'], ['round', '●', 'Pinceau rond']], st.brushShape, (v) => set({ brushShape: v })));
+    bar.append(check('Pixel perfect', !!st.pixelPerfect, (v) => set({ pixelPerfect: v }), 'Supprime les doubles pixels dans les courbes (taille 1)'));
+  }
+  if (t.id === 'pencil') {
+    bar.append(seg([['normal', 'Normal'], ['replace', 'Remplacer']], st.pencilMode || 'normal', (v) => set({ pencilMode: v })));
+  }
+  if (t.id === 'shade') {
+    bar.append(seg([['lighten', '☀ Éclaircir'], ['darken', '☾ Assombrir']], st.shadeMode || 'lighten', (v) => set({ shadeMode: v })));
+    bar.append(h('span', { class: 'small muted' }, 'Suit la palette · clic droit = inverse'));
+  }
+  if (t.id === 'gradient') {
+    bar.append(seg([['linear', 'Linéaire'], ['radial', 'Radial']], st.gradientShape || 'linear', (v) => set({ gradientShape: v })));
+    bar.append(seg([['layer', 'Tout le calque'], ['region', 'Zone touchée']], st.gradientArea || 'layer', (v) => set({ gradientArea: v })));
+    bar.append(check('Tramé', st.gradientDither !== false, (v) => set({ gradientDither: v })));
+    bar.append(h('span', { class: 'small muted' }, 'Glisser de A vers B · la sélection limite la zone'));
   }
   if (['line', 'rect', 'ellipse'].includes(t.id)) {
     bar.append(numberStepper('Épaisseur', st.shapeSize, 1, 32, (v) => set({ shapeSize: v })));
@@ -146,6 +160,34 @@ export function renderOptions(app) {
       bar.append(check('Image visible', st.wandSampleAll, (v) => set({ wandSampleAll: v })));
     }
   }
+  if (app.freeTransform) {
+    // transformation libre en cours : réglages en direct
+    const ft = app.freeTransform;
+    const A = app.actions;
+    const slider = (label, key, min, max, unit) => {
+      const out = h('span', { class: 'small', style: { width: '46px' } }, ft[key] + unit);
+      return h('span', { class: 'opt-group' }, h('span', { class: 'lbl' }, label),
+        h('input', { type: 'range', min, max, value: ft[key], oninput: (e) => {
+          const v = +e.target.value;
+          const patch = { [key]: v };
+          if (ft.lock && key === 'sx') patch.sy = v;
+          if (ft.lock && key === 'sy') patch.sx = v;
+          out.textContent = v + unit;
+          A.updateTransform(patch);
+        } }), out);
+    };
+    bar.append(
+      h('span', { class: 'opt-group' }, h('strong', {}, 'Transformer')),
+      slider('Angle', 'angle', -180, 180, '°'),
+      h('span', { class: 'opt-group' }, ...[-90, -45, 0, 45, 90].map((a) => h('button', { class: 'btn small', onclick: () => { A.updateTransform({ angle: a }); renderOptions(app); } }, a + '°'))),
+      slider('Largeur', 'sx', 10, 400, ' %'),
+      slider('Hauteur', 'sy', 10, 400, ' %'),
+      check('Proportions liées', ft.lock, (v) => { ft.lock = v; }),
+      check('Lissage pixel art', ft.smooth, (v) => A.updateTransform({ smooth: v }), 'Rotation de type RotSprite : évite les pixels cassés'),
+      h('button', { class: 'btn small primary', onclick: () => A.endTransform(false) }, 'Valider'),
+      h('button', { class: 'btn small', onclick: () => A.endTransform(true) }, 'Annuler'));
+    return;
+  }
   if (['select', 'lasso', 'wand', 'move'].includes(t.id)) {
     const sel = app.selection;
     const has = sel.active;
@@ -154,6 +196,7 @@ export function renderOptions(app) {
       tb('flipH', 'Miroir horizontal (Maj+H)', () => sel.transformFloating('flipH')),
       tb('flipV', 'Miroir vertical (Maj+V)', () => sel.transformFloating('flipV')),
       tb('rotate', 'Rotation 90° (Maj+R)', () => sel.transformFloating('cw')),
+      tb('transform', 'Rotation libre / échelle (Ctrl+T)', () => app.actions.startTransform()),
       tb('copy', 'Copier (Ctrl+C)', () => app.actions.copy(), !has),
       h('button', { class: 'btn small', onclick: () => app.actions.paste() }, 'Coller'),
       tb('trash', 'Effacer la sélection (Suppr)', () => app.actions.deleteSelection(), !has),

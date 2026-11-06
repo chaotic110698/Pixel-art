@@ -1,6 +1,6 @@
 // Registre des outils.
 
-import { PencilTool, EraserTool, FillTool, PickerTool } from './paint-tools.js';
+import { PencilTool, EraserTool, FillTool, PickerTool, ShadeTool, GradientTool } from './paint-tools.js';
 import { LineTool, RectTool, EllipseTool } from './shape-tools.js';
 import { RectSelectTool, LassoTool, WandTool, MoveTool, HandTool } from './select-tools.js';
 
@@ -8,7 +8,7 @@ export class Tools {
   constructor(app) {
     this.app = app;
     const list = [
-      PencilTool, EraserTool, FillTool, PickerTool, LineTool, RectTool, EllipseTool,
+      PencilTool, EraserTool, FillTool, PickerTool, ShadeTool, GradientTool, LineTool, RectTool, EllipseTool,
       RectSelectTool, LassoTool, WandTool, MoveTool, HandTool,
     ].map((C) => new C(app));
     this.list = list;

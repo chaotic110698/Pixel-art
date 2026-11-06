@@ -7,11 +7,11 @@
 ## Fonctionnalités
 
 - **Canevas** : préréglages 16 à 512 px ou taille libre (largeur ≠ hauteur), fond transparent en damier, redimensionnement avec ancrage, mise à l'échelle, recadrage, miroir et rotation.
-- **Outils** : crayon (taille 1 à 64, carré ou rond), gomme, remplissage (contigu ou global, avec tolérance), pipette, ligne, rectangle, ellipse (contour ou plein), sélection rectangulaire, lasso, baguette magique (déplacer, copier, coller, rotation, miroir), symétrie (verticale, horizontale ou les deux), **tramage** (10 motifs, 2 couleurs).
+- **Outils** : crayon (taille 1 à 64, carré ou rond, mode **pixel perfect**, mode **remplacer une couleur**), **ombrage** (éclaircit/assombrit en suivant la palette), **dégradé tramé** (linéaire ou radial, Bayer 4×4), gomme, remplissage (contigu ou global, avec tolérance), pipette, ligne, rectangle, ellipse (contour ou plein), sélection rectangulaire, lasso, baguette magique (déplacer, copier, coller, miroir, rotation 90° et **rotation libre / mise à l'échelle** avec lissage pixel art de type RotSprite), **contour automatique**, symétrie (verticale, horizontale ou les deux), **tramage** (10 motifs, 2 couleurs).
 - **Couleurs** : palettes PICO-8, Endesga 32, Game Boy, Sweetie 16, DawnBringer 16, CGA, peaux & cheveux… Sélecteur TSV avec alpha, couleurs récentes, import/export (.hex, .gpl, .json, .pal), extraction d'une palette depuis une image.
 - **Historique** illimité en pratique (annuler/rétablir), économe en mémoire, valable pour toutes les actions : pixels, sélections, calques, variantes, expressions, palette, grille, nom du projet, réglages d'animation et PNGtuber.
 - **Grille modulable** : cellules en largeur et hauteur séparées, décalage, lignes principales tous les N cellules, couleurs, épaisseurs, opacité. Aimantation des lignes, formes, sélections (rectangle et lasso) et déplacements. Réglages enregistrés dans le projet.
-- **Calques** : groupes, opacité, verrouillage, fusion, glisser-déposer, import d'images, et **images de référence nettes** : affichées en pleine résolution au-dessus ou en dessous du dessin, déplaçables et redimensionnables, jamais exportées.
+- **Calques** : groupes, opacité, verrouillage, fusion, glisser-déposer, **sélection multiple** (Ctrl/Maj + clic ou mode tactile : grouper, fusionner, dupliquer, masquer, supprimer), import d'images, et **images de référence nettes** : affichées en pleine résolution au-dessus ou en dessous du dessin, déplaçables et redimensionnables, jamais exportées.
 - **Variantes et expressions** : un groupe de variantes n'affiche qu'un seul enfant à la fois (ex. bouche fermée / ouverte). Les expressions enregistrent une combinaison de variantes (ex. « Content »). On les applique en un clic ou avec une touche.
 - **Bibliothèque de pièces originales** : corps, têtes, 14 coiffures, yeux et bouches avec plusieurs états, sourcils, nez, lunettes, chapeaux, oreilles, boucles d'oreilles, vêtements. La recoloration se fait par échange de palette, les pièces restent modifiables pixel par pixel, et l'on peut garder ses propres pièces dans « Ma bibliothèque » (import/export).
 - **Nouveau personnage** : une base prête à l'emploi avec yeux, bouche et sourcils en variantes, plus 7 expressions associées aux touches 1 à 7.
@@ -48,6 +48,8 @@
 | W | Baguette magique | S | Symétrie |
 | V | Déplacer | # | Grille |
 | H / Espace | Déplacer la vue | 0 / 1 | Ajuster / taille réelle |
+| K | Ombrage | J | Dégradé tramé |
+| Ctrl+T | Rotation libre / échelle | Ctrl+clic (calques) | Sélection multiple |
 | Tab | Variante suivante | T | Mode tuiles |
 | Ctrl+S | Enregistrer | ? | Tous les raccourcis |
 

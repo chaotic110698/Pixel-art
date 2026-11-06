@@ -4,7 +4,7 @@ import { h, pickFile, loadImageFromFile, imageToRGBA } from '../util/dom.js';
 import { openDialog, confirmDialog } from './dialogs.js';
 import { Doc } from '../core/doc.js';
 import { hexToU32, u32ToHex, normHex } from '../util/color.js';
-import { scaleNearest } from '../core/raster.js';
+import { scaleNearest, outlineMask } from '../core/raster.js';
 import { composePixels } from '../render/compose.js';
 import { extractPalette } from '../core/palettes.js';
 import * as ops from '../core/layer-ops.js';
@@ -254,6 +254,58 @@ export function createActions(app) {
   A.fitReference = (layer) => {
     const r = layer.refImg;
     if (r) A.setReference(layer, fitReference(app.doc, r.w, r.h));
+  };
+
+  // ---------- Transformation libre de la sélection ----------
+  A.startTransform = () => {
+    if (app.freeTransform) return;
+    if (!app.editableLayer()) return;
+    if (!app.selection.beginFreeTransform()) return;
+    app.freeTransform = { angle: 0, sx: 100, sy: 100, lock: true, smooth: true };
+    if (!['select', 'lasso', 'wand', 'move'].includes(app.tools.current.id)) app.tools.select('move');
+    app.emit('tool', app.tools.current);
+  };
+  A.updateTransform = (patch) => {
+    const t = app.freeTransform;
+    if (!t) return;
+    Object.assign(t, patch);
+    app.selection.previewFreeTransform(t.angle, t.sx / 100, t.sy / 100, t.smooth);
+  };
+  A.endTransform = (cancel = false) => {
+    if (!app.freeTransform) return;
+    app.selection.endFreeTransform(cancel);
+    app.freeTransform = null;
+    if (!cancel) app.selection.commitFloating('Rotation / échelle');
+    app.emit('tool', app.tools.current);
+  };
+
+  // ---------- Contour automatique ----------
+  A.outlineDialog = async () => {
+    const layer = app.editableLayer();
+    if (!layer) return;
+    const pos = h('select', { class: 'input wide' }, h('option', { value: 'out' }, 'Extérieur (autour du dessin)'), h('option', { value: 'in' }, 'Intérieur (sur le bord du dessin)'));
+    const corners = h('input', { type: 'checkbox' });
+    const v = await openDialog({
+      title: 'Contour automatique',
+      body: [
+        h('p', {}, 'Ajoute un contour d\'un pixel avec la couleur A autour du contenu du calque actif (ou de la sélection).'),
+        h('div', { class: 'row' }, h('span', { class: 'swatch', style: { background: app.state.primary, width: '32px', display: 'inline-block' } }), h('code', {}, app.state.primary)),
+        h('label', { class: 'field' }, h('span', {}, 'Position'), pos),
+        h('label', { class: 'chk' }, corners, 'Inclure les coins (contour plus épais en diagonale)'),
+      ],
+      buttons: [{ label: 'Annuler', value: false }, { label: 'Appliquer', value: true, primary: true }],
+    }).result;
+    if (!v) return;
+    app.selection.commitFloating();
+    const doc = app.doc;
+    const token = app.history.beginPixels(layer);
+    const m = outlineMask(token.before, doc.width, doc.height, { inside: pos.value === 'in', diagonal: corners.checked });
+    const sel = app.selection.mask;
+    const c = app.colorU32('primary');
+    for (let i = 0; i < m.length; i++) if (m[i] && (!sel || sel[i])) token.cel[i] = c;
+    app.markLayerDirty(token.cel);
+    app.history.endPixels(token, 'Contour automatique');
+    app.useColor();
   };
 
   // ---------- Couleurs ----------

@@ -73,6 +73,10 @@ export const ICONS = {
   chevronDown: s('<path d="M6 9l6 6 6-6"/>'),
   chevronRight: s('<path d="M9 6l6 6-6 6"/>'),
   ref: s('<rect x="3" y="4" width="18" height="16" rx="1" stroke-dasharray="3 2"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-6-6-9 9"/>'),
+  shade: s('<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 010 16z" fill="currentColor"/>'),
+  gradient: s('<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M8 4v16M12 4v16" stroke-dasharray="2 2"/><path d="M16 4v16" stroke-dasharray="1 3"/>'),
+  outline: s('<rect x="7" y="7" width="10" height="10" fill="currentColor" stroke="none"/><rect x="4" y="4" width="16" height="16" rx="1"/>'),
+  transform: s('<rect x="5" y="5" width="11" height="11" transform="rotate(-15 10.5 10.5)"/><path d="M17 17l4 4M17 21h4v-4"/>'),
   brush: s('<path d="M18 3l3 3-9 9-3-3z"/><path d="M9 12c-3 0-5 2-5 5 0 1-1 3-2 3 3 1 7 0 8-3"/>'),
 };
 

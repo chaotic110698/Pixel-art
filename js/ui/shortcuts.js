@@ -10,14 +10,14 @@ export const SHORTCUTS = [
   ['Outils', [
     ['B', 'Crayon'], ['E', 'Gomme'], ['G', 'Remplissage'], ['I', 'Pipette (ou Alt maintenu)'], ['L', 'Ligne'],
     ['U', 'Rectangle'], ['O', 'Ellipse'], ['M', 'Sélection rectangle'], ['Q', 'Lasso'], ['W', 'Baguette magique'],
-    ['V', 'Déplacer'], ['H', 'Main (déplacer la vue)'], ['D', 'Tramage on/off'], ['S', 'Symétrie (cycle)'],
+    ['V', 'Déplacer'], ['H', 'Main (déplacer la vue)'], ['K', 'Ombrage (éclaircir/assombrir selon la palette)'], ['J', 'Dégradé tramé'], ['D', 'Tramage on/off'], ['S', 'Symétrie (cycle)'],
     ['X', 'Échanger couleurs A/B'], ['[ / ]', 'Taille du pinceau −/+'], ['F', 'Formes pleines on/off'],
   ]],
   ['Édition', [
     ['Ctrl+Z', 'Annuler'], ['Ctrl+Y / Ctrl+Maj+Z', 'Rétablir'], ['Ctrl+C / X / V', 'Copier / couper / coller'],
     ['Ctrl+A', 'Tout sélectionner'], ['Ctrl+D / Échap', 'Désélectionner'], ['Ctrl+Maj+I', 'Inverser la sélection'], ['Suppr', 'Effacer la sélection'],
     ['Entrée', 'Valider le déplacement'], ['Flèches', 'Déplacer la sélection de 1 px (Maj : 8 px)'],
-    ['Maj+H / Maj+V', 'Miroir de la sélection'], ['Maj+R', 'Rotation 90° de la sélection'],
+    ['Maj+H / Maj+V', 'Miroir de la sélection'], ['Maj+R', 'Rotation 90° de la sélection'], ['Ctrl+T', 'Rotation libre / échelle'],
     ['Maj (crayon)', 'Ligne droite depuis le dernier point'], ['Maj (formes)', 'Carré / cercle / 45°'],
     ['Clic droit', 'Dessiner avec la couleur B'],
   ]],
@@ -74,6 +74,10 @@ export function initShortcuts(app) {
     const sel = app.selection;
     const A = app.actions;
 
+    if (e.key === 'Escape' && app.freeTransform) {
+      A.endTransform(true);
+      return;
+    }
     if (e.key === 'Escape') {
       closePopups();
       if (closeTopDialog()) return;
@@ -109,6 +113,7 @@ export function initShortcuts(app) {
       if (k === 'e' && e.shiftKey) return run(() => A.exportDialog());
       if (k === 'e') return run(() => ops.mergeDown(app));
       if (k === 'j') return run(() => ops.duplicate(app));
+      if (k === 't') return run(() => A.startTransform());
       if (k === 'n' && e.shiftKey) return run(() => ops.addLayer(app));
       if (k === '0') return run(() => app.viewport.fit());
       if (k === '1') return run(() => app.viewport.actualSize());
@@ -139,6 +144,7 @@ export function initShortcuts(app) {
         sel.moveFloating(...d);
       });
     }
+    if (e.key === 'Enter' && app.freeTransform) return run(() => A.endTransform(false));
     if (e.key === 'Enter' && sel.floating) return run(() => sel.commitFloating());
     if ((e.key === 'Delete' || e.key === 'Backspace') && !e.repeat) return run(() => A.deleteSelection());
     if (e.key === 'F2') return run(() => app.renameActive?.());

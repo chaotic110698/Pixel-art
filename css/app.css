@@ -707,3 +707,4 @@ button, .chip, .swatch, .card, .lrow, .menu-item { touch-action: manipulation; -
   font-size: 13px;
 }
 .meter .thr2 { background: var(--accent2); }
+.lrow.multi { outline: 2px solid var(--accent2); outline-offset: -2px; background: color-mix(in srgb, var(--accent2) 18%, var(--panel)); }

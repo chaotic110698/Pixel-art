@@ -21,6 +21,10 @@ export class Painter {
     this.symX = opts.symX ?? this.w / 2;
     this.symY = opts.symY ?? this.h / 2;
     this.wrap = !!opts.wrap;
+    // état d'origine du calque (début du trait) : pixel perfect, remplacement, ombrage
+    this.before = opts.before || null;
+    this.onlyColor = opts.onlyColor ?? null; // ne peindre que sur cette couleur d'origine
+    this.mapColor = opts.mapColor || null; // couleur finale = mapColor(couleur d'origine)
     this.dirty = null;
     this.footprint = this._footprint();
   }
@@ -60,8 +64,13 @@ export class Painter {
     } else if (x < 0 || y < 0 || x >= this.w || y >= this.h) return;
     const i = y * this.w + x;
     if (this.mask && !this.mask[i]) return;
+    const orig = this.before ? this.before[i] : this.target[i];
+    if (this.onlyColor !== null && orig !== this.onlyColor) return;
     let c;
-    if (this.dither) {
+    if (this.mapColor) {
+      c = this.mapColor(orig);
+      if (c === null || c === undefined) return;
+    } else if (this.dither) {
       if (this.dither(x, y)) c = this.erase ? 0 : this.color;
       else {
         if (this.color2 === null) return;
@@ -73,16 +82,37 @@ export class Painter {
     this.touch(x, y);
   }
 
-  /** Pixel + copies symétriques. */
-  plot(x, y) {
-    this.put(x, y);
+  /** Appelle fn pour le pixel et ses copies symétriques. */
+  forSym(x, y, fn) {
+    fn(x, y);
     const s = this.symmetry;
     if (s === 'none') return;
     const mx = Math.floor(2 * this.symX) - 1 - x;
     const my = Math.floor(2 * this.symY) - 1 - y;
-    if (s === 'v' || s === 'both') this.put(mx, y);
-    if (s === 'h' || s === 'both') this.put(x, my);
-    if (s === 'both') this.put(mx, my);
+    if (s === 'v' || s === 'both') fn(mx, y);
+    if (s === 'h' || s === 'both') fn(x, my);
+    if (s === 'both') fn(mx, my);
+  }
+
+  /** Pixel + copies symétriques. */
+  plot(x, y) {
+    this.forSym(x, y, (a, b) => this.put(a, b));
+  }
+
+  /** Rétablit la couleur d'origine (pixel perfect). */
+  restore(x, y) {
+    if (!this.before) return;
+    this.forSym(x, y, (a, b) => {
+      if (this.wrap) {
+        a = ((a % this.w) + this.w) % this.w;
+        b = ((b % this.h) + this.h) % this.h;
+      } else if (a < 0 || b < 0 || a >= this.w || b >= this.h) return;
+      const i = b * this.w + a;
+      if (this.target[i] !== this.before[i]) {
+        this.target[i] = this.before[i];
+        this.touch(a, b);
+      }
+    });
   }
 
   dab(x, y) {

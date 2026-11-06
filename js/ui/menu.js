@@ -27,6 +27,8 @@ export function openMainMenu(app, anchor) {
     { label: 'Rotation 90° horaire', icon: 'rotate', action: () => img.rotateDoc(app, 1) },
     { label: 'Rotation 90° antihoraire', icon: 'rotate', action: () => img.rotateDoc(app, -1) },
     { label: 'Remplacer une couleur…', icon: 'swap', action: A.replaceColorDialog },
+    { label: 'Contour automatique…', icon: 'outline', action: A.outlineDialog },
+    { label: 'Rotation libre / échelle de la sélection', icon: 'transform', hint: 'Ctrl+T', action: A.startTransform },
     { heading: 'Personnage' },
     { label: 'Bibliothèque de pièces…', icon: 'book', action: () => A.openLibrary() },
     { label: 'Recolorer le personnage…', icon: 'palette', action: A.recolor },
