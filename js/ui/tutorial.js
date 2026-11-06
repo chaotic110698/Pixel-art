@@ -8,8 +8,8 @@ const STEPS = [
   { emoji: '✏️', title: 'Les outils', sel: '#toolbar', text: 'Crayon, gomme, remplissage, formes, sélections… Sur ordinateur, chaque outil a une touche (B, E, G, I…). Appuyez sur ? pour voir tous les raccourcis.' },
   { emoji: '🖐️', title: 'Naviguer', sel: '#stage', text: 'Sur téléphone : 1 doigt dessine, 2 doigts zooment et déplacent, une tape à 2 doigts annule. Sur ordinateur : molette pour zoomer, espace + glisser pour déplacer.' },
   { emoji: '🎨', title: 'Couleurs et calques', sel: '#sidebar', mobileSel: '#mobilenav', text: 'Choisissez vos couleurs dans la palette (clic = couleur A, clic droit ou appui long = couleur B). Organisez votre dessin en calques, groupes et variantes.' },
-  { emoji: '🧑‍🎤', title: 'Créer un PNGtuber', sel: '#btn-library', text: '« Nouveau personnage » (menu ☰) crée une base avec yeux et bouche déjà organisés en variantes. La bibliothèque ajoute coiffures, accessoires, vêtements… Tout reste modifiable pixel par pixel.' },
-  { emoji: '📺', title: 'Tester et exporter', sel: '#btn-pngtuber', text: 'Le mode PNGtuber anime la bouche avec votre micro (traité localement) et fait cligner les yeux. Exportez ensuite en PNG : image, calque par calque, variantes, expressions… avec un fichier manifest.json.' },
+  { emoji: '🧑‍🎤', title: 'Créer un PNGtuber', sel: '#btn-library', mobileSel: '#mobilenav', text: '« Nouveau personnage » (menu ☰) crée une base avec yeux et bouche déjà organisés en variantes. La bibliothèque (bouton « Pièces » sur téléphone) ajoute coiffures, accessoires, vêtements… Tout reste modifiable pixel par pixel.' },
+  { emoji: '📺', title: 'Tester et exporter', sel: '#btn-pngtuber', mobileSel: '#mobilenav', text: 'Le mode PNGtuber anime la bouche avec votre micro (traité localement) et fait cligner les yeux. Exportez ensuite en PNG : image, calque par calque, variantes, expressions… avec un fichier manifest.json.' },
   { emoji: '💾', title: 'Sauvegarde automatique', sel: '#btn-menu', text: 'Vos projets sont enregistrés automatiquement dans le navigateur. Le menu ☰ donne accès à vos projets, à l\'export et à l\'aide. Bon dessin !' },
 ];
 

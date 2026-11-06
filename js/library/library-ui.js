@@ -11,6 +11,7 @@ import { db } from '../storage/db.js';
 import { pixelsToCanvas } from '../render/compose.js';
 import { uid } from '../core/doc.js';
 import { normHex } from '../util/color.js';
+import { resizeCanvas } from '../core/image-ops.js';
 
 const COLOR_FIELDS = [
   ['skin', 'Peau'],
@@ -117,7 +118,7 @@ export function openLibrary(app, initialCat = null) {
   const tabs = h('div', { class: 'tabs-row' });
   const colorsBox = h('div');
   const warn = doc.width < TEMPLATE || doc.height < TEMPLATE
-    ? h('p', { class: 'hint', style: { color: 'var(--danger)' } }, `Les pièces sont prévues pour un canevas d'au moins 64×64 px (actuel : ${doc.width}×${doc.height}). Elles seront rognées. Astuce : « Nouveau personnage » crée un canevas adapté.`)
+    ? h('p', { class: 'hint', style: { color: 'var(--accent)' } }, `Les pièces sont prévues pour un canevas d'au moins 64×64 px (actuel : ${doc.width}×${doc.height}) : il sera agrandi automatiquement à la première pièce ajoutée (annulable). Astuce : « Nouveau personnage » crée directement un personnage complet.`)
     : null;
 
   function renderColors() {
@@ -141,13 +142,27 @@ export function openLibrary(app, initialCat = null) {
 
   const insert = (piece) => {
     app.selection.commitFloating();
+    const d0 = app.doc;
+    if (d0.width < TEMPLATE || d0.height < TEMPLATE) {
+      // les pièces sont dessinées sur un gabarit 64×64 : on agrandit le canevas (ancré en bas)
+      resizeCanvas(app, Math.max(d0.width, TEMPLATE), Math.max(d0.height, TEMPLATE), 'b');
+      warn?.remove();
+      app.toast(`Canevas agrandi à ${app.doc.width}×${app.doc.height} pour accueillir les pièces`, 2600);
+    }
+    let addedBase = false;
     const node = app.history.transact(`Ajouter « ${piece.name} »`, () => {
+      // sans tête ni corps, une coiffure ou des yeux « flottent » : on ajoute une base
+      const has = (cat) => [...app.doc.nodes.values()].some((n) => n.part?.category === cat);
+      if (!['body', 'head'].includes(piece.category)) {
+        if (!has('body')) { insertPiece(app.doc, pieceById('body-moyen'), { colors }); addedBase = true; }
+        if (!has('head') && piece.category !== 'top') { insertPiece(app.doc, pieceById('head-round'), { colors }); addedBase = true; }
+      }
       const n = insertPiece(app.doc, piece, { colors, replace: replace && (CATEGORIES.find((c) => c.id === piece.category)?.exclusive || piece.exclusiveKey) });
       if (n) app.doc.activeId = n.type === 'group' ? n.children[n.children.length - 1] : n.id;
       autoPngtuber(app.doc);
       return n;
     });
-    app.toast(node ? `« ${piece.name} » ajouté` : `« ${piece.name} » : pièce retirée`);
+    app.toast(node ? `« ${piece.name} » ajouté${addedBase ? ' (avec une tête et un corps de base)' : ''}` : `« ${piece.name} » : pièce retirée`, addedBase ? 2800 : 1800);
   };
 
   async function renderGrid() {
@@ -291,7 +306,7 @@ export function openNewCharacter(app) {
   openDialog({
     title: 'Nouveau personnage',
     wide: true,
-    body: h('div', { class: 'fields', style: { gridTemplateColumns: 'auto minmax(0, 1fr)', gap: '16px', alignItems: 'start' } },
+    body: h('div', { class: 'fields newchar-grid' },
       h('div', { style: { display: 'grid', gap: '8px', justifyItems: 'center' } }, preview,
         h('button', { class: 'btn small', onclick: randomize }, '🎲 Au hasard'),
         h('p', { class: 'hint', style: { maxWidth: '200px' } }, 'Les yeux, la bouche et les sourcils sont créés en groupes de variantes, avec des expressions prêtes (Neutre, Parle, Content…).')),

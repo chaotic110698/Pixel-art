@@ -77,7 +77,11 @@ export class Input {
     const app = this.app;
     this.canvas.setPointerCapture?.(e.pointerId);
     e.preventDefault();
-    app.closeTransient?.();
+    if (app.closeTransient?.() && e.pointerType === 'touch') {
+      // ce toucher sert seulement à fermer le tiroir : pas de pixel parasite
+      this.ignoreId = e.pointerId;
+      return;
+    }
     const info = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t: performance.now(), type: e.pointerType };
     this.pointers.set(e.pointerId, info);
 
@@ -118,6 +122,7 @@ export class Input {
 
   onMove(e) {
     const app = this.app;
+    if (this.ignoreId === e.pointerId) return;
     const info = this.pointers.get(e.pointerId);
     if (info) {
       info.x = e.clientX;
@@ -154,6 +159,11 @@ export class Input {
 
   onUp(e, cancelled = false) {
     const app = this.app;
+    if (this.ignoreId === e.pointerId) {
+      this.ignoreId = null;
+      this.pointers.delete(e.pointerId);
+      return;
+    }
     const info = this.pointers.get(e.pointerId);
     this.pointers.delete(e.pointerId);
     if (this.gesture) {

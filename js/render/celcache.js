@@ -3,8 +3,17 @@
 
 const cache = new WeakMap();
 
+// Safari 16.0–16.3 expose OffscreenCanvas sans contexte 2D : on teste réellement.
+const OFFSCREEN_OK = (() => {
+  try {
+    return typeof OffscreenCanvas !== 'undefined' && !!new OffscreenCanvas(1, 1).getContext('2d');
+  } catch (_) {
+    return false;
+  }
+})();
+
 function makeCanvas(w, h) {
-  if (typeof OffscreenCanvas !== 'undefined') {
+  if (OFFSCREEN_OK) {
     try {
       return new OffscreenCanvas(w, h);
     } catch (_) { /* repli */ }

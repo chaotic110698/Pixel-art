@@ -82,9 +82,13 @@ export function recordToDoc(r) {
 // ---------- Fichier .json ----------
 async function deflate(bytes) {
   if (typeof CompressionStream === 'undefined') return null;
-  const cs = new CompressionStream('deflate-raw');
-  const out = new Response(new Blob([bytes]).stream().pipeThrough(cs));
-  return new Uint8Array(await out.arrayBuffer());
+  try {
+    const cs = new CompressionStream('deflate-raw');
+    const out = new Response(new Blob([bytes]).stream().pipeThrough(cs));
+    return new Uint8Array(await out.arrayBuffer());
+  } catch (_) {
+    return null; // navigateur sans « deflate-raw » : on enregistre sans compression
+  }
 }
 
 async function inflate(bytes) {
@@ -97,12 +101,17 @@ export async function docToFileJSON(doc) {
   const rec = docToRecord(doc);
   const enc = {};
   let compression = 'deflate-raw';
-  for (const [k, cel] of Object.entries(rec.cels)) {
-    const bytes = new Uint8Array(cel.buffer, cel.byteOffset, cel.byteLength);
-    const z = await deflate(bytes);
-    if (!z) compression = 'none';
-    enc[k] = bytesToBase64(z || bytes);
+  const entries = Object.entries(rec.cels);
+  // tout compressé ou rien : le format n'a qu'un seul indicateur de compression
+  const zipped = [];
+  for (const [, cel] of entries) {
+    const z = await deflate(new Uint8Array(cel.buffer, cel.byteOffset, cel.byteLength));
+    if (!z) { compression = 'none'; break; }
+    zipped.push(z);
   }
+  entries.forEach(([k, cel], i) => {
+    enc[k] = bytesToBase64(compression === 'none' ? new Uint8Array(cel.buffer, cel.byteOffset, cel.byteLength) : zipped[i]);
+  });
   rec.cels = enc;
   rec.compression = compression;
   rec.app = 'Pixel Atelier';

@@ -47,7 +47,7 @@
 | Tab | Variante suivante | T | Mode tuiles |
 | Ctrl+S | Enregistrer | ? | Tous les raccourcis |
 
-**Tactile** : 1 doigt pour dessiner, 2 doigts pour zoomer ou déplacer, tape à 2 doigts pour annuler, tape à 3 doigts pour rétablir, appui long sur une couleur pour la choisir comme couleur B.
+**Tactile** : la barre du bas donne accès aux couleurs, calques, expressions, à la bibliothèque (« Pièces ») et au mode PNGtuber. 1 doigt pour dessiner, 2 doigts pour zoomer ou déplacer, tape à 2 doigts pour annuler, tape à 3 doigts pour rétablir, appui long sur une couleur pour la choisir comme couleur B.
 
 ## Lancer en local
 

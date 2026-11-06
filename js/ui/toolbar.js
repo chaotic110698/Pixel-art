@@ -54,8 +54,12 @@ export function initToolbar(app, { openColorEditor }) {
     refresh();
     renderOptions(app);
   });
-  app.on('state', () => {
+  // clés d'état qui n'affectent pas la barre d'options (évite de la reconstruire à chaque trait)
+  const IGNORED = new Set(['primary', 'secondary', 'recent', 'charColors', 'libraryCat', 'exportScale', 'exportCrop', 'exportIncludeProject', 'lastExportKind', 'tutorialDone', 'lastPalette', 'theme', 'showMinimap', 'showVariantBar', 'showPixelGrid', 'wheelPans', 'onion']);
+  app.on('state', (patch) => {
     refresh();
+    if (patch && Object.keys(patch).length && Object.keys(patch).every((k) => IGNORED.has(k))) return;
+    if (!patch) return; // changement de couleur ou de couleurs récentes
     renderOptions(app);
   });
   app.on('color', refresh);
@@ -110,6 +114,8 @@ export function renderOptions(app) {
   const st = app.state;
   const t = app.tools.current;
   const set = (patch) => app.setState(patch);
+  const scroll = bar.scrollLeft;
+  requestAnimationFrame(() => { bar.scrollLeft = scroll; });
   clear(bar);
   bar.append(h('span', { class: 'opt-title' }, t.name));
   const paint = ['pencil', 'eraser', 'line', 'rect', 'ellipse'].includes(t.id);
@@ -127,7 +133,7 @@ export function renderOptions(app) {
     bar.append(seg([[true, 'Contigu'], [false, 'Global']], st.fillContiguous, (v) => set({ fillContiguous: v })));
     bar.append(check('Tous les calques', st.fillSampleAll, (v) => set({ fillSampleAll: v }), 'Délimiter selon l\'image visible'));
     bar.append(h('span', { class: 'opt-group' }, h('span', { class: 'lbl' }, 'Tolérance'),
-      h('input', { type: 'range', min: 0, max: 100, value: st.fillTolerance, oninput: (e) => { st.fillTolerance = +e.target.value; }, onchange: () => set({}) })));
+      h('input', { type: 'range', min: 0, max: 100, value: st.fillTolerance, onchange: (e) => set({ fillTolerance: +e.target.value }) })));
   }
   if (t.id === 'picker') {
     bar.append(seg([[true, 'Image'], [false, 'Calque actif']], st.pickerSampleAll, (v) => set({ pickerSampleAll: v })));

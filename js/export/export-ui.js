@@ -63,7 +63,7 @@ export function openExportDialog(app, preset = null) {
   function renderOpts() {
     const zipKind = EXPORT_KINDS.find((k) => k.id === kind).zip;
     const anim = ['gif', 'sheet', 'frames'].includes(kind);
-    opts.replaceChildren(
+    opts.replaceChildren(...[
       h('div', { class: 'row' }, h('span', {}, 'Échelle'), scaleSel, scaleCustom, sizeLbl),
       h('p', { class: 'hint' }, 'Agrandissement au plus proche voisin : jamais de flou. La transparence est toujours conservée.'),
       h('label', { class: 'field' }, h('span', {}, 'Recadrage'), cropSel),
@@ -71,7 +71,8 @@ export function openExportDialog(app, preset = null) {
       zipKind ? h('label', { class: 'chk' }, projChk, 'Inclure le fichier projet (.pxa.json) dans le ZIP') : null,
       kind === 'sheet' ? h('div', { class: 'row' }, h('span', {}, 'Colonnes'), colsIn, h('span', {}, 'Espacement (px)'), spIn, h('label', { class: 'chk' }, jsonChk, 'Avec fichier JSON')) : null,
       anim && doc.frames.length < 2 ? h('p', { class: 'hint' }, 'Astuce : ajoutez des images dans la timeline (menu ☰ > Animation).') : null,
-      zipKind ? h('p', { class: 'hint' }, 'Le ZIP contient un manifest.json décrivant calques, groupes, variantes et expressions.') : null);
+      zipKind ? h('p', { class: 'hint' }, 'Le ZIP contient un manifest.json décrivant calques, groupes, variantes et expressions.') : null,
+    ].filter(Boolean));
     updateSize();
   }
   renderList();
@@ -81,7 +82,7 @@ export function openExportDialog(app, preset = null) {
   const d = openDialog({
     title: 'Exporter',
     wide: true,
-    body: h('div', { class: 'fields', style: { gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', alignItems: 'start' } },
+    body: h('div', { class: 'fields export-grid' },
       h('div', {}, list), h('div', {}, h('h3', { style: { marginTop: 0 } }, 'Options'), opts, status)),
     buttons: [
       { label: 'Fermer', value: null },

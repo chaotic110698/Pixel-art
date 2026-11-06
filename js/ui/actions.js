@@ -267,16 +267,27 @@ export function createActions(app) {
   };
 
   // ---------- Modules chargés à la demande ----------
-  A.exportDialog = async (preset) => (await import('../export/export-ui.js')).openExportDialog(app, preset);
-  A.openLibrary = async (cat) => (await import('../library/library-ui.js')).openLibrary(app, cat);
-  A.newCharacter = async () => (await import('../library/library-ui.js')).openNewCharacter(app);
-  A.saveToLibrary = async () => (await import('../library/library-ui.js')).saveActiveToLibrary(app);
-  A.recolor = async () => (await import('../library/library-ui.js')).openRecolor(app);
-  A.openPngtuber = async () => (await import('../pngtuber/pngtuber.js')).openPngtuber(app);
-  A.openProjects = async () => (await import('../storage/projects-ui.js')).openProjects(app);
-  A.saveProjectFile = async () => (await import('../storage/project-file.js')).downloadProject(app);
-  A.openProjectFile = async () => (await import('../storage/project-file.js')).openProjectFile(app);
-  A.toggleAnimation = async () => (await import('./timeline.js')).toggleTimeline(app);
+  // En cas d'échec (réseau, ancienne version en cache…), on prévient l'utilisateur
+  // au lieu d'échouer en silence.
+  const lazy = (label, load) => async (...args) => {
+    try {
+      return await load(...args);
+    } catch (err) {
+      console.error(`[${label}]`, err);
+      app.toast(`Impossible d'ouvrir « ${label} » : ${err?.message || err}. Rechargez la page.`, 5000);
+      return undefined;
+    }
+  };
+  A.exportDialog = lazy('Exporter', async (preset) => (await import('../export/export-ui.js')).openExportDialog(app, preset));
+  A.openLibrary = lazy('Bibliothèque', async (cat) => (await import('../library/library-ui.js')).openLibrary(app, cat));
+  A.newCharacter = lazy('Nouveau personnage', async () => (await import('../library/library-ui.js')).openNewCharacter(app));
+  A.saveToLibrary = lazy('Ma bibliothèque', async () => (await import('../library/library-ui.js')).saveActiveToLibrary(app));
+  A.recolor = lazy('Recolorer', async () => (await import('../library/library-ui.js')).openRecolor(app));
+  A.openPngtuber = lazy('Mode PNGtuber', async () => (await import('../pngtuber/pngtuber.js')).openPngtuber(app));
+  A.openProjects = lazy('Mes projets', async () => (await import('../storage/projects-ui.js')).openProjects(app));
+  A.saveProjectFile = lazy('Fichier projet', async () => (await import('../storage/project-file.js')).downloadProject(app));
+  A.openProjectFile = lazy('Fichier projet', async () => (await import('../storage/project-file.js')).openProjectFile(app));
+  A.toggleAnimation = lazy('Animation', async () => (await import('./timeline.js')).toggleTimeline(app));
 
   A.confirmDiscard = (msg) => confirmDialog(msg, { danger: true, ok: 'Continuer' });
   A.u32ToHex = u32ToHex;

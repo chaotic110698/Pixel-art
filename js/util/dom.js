@@ -71,7 +71,7 @@ export function downloadBlob(blob, filename) {
 
 export function pickFile(accept, multiple = false) {
   return new Promise((resolve) => {
-    const input = h('input', { type: 'file', accept, multiple, style: { display: 'none' } });
+    const input = h('input', { type: 'file', accept, multiple, style: { position: 'fixed', left: '-1000px', top: '0', opacity: '0', width: '1px', height: '1px' } });
     input.addEventListener('change', () => {
       resolve(multiple ? [...input.files] : input.files[0] || null);
       input.remove();

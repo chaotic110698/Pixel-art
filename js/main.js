@@ -120,12 +120,12 @@ function setupPanels() {
     ['colors', 'Couleurs', chip],
     ['layers', 'Calques', icon('layers')],
     ['expressions', 'Expressions', icon('face')],
-    ['grid', 'Grille', icon('grid')],
   ];
   for (const [id, label, ic] of navDefs) {
     nav.append(h('button', { dataset: { tab: id }, 'aria-label': label, onclick: () => toggleDrawer(id) }, ic, label));
   }
-  nav.append(h('button', { 'aria-label': 'Exporter', onclick: () => app.actions.exportDialog() }, icon('download'), 'Exporter'));
+  nav.append(h('button', { 'aria-label': 'Bibliothèque de pièces', onclick: () => { closeDrawer(); app.actions.openLibrary(); } }, icon('book'), 'Pièces'));
+  nav.append(h('button', { 'aria-label': 'Mode PNGtuber', onclick: () => { closeDrawer(); app.actions.openPngtuber(); } }, icon('tv'), 'PNGtuber'));
   const syncChip = () => (chip.style.background = app.state.primary);
   app.on('color', syncChip);
   syncChip();
@@ -145,7 +145,9 @@ function setupPanels() {
   }
   app.closeDrawer = closeDrawer;
   app.closeTransient = () => {
-    if (mobile()) closeDrawer();
+    if (!mobile() || !sidebar.classList.contains('open')) return false;
+    closeDrawer();
+    return true;
   };
   // glisser la poignée vers le bas pour fermer
   const handle = sidebar.querySelector('.drawer-handle');
@@ -249,7 +251,23 @@ function setupGlobalToggles() {
   app.startTutorial = () => startTutorial(app);
 }
 
+function setupErrorReporting() {
+  // Sur mobile il n'y a pas de console : on affiche les erreurs inattendues.
+  let last = 0;
+  const report = (msg) => {
+    const now = Date.now();
+    if (now - last < 3000) return;
+    last = now;
+    toast(`Erreur : ${msg}`, 5000);
+  };
+  window.addEventListener('error', (e) => report(e.message || 'inconnue'));
+  window.addEventListener('unhandledrejection', (e) => report(e.reason?.message || String(e.reason)));
+  // iOS : empêcher le zoom de la page entière par pincement (le canevas gère son propre zoom)
+  for (const ev of ['gesturestart', 'gesturechange']) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
+}
+
 async function boot() {
+  setupErrorReporting();
   setupTheme();
   app.on('toast', (m, ms) => toast(m, ms));
   app.actions = createActions(app);
@@ -257,7 +275,7 @@ async function boot() {
   app.init(canvas);
 
   // document de départ (remplacé par le dernier projet si disponible)
-  const doc = new Doc(32, 32, 'Sans titre');
+  const doc = new Doc(64, 64, 'Sans titre');
   doc.palette = app.doc.palette;
   const l = doc.createLayer('Calque 1');
   doc.insert(l, 'root');
@@ -301,7 +319,14 @@ async function boot() {
 
   // PWA
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('./sw.js').catch((e) => console.warn('SW', e));
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('./sw.js').then((reg) => reg.update()).catch((e) => console.warn('SW', e));
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      // nouvelle version installée : le projet est sauvegardé puis la page rechargée
+      if (!hadController) return;
+      app.toast('Nouvelle version installée : rechargement…', 2500);
+      Promise.resolve(app.storage?.saveNow()).finally(() => setTimeout(() => location.reload(), 1200));
+    });
   }
 
   if (!app.state.tutorialDone) setTimeout(() => startTutorial(app), 400);

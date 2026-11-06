@@ -141,6 +141,11 @@ export function popupMenu(anchor, items, { align = 'left' } = {}) {
     document.addEventListener('pointerdown', onDocDown, true);
   }, 0);
   function onDocDown(e) {
+    if (!menu.isConnected) {
+      // menu retiré autrement : on se contente de nettoyer l'écouteur
+      document.removeEventListener('pointerdown', onDocDown, true);
+      return;
+    }
     if (!menu.contains(e.target)) closePopups();
   }
   menu._cleanup = () => document.removeEventListener('pointerdown', onDocDown, true);

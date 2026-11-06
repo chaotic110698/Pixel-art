@@ -151,6 +151,7 @@ export function openPngtuber(app) {
     try {
       state.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
       state.audio = new (window.AudioContext || window.webkitAudioContext)();
+      if (state.audio.state === 'suspended') await state.audio.resume().catch(() => {});
       const src = state.audio.createMediaStreamSource(state.stream);
       state.analyser = state.audio.createAnalyser();
       state.analyser.fftSize = 1024;
