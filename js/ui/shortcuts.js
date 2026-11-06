@@ -62,6 +62,11 @@ export function initShortcuts(app) {
   });
 
   window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && (anyDialogOpen() || document.querySelector('.popup-menu'))) {
+      closePopups();
+      closeTopDialog();
+      return;
+    }
     if (isTyping(e)) return;
     if (app.pngtuberOpen) return; // le mode PNGtuber gère ses propres touches
     const ctrl = e.ctrlKey || e.metaKey;

@@ -290,6 +290,7 @@ export class Doc {
       frames: this.frames.map((f) => ({ ...f })),
       frame: this.frame,
       expressions: JSON.parse(JSON.stringify(this.expressions)),
+      charColors: this.charColors ? { ...this.charColors } : null,
     };
   }
 
@@ -309,6 +310,7 @@ export class Doc {
     this.frames = s.frames.map((f) => ({ ...f }));
     this.frame = Math.min(s.frame, this.frames.length - 1);
     this.expressions = JSON.parse(JSON.stringify(s.expressions));
+    this.charColors = s.charColors ? { ...s.charColors } : null;
   }
 
   /** Premier calque éditable trouvé (pour définir un calque actif par défaut). */

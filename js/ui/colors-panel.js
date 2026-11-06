@@ -173,7 +173,7 @@ export function initColorsPanel(app) {
     for (const hex of app.state.recent) {
       recentGrid.append(swatch(hex, { onPick: () => app.setColor('primary', hex), onAlt: () => app.setColor('secondary', hex) }));
     }
-    if (!app.state.recent.length) recentGrid.append(h('span', { class: 'hint' }, 'Les couleurs utilisées apparaîtront ici.'));
+    if (!app.state.recent.length) recentGrid.append(h('span', { class: 'hint', style: { gridColumn: '1 / -1' } }, 'Les couleurs utilisées apparaîtront ici.'));
   }
 
   function setPalette(colors, label = 'Palette modifiée') {

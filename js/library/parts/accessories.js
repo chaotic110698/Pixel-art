@@ -1,0 +1,257 @@
+// Accessoires : lunettes, chapeaux, oreilles d'animaux, boucles d'oreilles, détails du visage.
+
+import { G, Z, pair, place } from '../builder.js';
+
+const CX = 31.5;
+
+function ring(g, cx, cy, rx, ry, role) {
+  const inner = G().ell(cx, cy, rx - 1, ry - 1, 'x');
+  const outer = G().ell(cx, cy, rx, ry, role).subtract(inner);
+  return g.stamp(outer, 0, 0);
+}
+
+const ITEMS = [
+  // ----- lunettes -----
+  {
+    id: 'glasses-round', name: 'Lunettes rondes', sub: 'glasses', z: Z.glasses,
+    draw: () => {
+      const g = G();
+      g.ell(26.5, 25.5, 4, 4, 'g');
+      g.ell(37.5, 25.5, 4, 4, 'g');
+      ring(g, 26.5, 25.5, 4, 4, 'p');
+      ring(g, 37.5, 25.5, 4, 4, 'p');
+      g.line(30, 24, 33, 24, 'p');
+      g.line(18, 24, 22, 24, 'p');
+      g.line(41, 24, 45, 24, 'p');
+      return g;
+    },
+  },
+  {
+    id: 'glasses-square', name: 'Lunettes carrées', sub: 'glasses', z: Z.glasses,
+    draw: () => {
+      const g = G();
+      g.rect(22, 22, 29, 28, 'p').rect(34, 22, 41, 28, 'p');
+      g.rect(23, 23, 28, 27, 'g').rect(35, 23, 40, 27, 'g');
+      g.line(30, 23, 33, 23, 'p');
+      g.line(18, 23, 21, 23, 'p').line(42, 23, 45, 23, 'p');
+      return g;
+    },
+  },
+  {
+    id: 'sunglasses', name: 'Lunettes de soleil', sub: 'glasses', z: Z.glasses,
+    draw: () => {
+      const g = G();
+      g.rect(21, 22, 29, 23, 'p').rect(34, 22, 42, 23, 'p');
+      g.ell(25.5, 24.5, 4.5, 3.5, 'p').ell(38.5, 24.5, 4.5, 3.5, 'p');
+      g.clear((x, y) => y < 22);
+      g.line(30, 23, 33, 23, 'p');
+      g.line(18, 23, 21, 23, 'p').line(42, 23, 45, 23, 'p');
+      g.px(23, 24, 'l').px(24, 24, 'l').px(36, 24, 'l').px(37, 24, 'l');
+      return g;
+    },
+  },
+  // ----- chapeaux -----
+  {
+    id: 'beanie', name: 'Bonnet', sub: 'hat', z: Z.hat,
+    draw: () => {
+      const g = G();
+      g.ell(CX, 17, 15, 11, 'a').clear((x, y) => y > 17);
+      g.rect(16, 14, 47, 19, 'A');
+      for (let x = 17; x <= 46; x += 2) g.line(x, 15, x, 18, 'a');
+      g.ell(CX, 4.5, 3.5, 3, 'a');
+      g.shade('a', 'A', 1, 1, 1);
+      g.outline('y');
+      return g;
+    },
+  },
+  {
+    id: 'cap', name: 'Casquette', sub: 'hat', z: Z.hat,
+    draw: () => {
+      const g = G();
+      g.ell(CX, 16, 14, 10, 'a').clear((x, y) => y > 16);
+      g.poly([[30, 14], [55, 15], [55, 18], [30, 18]], 'A');
+      g.px(CX, 6, 'A');
+      g.line(31, 7, 31, 15, 'A');
+      g.shade('a', 'A', 1, 1, 1);
+      g.outline('y');
+      return g;
+    },
+  },
+  {
+    id: 'witch', name: 'Chapeau pointu', sub: 'hat', z: Z.hat,
+    draw: () => {
+      const g = G();
+      g.poly([[19, 15], [44, 15], [36, 0], [41, -2]], 'a');
+      g.ell(CX, 15.5, 20, 3, 'a');
+      g.rect(20, 12, 43, 14, 'c');
+      g.shade('a', 'A', 1, 1, 1);
+      g.outline('y');
+      return g;
+    },
+  },
+  {
+    id: 'tophat', name: 'Haut-de-forme', sub: 'hat', z: Z.hat,
+    draw: () => {
+      const g = G();
+      g.rect(22, 0, 41, 13, 'p');
+      g.rect(22, 10, 41, 12, 'a');
+      g.ell(CX, 14.5, 17, 2.5, 'p');
+      g.outline('y');
+      return g;
+    },
+  },
+  {
+    id: 'crown', name: 'Couronne', sub: 'hat', z: Z.hat,
+    draw: () => {
+      const g = G();
+      g.rect(22, 7, 41, 12, 'a');
+      for (const x of [22, 27, 31.5, 36, 41]) g.poly([[x - 2.5, 8], [x + 2.5, 8], [x, 1.5]], 'a');
+      g.px(26, 9, 'e').px(31, 9, 'r').px(32, 9, 'r').px(37, 9, 'e');
+      g.shade('a', 'A', 1, 1, 1);
+      g.outline('y');
+      return g;
+    },
+  },
+  {
+    id: 'bow', name: 'Nœud', sub: 'hat', z: Z.hat,
+    draw: () => {
+      const g = G();
+      g.poly([[36, 8], [43, 3], [44, 13]], 'a');
+      g.poly([[36, 8], [29, 3], [28, 13]], 'a');
+      g.ell(36, 8, 2, 2, 'A');
+      g.outline('y');
+      return g;
+    },
+  },
+  {
+    id: 'headband', name: 'Bandeau', sub: 'hat', z: Z.hat,
+    draw: () => {
+      const g = G();
+      g.ell(CX, 21, 14.5, 12.5, 'a');
+      g.clear((x, y) => y < 12 || y > 13);
+      g.outline('y');
+      return g;
+    },
+  },
+  // ----- oreilles -----
+  {
+    id: 'ears-cat', name: 'Oreilles de chat', sub: 'animalEars', z: Z.animalEars,
+    draw: () => {
+      const g = G();
+      g.poly([[18, 15], [20, 1], [30, 9]], 'h');
+      g.poly([[21, 12], [21.5, 5], [26, 10]], 'r');
+      g.mirror();
+      g.outline('q');
+      return g;
+    },
+  },
+  {
+    id: 'ears-fox', name: 'Oreilles de renard', sub: 'animalEars', z: Z.animalEars,
+    draw: () => {
+      const g = G();
+      g.poly([[16, 16], [15, -1], [29, 9]], 'h');
+      g.poly([[18, 12], [17.5, 4], [24, 10]], 'w');
+      g.mirror();
+      g.outline('q');
+      return g;
+    },
+  },
+  {
+    id: 'ears-bunny', name: 'Oreilles de lapin', sub: 'animalEars', z: Z.animalEars,
+    draw: () => {
+      const g = G();
+      g.ell(25, 3, 3.5, 10, 'h');
+      g.ell(25, 4, 1.5, 7, 'r');
+      g.clear((x, y) => y > 11);
+      g.mirror();
+      g.outline('q');
+      return g;
+    },
+  },
+  {
+    id: 'ears-bear', name: 'Oreilles d\'ours', sub: 'animalEars', z: Z.animalEars,
+    draw: () => {
+      const g = G();
+      g.ell(20.5, 10.5, 5, 5, 'h');
+      g.ell(20.5, 10.5, 2.5, 2.5, 'H');
+      g.mirror();
+      g.outline('q');
+      return g;
+    },
+  },
+  {
+    id: 'horns', name: 'Petites cornes', sub: 'animalEars', z: Z.animalEars,
+    draw: () => {
+      const g = G();
+      g.poly([[21, 13], [26, 11], [19, 2]], 'a');
+      g.mirror();
+      g.shade('a', 'A', 1, 0, 1);
+      g.outline('y');
+      return g;
+    },
+  },
+  // ----- boucles d'oreilles -----
+  {
+    id: 'earrings-hoop', name: 'Anneaux', sub: 'earrings', z: Z.earrings,
+    draw: () => {
+      const g = G();
+      ring(g, 19.5, 32.5, 2.5, 2.5, 'a');
+      ring(g, 44.5, 32.5, 2.5, 2.5, 'a');
+      return g;
+    },
+  },
+  {
+    id: 'earrings-pearl', name: 'Perles', sub: 'earrings', z: Z.earrings,
+    draw: () => {
+      const g = G();
+      g.rect(18, 30, 19, 31, 'w').rect(44, 30, 45, 31, 'w');
+      g.px(18, 30, 'l').px(44, 30, 'l');
+      g.outline('y');
+      return g;
+    },
+  },
+  {
+    id: 'earrings-star', name: 'Étoiles', sub: 'earrings', z: Z.earrings,
+    draw: () => {
+      const star = ['.a.', 'aaa', '.a.'];
+      const g = G();
+      g.stamp(place(star, 18, 31), 0, 0).stamp(place(star, 43, 31), 0, 0);
+      g.line(19, 30, 19, 30, 'y').line(44, 30, 44, 30, 'y');
+      return g;
+    },
+  },
+  // ----- détails du visage -----
+  {
+    id: 'blush', name: 'Joues roses', sub: 'blush', z: Z.blush,
+    draw: () => pair(['rrr'], 23, 29, { flip: true }),
+  },
+  {
+    id: 'freckles', name: 'Taches de rousseur', sub: 'blush', z: Z.blush,
+    draw: () => pair(['S.S', '.S.'], 23, 29, { flip: true }),
+  },
+  {
+    id: 'mole', name: 'Grain de beauté', sub: 'blush', z: Z.blush,
+    draw: () => place(['k'], 37, 33),
+  },
+  {
+    id: 'bandaid', name: 'Pansement', sub: 'blush', z: Z.blush,
+    draw: () => place(['.ww', 'wSw', 'ww.'], 36, 29),
+  },
+];
+
+export const ACCESSORY_SUBS = {
+  glasses: 'Lunettes',
+  hat: 'Chapeaux',
+  animalEars: 'Oreilles',
+  earrings: 'Boucles d\'oreilles',
+  blush: 'Détails du visage',
+};
+
+export default ITEMS.map((it) => ({
+  id: `acc-${it.id}`,
+  name: it.name,
+  category: 'accessory',
+  sub: it.sub,
+  exclusiveKey: it.sub === 'blush' ? null : it.sub,
+  build: () => [{ name: it.name, z: it.z, grid: it.draw() }],
+}));

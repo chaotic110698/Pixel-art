@@ -39,7 +39,7 @@ export function openDialog({ title, body, buttons = [], wide = false, full = fal
   stack.push(entry);
   requestAnimationFrame(() => {
     backdrop.classList.add('show');
-    const f = box.querySelector('[autofocus]') || box.querySelector('input, select, textarea');
+    const f = box.querySelector('[autofocus]') || box.querySelector('input[type=text], textarea');
     if (f && window.matchMedia('(pointer: fine)').matches) f.focus();
   });
   function close(v) {
