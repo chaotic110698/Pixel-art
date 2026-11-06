@@ -19,6 +19,23 @@ export async function makeThumb(doc, size = 128) {
   return new Promise((r) => c.toBlob((b) => r(b), 'image/png'));
 }
 
+/** Lit un projet enregistré (utilisable sans l'éditeur, ex. fenêtre de capture). */
+export async function readProject(id) {
+  const rec = await db.get('projects', id);
+  if (!rec) throw new Error('Projet introuvable');
+  if (!rec.celKeys) return { doc: recordToDoc(rec), rec, entries: null }; // ancien format : pixels dans l'enregistrement
+  const entries = await db.entries('cels', prefixRange(`${id}|`));
+  rec.cels = {};
+  for (const { key, value } of entries) {
+    const [, layerId, f] = key.split('|');
+    rec.cels[`${layerId}:${f}`] = value;
+  }
+  return { doc: recordToDoc(rec), rec, entries };
+}
+
+/** Canal entre onglets (éditeur -> fenêtre de capture PNGtuber). */
+export const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('pixel-atelier') : null;
+
 export async function initStorage(app) {
   let saving = false;
   let dirty = false;
@@ -108,6 +125,7 @@ export async function initStorage(app) {
       dirty = false;
       lastSaved = Date.now();
       app.emit('saved', lastSaved);
+      channel?.postMessage({ type: 'saved', projectId: app.doc.id });
       if (showToast) app.toast('Projet enregistré sur cet appareil');
     } catch (err) {
       console.error('[save]', err);
@@ -128,16 +146,8 @@ export async function initStorage(app) {
   window.addEventListener('pagehide', () => autosave.flush());
 
   async function load(id) {
-    const rec = await db.get('projects', id);
-    if (!rec) throw new Error('Projet introuvable');
-    if (!rec.celKeys) return recordToDoc(rec); // ancien format : pixels dans l'enregistrement
-    const entries = await db.entries('cels', prefixRange(`${id}|`));
-    rec.cels = {};
-    for (const { key, value } of entries) {
-      const [, layerId, f] = key.split('|');
-      rec.cels[`${layerId}:${f}`] = value;
-    }
-    const doc = recordToDoc(rec);
+    const { doc, rec, entries } = await readProject(id);
+    if (!entries) return doc; // ancien format
     // les cels chargées sont déjà à jour en base
     const keys = new Set();
     for (const layer of doc.allLayers()) {

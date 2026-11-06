@@ -52,7 +52,12 @@ js/library/
   character.js        « Nouveau personnage », expressions par défaut, réglage PNGtuber automatique
   library-ui.js       fenêtres Bibliothèque, Nouveau personnage, Recolorer, Ma bibliothèque
   parts/*.js          UN FICHIER PAR CATÉGORIE (bodies, heads, hair, eyes, brows, noses, mouths, accessories, tops)
-js/pngtuber/          mode PNGtuber (micro Web Audio local, clignement, expressions au clavier)
+js/pngtuber/
+  engine.js           moteur d'avatar AUTONOME (copié par toString dans l'avatar .html : aucune dépendance)
+  assets.js           overrides (expression, bouche closed/half/open, clignement), images, réglages
+  pngtuber.js         fenêtre PNGtuber de l'éditeur ; capture.js + capture.html : fenêtre de capture OBS
+  standalone.js       export de l'avatar .html autonome
+capture.html          page de capture (lit IndexedDB, suit l'éditeur via BroadcastChannel « pixel-atelier »)
 js/storage/           db.js (IndexedDB), serialize.js, storage.js (autosave incrémental), project-file.js, projects-ui.js
 scripts/sw-files.mjs  vérifie ou régénère la liste de précache de sw.js
 ```

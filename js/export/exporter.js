@@ -13,6 +13,8 @@ import { contentBounds } from '../core/raster.js';
 export const EXPORT_KINDS = [
   { id: 'png', name: 'Image (PNG)', desc: 'L\'image telle qu\'affichée (variantes actuelles).', zip: false },
   { id: 'pack', name: 'Pack PNGtuber complet (ZIP)', desc: 'Image, calques, variantes, expressions et manifest.json réunis.', zip: true },
+  { id: 'pngtuber', name: 'Images pour logiciels PNGtuber (ZIP)', desc: 'Par expression : repos, parle, entrouverte, avec et sans clignement (veadotube, PNGTuber Plus…).', zip: true },
+  { id: 'obs', name: 'Avatar OBS (.html)', desc: 'Un fichier à ajouter dans OBS comme source navigateur : fond transparent, micro, clignement, expressions.', zip: false },
   { id: 'layers', name: 'Calque par calque (ZIP)', desc: 'Un PNG par calque, tous à la taille du canevas pour un alignement parfait.', zip: true },
   { id: 'variants', name: 'Par variante (ZIP)', desc: 'Un PNG par variante de chaque groupe de variantes.', zip: true },
   { id: 'expressions', name: 'Par expression (ZIP)', desc: 'Un PNG composé par expression enregistrée.', zip: true },
@@ -227,6 +229,48 @@ export async function runExport(app, kind, opts) {
       return { blob: makeZip([{ name: `${base}_sheet.png`, data: png }, { name: `${base}_sheet.json`, data: json }]), filename: `${base}_sheet.zip`, count: 2 };
     }
     return { blob: new Blob([png], { type: 'image/png' }), filename: `${base}_sheet.png`, count: 1 };
+  }
+
+  if (kind === 'obs') {
+    const { buildStandaloneAvatar } = await import('../pngtuber/standalone.js');
+    const html = await buildStandaloneAvatar(doc);
+    return { blob: new Blob([html], { type: 'text/html' }), filename: `${base}_avatar_obs.html`, count: 1 };
+  }
+
+  if (kind === 'pngtuber') {
+    const { avatarOverrides, hasHalf } = await import('../pngtuber/assets.js');
+    const exprs = doc.expressions.length ? doc.expressions : [{ id: null, name: 'defaut' }];
+    const states = [['idle', 'closed', 0], ['idle_blink', 'closed', 1], ['talk', 'open', 0], ['talk_blink', 'open', 1]];
+    if (hasHalf(doc)) states.push(['talk_half', 'half', 0], ['talk_half_blink', 'half', 1]);
+    const its = [];
+    const folders = new Set();
+    for (const e of exprs) {
+      const folder = uniqueFile(folders, slug(e.name, 'expression'), '');
+      for (const [file, mouth, blink] of states) {
+        its.push({ path: `${folder}/${file}.png`, pixels: compositeImage(doc, { overrides: avatarOverrides(doc, e.id, mouth, !!blink) }), meta: { type: 'avatar' } });
+      }
+    }
+    finalize(doc, its, { ...o, crop: o.crop === 'each' ? 'common' : o.crop });
+    const files = (await encodeItems(its)).map((f) => ({ name: f.name, data: f.data }));
+    const readme = [
+      'Images PNGtuber exportées par Pixel Atelier',
+      '',
+      'Un dossier par expression. Dans chaque dossier :',
+      '  idle.png            repos (bouche fermée, yeux ouverts)',
+      '  idle_blink.png      repos, yeux fermés (clignement)',
+      '  talk.png            parle (bouche ouverte)',
+      '  talk_blink.png      parle, yeux fermés',
+      ...(hasHalf(doc) ? ['  talk_half.png       parle doucement (bouche entrouverte)', '  talk_half_blink.png parle doucement, yeux fermés'] : []),
+      '',
+      'veadotube mini : pour chaque état, glissez idle.png (« idle »), talk.png (« talking »),',
+      '  et les versions _blink pour le clignement.',
+      'PNGTuber Plus / autres logiciels : utilisez idle.png et talk.png comme images',
+      '  « silence » et « parle » ; les versions _blink servent au clignement si le logiciel le gère.',
+      '',
+      'Toutes les images ont la même taille : elles se superposent parfaitement.',
+    ].join('\n');
+    files.push({ name: 'LISEZMOI.txt', data: readme });
+    return { blob: makeZip(files), filename: `${base}_pngtuber_images.zip`, count: its.length };
   }
 
   let items = [];

@@ -15,7 +15,11 @@
 - **Variantes et expressions** : un groupe de variantes n'affiche qu'un seul enfant à la fois (ex. bouche fermée / ouverte). Les expressions enregistrent une combinaison de variantes (ex. « Content »). On les applique en un clic ou avec une touche.
 - **Bibliothèque de pièces originales** : corps, têtes, 14 coiffures, yeux et bouches avec plusieurs états, sourcils, nez, lunettes, chapeaux, oreilles, boucles d'oreilles, vêtements. La recoloration se fait par échange de palette, les pièces restent modifiables pixel par pixel, et l'on peut garder ses propres pièces dans « Ma bibliothèque » (import/export).
 - **Nouveau personnage** : une base prête à l'emploi avec yeux, bouche et sourcils en variantes, plus 7 expressions associées aux touches 1 à 7.
-- **Mode PNGtuber** : fond vert, bleu, magenta, noir, blanc, damier ou image. La bouche suit le micro (traitement **local**, seuil réglable), les yeux clignent automatiquement, le personnage rebondit quand on parle, les expressions se déclenchent au clavier, et un plein écran sert à la capture dans OBS.
+- **Mode PNGtuber** : fond vert, bleu, magenta, noir, blanc, damier ou image. La bouche suit le micro (traitement **local**) avec 2 ou 3 états (fermée, entrouverte, ouverte) et deux seuils réglables. Les yeux clignent automatiquement ; respiration, rebond, secousse quand on crie et inclinaison sont activables. Les expressions se déclenchent au clavier, normalement ou de façon **temporaire** (tant que la touche est maintenue).
+- **Diffusion dans OBS** :
+  - une **fenêtre de capture** qui n'affiche que l'avatar et suit l'éditeur (expressions, enregistrements) ;
+  - un **avatar autonome `.html`** à ajouter comme source navigateur (fond transparent, paramètres `?bg=`, `?mic=1`, `?ui=0`, `?scale=`) ;
+  - des **images prêtes pour les logiciels PNGtuber** (repos / parle / entrouverte / clignement, par expression).
 - **Mode tuiles** : aperçu en mosaïque 3×3 et dessin enroulé sur les bords.
 - **Animation** : images multiples, lecture, FPS, durée par image, onion skin.
 - **Export** sans aucun lissage et avec la transparence préservée, à l'échelle ×1 à ×64 :

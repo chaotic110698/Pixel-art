@@ -1,12 +1,16 @@
-// Mode PNGtuber : aperçu sur fond (vert, noir, blanc, damier, image), bouche
-// pilotée par le micro (Web Audio, 100 % local), clignement automatique,
-// expressions au clavier, petit rebond quand on parle.
+// Mode PNGtuber de l'éditeur : aperçu sur fond, bouche à 2 ou 3 états pilotée
+// par le micro (Web Audio, 100 % local), clignement, respiration, secousse,
+// inclinaison, expressions au clavier (normales ou temporaires).
+// Le rendu est assuré par engine.js, partagé avec la fenêtre de capture et
+// l'avatar exporté pour OBS.
 
-import { h, clear, pickFile, debounce } from '../util/dom.js';
+import { h, clear, pickFile, debounce, downloadBlob, slugify } from '../util/dom.js';
 import { openDialog } from '../ui/dialogs.js';
 import { icon } from '../ui/icons.js';
-import { composeToCanvas } from '../render/compose.js';
 import { autoPngtuber } from '../library/character.js';
+import { createAvatar } from './engine.js';
+import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression } from './assets.js';
+import { channel } from '../storage/storage.js';
 
 const BACKGROUNDS = [
   ['green', 'Vert', '#00ff00'],
@@ -46,52 +50,74 @@ export function openPngtuber(app) {
       if (!pendingBefore) pendingBefore = { ...doc.pngtuber };
       doc.pngtuber[k] = v;
       flushCfg();
+      provider.clear();
+      engine?.refresh();
       return true;
     },
   });
-  const state = {
-    talking: false,
-    level: 0,
-    lastLoud: 0,
-    blinkUntil: 0,
-    nextBlink: performance.now() + cfg.blinkEvery * 1000,
-    expression: null,
-    manualTalk: false,
-    stream: null,
-    audio: null,
-    analyser: null,
-    raf: 0,
-    hideUi: false,
-  };
-  // expression de départ : celle qui correspond à l'état actuel, sinon « Neutre »
-  const cur = JSON.stringify(Object.fromEntries(doc.variantGroups().map((g) => [g.id, g.active])));
-  state.expression = doc.expressions.find((e) => JSON.stringify(e.states) === cur)?.id || doc.expressions.find((e) => /neutre/i.test(e.name))?.id || null;
 
   const canvas = h('canvas', { 'aria-label': 'Aperçu PNGtuber' });
   const stage = h('div', { class: 'pt-stage' }, canvas);
   const side = h('div', { class: 'pt-side' });
   const wrap = h('div', { class: 'pt-wrap' }, stage, side);
+  const provider = makeImageProvider(doc);
 
   const meterLvl = h('div', { class: 'lvl' });
-  const meterThr = h('div', { class: 'thr' });
-  const meter = h('div', { class: 'meter', title: 'Volume du micro (le trait rose = seuil)' }, meterLvl, meterThr);
+  const meterThr = h('div', { class: 'thr', title: 'Seuil de parole' });
+  const meterThr2 = h('div', { class: 'thr thr2', title: 'Seuil de bouche grande ouverte' });
+  const meter = h('div', { class: 'meter', title: 'Volume du micro (rose = parole, violet = grande ouverture)' }, meterLvl, meterThr, meterThr2);
   const micBtn = h('button', { class: 'btn primary', onclick: toggleMic }, icon('mic'), 'Activer le micro');
   const talkBtn = h('button', { class: 'btn', title: 'Maintenir pour simuler la parole (ou touche Espace)' }, 'Maintenir pour parler');
-  talkBtn.addEventListener('pointerdown', () => (state.manualTalk = true));
-  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) talkBtn.addEventListener(ev, () => (state.manualTalk = false));
+  talkBtn.addEventListener('pointerdown', () => engine.setManualTalk(true));
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) talkBtn.addEventListener(ev, () => engine.setManualTalk(false));
+
+  const engine = createAvatar({
+    canvas,
+    stage,
+    width: doc.width,
+    height: doc.height,
+    getImage: provider,
+    cfg: () => avatarSettings(doc),
+    expressions: () => avatarExpressions(doc),
+    initialExpression: initialExpression(doc),
+    onChange: (s) => {
+      channel?.postMessage({ type: 'expression', projectId: doc.id, id: s.expression });
+      renderExprChips();
+    },
+    onFrame: (s) => {
+      meterLvl.style.width = s.level * 100 + '%';
+      meterLvl.style.background = s.mouth === 'open' ? 'var(--accent2)' : s.talking ? 'var(--ok)' : 'var(--muted)';
+    },
+  });
 
   function groupSelect(key, label, onChange) {
     const sel = h('select', { class: 'input wide' }, h('option', { value: '' }, '— Aucun —'),
       doc.variantGroups().map((g) => h('option', { value: g.id, selected: cfg[key] === g.id }, g.name)));
-    sel.addEventListener('change', () => { cfg[key] = sel.value || null; onChange(); app.emit('changed'); });
+    sel.addEventListener('change', () => { cfg[key] = sel.value || null; onChange(); });
     return h('label', { class: 'field' }, h('span', {}, label), sel);
   }
-  function variantSelect(groupKey, key, label) {
+  function variantSelect(groupKey, key, label, optional = false) {
     const g = doc.get(cfg[groupKey]);
-    const sel = h('select', { class: 'input wide' }, h('option', { value: '' }, '—'),
+    const sel = h('select', { class: 'input wide' }, h('option', { value: '' }, optional ? '— Aucune —' : '—'),
       (g ? g.children : []).map((cid) => h('option', { value: cid, selected: cfg[key] === cid }, doc.get(cid).name)));
-    sel.addEventListener('change', () => { cfg[key] = sel.value || null; app.emit('changed'); });
+    sel.addEventListener('change', () => { cfg[key] = sel.value || null; });
     return h('label', { class: 'field' }, h('span', {}, label), sel);
+  }
+  const toggle = (key, label, title = '') => h('label', { class: 'chk', title },
+    h('input', { type: 'checkbox', checked: !!cfg[key], onchange: (e) => { cfg[key] = e.target.checked; } }), label);
+
+  const exprBox = h('div');
+  function renderExprChips() {
+    clear(exprBox);
+    const cur = engine?.state.expression || null;
+    if (!doc.expressions.length) {
+      exprBox.append(h('p', { class: 'hint' }, 'Aucune expression : créez-en dans l\'onglet Expressions.'));
+      return;
+    }
+    exprBox.append(h('div', { class: 'chips' },
+      h('button', { class: 'chip' + (!cur ? ' on' : ''), onclick: () => engine.setExpression(null) }, 'Actuel'),
+      doc.expressions.map((e) => h('button', { class: 'chip' + (cur === e.id ? ' on' : ''), title: e.hold ? 'Expression temporaire (touche maintenue)' : '', onclick: () => engine.setExpression(e.id) },
+        e.name, e.key ? h('kbd', { style: { marginLeft: '6px' } }, e.key + (e.hold ? ' ⏳' : '')) : null))));
   }
 
   function renderSide() {
@@ -113,9 +139,15 @@ export function openPngtuber(app) {
         renderSide();
       },
     }, label)));
-    const thr = h('input', { type: 'range', min: 1, max: 100, value: Math.round(cfg.threshold * 100), class: 'grow', oninput: (e) => { cfg.threshold = e.target.value / 100; } , onchange: () => app.emit('changed') });
-    const blink = h('input', { type: 'number', class: 'input num', min: 0, max: 60, step: 0.5, value: cfg.blinkEvery, onchange: (e) => { cfg.blinkEvery = Math.max(0, parseFloat(e.target.value) || 0); app.emit('changed'); } });
-    const blinkDur = h('input', { type: 'number', class: 'input num', min: 0.05, max: 2, step: 0.05, value: cfg.blinkDuration, onchange: (e) => { cfg.blinkDuration = Math.max(0.05, parseFloat(e.target.value) || 0.15); app.emit('changed'); } });
+    const placeMarkers = () => {
+      meterThr.style.left = cfg.threshold * 100 + '%';
+      meterThr2.style.left = Math.max(cfg.threshold, cfg.threshold2) * 100 + '%';
+      meterThr2.hidden = !avatarSettings(doc).hasHalf;
+    };
+    const thr = h('input', { type: 'range', min: 1, max: 100, value: Math.round(cfg.threshold * 100), class: 'grow', oninput: (e) => { cfg.threshold = e.target.value / 100; placeMarkers(); } });
+    const thr2 = h('input', { type: 'range', min: 1, max: 100, value: Math.round(cfg.threshold2 * 100), class: 'grow', oninput: (e) => { cfg.threshold2 = e.target.value / 100; placeMarkers(); } });
+    const blink = h('input', { type: 'number', class: 'input num', min: 0, max: 60, step: 0.5, value: cfg.blinkEvery, onchange: (e) => { cfg.blinkEvery = Math.max(0, parseFloat(e.target.value) || 0); } });
+    const blinkDur = h('input', { type: 'number', class: 'input num', min: 0.05, max: 2, step: 0.05, value: cfg.blinkDuration, onchange: (e) => { cfg.blinkDuration = Math.max(0.05, parseFloat(e.target.value) || 0.15); } });
 
     side.append(
       h('h3', {}, 'Fond'), bgRow,
@@ -123,39 +155,51 @@ export function openPngtuber(app) {
       h('p', { class: 'hint' }, '🔒 Le son est analysé uniquement sur cet appareil : rien n\'est enregistré ni envoyé.'),
       h('div', { class: 'row' }, micBtn, talkBtn),
       h('div', { style: { margin: '8px 0' } }, meter),
-      h('label', { class: 'row nowrap' }, h('span', { class: 'small' }, 'Seuil'), thr),
+      h('label', { class: 'row nowrap' }, h('span', { class: 'small', style: { width: '92px' } }, 'Seuil parole'), thr),
+      h('label', { class: 'row nowrap' }, h('span', { class: 'small', style: { width: '92px' } }, 'Grande ouv.'), thr2),
       h('h3', {}, 'Bouche'),
       groupSelect('mouthGroup', 'Groupe de la bouche', () => { autoPick('mouth'); renderSide(); }),
-      h('div', { class: 'fields' }, variantSelect('mouthGroup', 'mouthClosed', 'Fermée (silence)'), variantSelect('mouthGroup', 'mouthOpen', 'Ouverte (parole)')),
+      h('div', { class: 'fields' },
+        variantSelect('mouthGroup', 'mouthClosed', 'Fermée (silence)'),
+        variantSelect('mouthGroup', 'mouthHalf', 'Entrouverte (voix douce, facultatif)', true),
+        variantSelect('mouthGroup', 'mouthOpen', 'Ouverte (voix forte)')),
       h('h3', {}, 'Yeux et clignement'),
       groupSelect('eyesGroup', 'Groupe des yeux', () => { autoPick('eyes'); renderSide(); }),
       h('div', { class: 'fields' }, variantSelect('eyesGroup', 'eyesOpen', 'Ouverts'), variantSelect('eyesGroup', 'eyesClosed', 'Fermés (clignement)')),
       h('div', { class: 'row' }, h('span', { class: 'small' }, 'Cligner toutes les'), blink, h('span', { class: 'small' }, 's (0 = jamais), durée'), blinkDur, h('span', { class: 'small' }, 's')),
-      h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: cfg.bounce, onchange: (e) => { cfg.bounce = e.target.checked; app.emit('changed'); } }), 'Petit rebond en parlant'),
+      h('h3', {}, 'Animations'),
+      toggle('bounce', 'Rebond en parlant'),
+      toggle('breathe', 'Respiration au repos'),
+      toggle('shake', 'Secousse quand on crie', 'Au-dessus du seuil de grande ouverture, avec une marge'),
+      toggle('tilt', 'Inclinaison en parlant'),
       h('h3', {}, 'Expressions'),
-      doc.expressions.length
-        ? h('div', { class: 'chips' }, h('button', { class: 'chip' + (!state.expression ? ' on' : ''), onclick: () => { state.expression = null; renderSide(); } }, 'Actuel'),
-          doc.expressions.map((e) => h('button', { class: 'chip' + (state.expression === e.id ? ' on' : ''), onclick: () => { state.expression = e.id; renderSide(); } }, e.name, e.key ? h('kbd', { style: { marginLeft: '6px' } }, e.key) : null)))
-        : h('p', { class: 'hint' }, 'Aucune expression : créez-en dans l\'onglet Expressions.'),
-      h('p', { class: 'hint' }, 'Touches : celles associées aux expressions (onglet Expressions > ⋯ > Associer une touche), Espace = parler, H = masquer les réglages, Échap = quitter.'),
+      exprBox,
+      h('p', { class: 'hint' }, 'Touches : celles associées aux expressions (onglet Expressions > ⋯ > Associer une touche ; « temporaire » = seulement tant que la touche est maintenue). Espace = parler, Échap = quitter.'),
+      h('h3', {}, 'Diffusion (OBS)'),
+      h('div', { class: 'row' },
+        h('button', { class: 'btn', onclick: openCapture, title: 'Fenêtre avec seulement l\'avatar, à capturer dans OBS (capture de fenêtre + incrustation chroma)' }, icon('tv'), 'Fenêtre de capture'),
+        h('button', { class: 'btn', onclick: exportObs, title: 'Fichier .html autonome à ajouter dans OBS comme source navigateur (fond transparent)' }, icon('download'), 'Avatar OBS (.html)'),
+        h('button', { class: 'btn', onclick: () => stage.requestFullscreen?.() }, icon('fit'), 'Plein écran')),
+      h('p', { class: 'hint' }, 'Fenêtre de capture : elle suit vos changements d\'expression et vos enregistrements. Avatar OBS : ajoutez le fichier comme « Source navigateur » (fichier local) ; le fond est transparent. Pour le micro dans OBS, lancez OBS avec l\'option --use-fake-ui-for-media-stream et ajoutez ?mic=1 à l\'adresse, ou cliquez sur « Interagir ».'),
       h('div', { class: 'row', style: { marginTop: '8px' } },
-        h('button', { class: 'btn', onclick: () => stage.requestFullscreen?.() }, icon('fit'), 'Plein écran (pour la capture)'),
-        h('button', { class: 'btn', onclick: () => app.actions.exportDialog('pack') }, icon('download'), 'Exporter le pack')));
-    meterThr.style.left = cfg.threshold * 100 + '%';
-    thr.addEventListener('input', () => (meterThr.style.left = cfg.threshold * 100 + '%'));
-    micBtn.replaceChildren(icon('mic'), state.stream ? 'Couper le micro' : 'Activer le micro');
-    micBtn.classList.toggle('primary', !state.stream);
+        h('button', { class: 'btn', onclick: () => app.actions.exportDialog('pngtuber') }, icon('download'), 'Images pour logiciels PNGtuber')));
+    placeMarkers();
+    renderExprChips();
+    micBtn.replaceChildren(icon('mic'), engine.state.stream ? 'Couper le micro' : 'Activer le micro');
+    micBtn.classList.toggle('primary', !engine.state.stream);
   }
 
   function autoPick(which) {
     const g = doc.get(cfg[which + 'Group']);
     cfg[which + 'Open'] = null;
     cfg[which + 'Closed'] = null;
+    if (which === 'mouth') cfg.mouthHalf = null;
     if (!g) return;
     const kids = g.children.map((id) => doc.get(id));
     const find = (st, rx) => kids.find((c) => c.part?.state === st)?.id || kids.find((c) => rx.test(c.name))?.id || null;
     cfg[which + 'Open'] = find('open', /ouvert|open/i) || g.children[g.children.length - 1];
     cfg[which + 'Closed'] = find('closed', /ferm|closed/i) || g.children[0];
+    if (which === 'mouth') cfg.mouthHalf = find('half', /entrouv|half/i);
   }
 
   function applyBg() {
@@ -171,136 +215,48 @@ export function openPngtuber(app) {
   }
 
   async function toggleMic() {
-    if (state.stream) return stopMic();
-    try {
-      state.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
-      state.audio = new (window.AudioContext || window.webkitAudioContext)();
-      if (state.audio.state === 'suspended') await state.audio.resume().catch(() => {});
-      const src = state.audio.createMediaStreamSource(state.stream);
-      state.analyser = state.audio.createAnalyser();
-      state.analyser.fftSize = 1024;
-      src.connect(state.analyser);
-      app.toast('Micro activé (traitement local)');
-    } catch (err) {
-      app.toast('Micro indisponible : ' + (err.message || err), 3000);
-      stopMic();
+    if (engine.state.stream) engine.stopMic();
+    else {
+      try {
+        await engine.startMic();
+        app.toast('Micro activé (traitement local)');
+      } catch (err) {
+        app.toast('Micro indisponible : ' + (err.message || err), 3000);
+      }
     }
     renderSide();
   }
 
-  function stopMic() {
-    state.stream?.getTracks().forEach((t) => t.stop());
-    state.audio?.close().catch(() => {});
-    state.stream = null;
-    state.audio = null;
-    state.analyser = null;
-    state.level = 0;
+  async function openCapture() {
+    flushCfg.flush();
+    await app.storage?.saveNow();
+    const bg = ['green', 'blue', 'magenta', 'black', 'white'].includes(cfg.background) ? cfg.background : 'green';
+    const w = window.open(`capture.html?project=${encodeURIComponent(doc.id)}&bg=${bg}`, 'pixel-atelier-capture', 'width=520,height=560');
+    if (!w) app.toast('Fenêtre bloquée : autorisez les fenêtres pop-up pour ce site', 3500);
   }
 
-  const buf = new Float32Array(1024);
-  function readLevel() {
-    if (!state.analyser) return 0;
-    state.analyser.getFloatTimeDomainData(buf);
-    let sum = 0;
-    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
-    const rms = Math.sqrt(sum / buf.length);
-    // échelle perceptive approximative : 0..1
-    return Math.min(1, Math.max(0, (20 * Math.log10(rms + 1e-8) + 60) / 60));
-  }
-
-  function overrides(now) {
-    const ov = {};
-    const e = doc.expressions.find((x) => x.id === state.expression);
-    if (e) Object.assign(ov, e.states);
-    if (cfg.mouthGroup && doc.get(cfg.mouthGroup)) {
-      if (state.talking && cfg.mouthOpen) ov[cfg.mouthGroup] = cfg.mouthOpen;
-      else if (!e?.states[cfg.mouthGroup] && cfg.mouthClosed) ov[cfg.mouthGroup] = cfg.mouthClosed;
-    }
-    if (cfg.eyesGroup && cfg.eyesClosed && now < state.blinkUntil) ov[cfg.eyesGroup] = cfg.eyesClosed;
-    return ov;
-  }
-
-  function loop() {
-    const now = performance.now();
-    state.level = state.level * 0.6 + readLevel() * 0.4;
-    const loud = state.level > cfg.threshold || state.manualTalk;
-    if (loud) state.lastLoud = now;
-    state.talking = loud || now - state.lastLoud < 140; // petite tenue pour éviter le clignotement
-    meterLvl.style.width = state.level * 100 + '%';
-    meterLvl.style.background = state.level > cfg.threshold ? 'var(--ok)' : 'var(--muted)';
-    if (cfg.blinkEvery > 0 && now >= state.nextBlink) {
-      state.blinkUntil = now + cfg.blinkDuration * 1000;
-      state.nextBlink = now + cfg.blinkEvery * 1000 * (0.7 + Math.random() * 0.6);
-    }
-    draw(now);
-    state.raf = requestAnimationFrame(loop);
-  }
-
-  let lastKey = '';
-  function draw(now) {
-    const ov = overrides(now);
-    const key = JSON.stringify(ov);
-    const r = stage.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const maxW = r.width * dpr, maxH = r.height * dpr;
-    const s = Math.max(1, Math.floor(Math.min(maxW / doc.width, maxH / doc.height) * 0.9));
-    const bounce = cfg.bounce && state.talking ? Math.round(Math.abs(Math.sin(now / 90)) * Math.max(1, s * 1.5)) : 0;
-    const k = `${key}|${s}|${bounce}|${maxW}|${maxH}`;
-    if (k === lastKey) return;
-    lastKey = k;
-    const W = doc.width * s, H = doc.height * s + Math.max(1, s * 2);
-    if (canvas.width !== W || canvas.height !== H) {
-      canvas.width = W;
-      canvas.height = H;
-      canvas.style.width = W / dpr + 'px';
-      canvas.style.height = H / dpr + 'px';
-    }
-    const g = canvas.getContext('2d');
-    g.clearRect(0, 0, W, H);
-    g.imageSmoothingEnabled = false;
-    g.drawImage(composeToCanvas(doc, { overrides: ov, includeReference: false }), 0, H - doc.height * s - bounce, doc.width * s, doc.height * s);
-  }
-
-  function onKey(e) {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-    if (e.code === 'Space') {
-      state.manualTalk = e.type === 'keydown';
-      e.preventDefault();
-      return;
-    }
-    if (e.type !== 'keydown' || e.repeat) return;
-    if (e.key.toLowerCase() === 'h' && !doc.expressions.some((x) => x.key === 'H')) {
-      state.hideUi = !state.hideUi;
-      side.hidden = state.hideUi;
-      wrap.style.gridTemplateColumns = state.hideUi ? '1fr' : '';
-      return;
-    }
-    const ex = doc.expressions.find((x) => x.key && x.key === e.key.toUpperCase());
-    if (ex) {
-      state.expression = ex.id;
-      renderSide();
-      e.preventDefault();
-    }
+  async function exportObs() {
+    const { buildStandaloneAvatar } = await import('./standalone.js');
+    const html = await buildStandaloneAvatar(doc);
+    downloadBlob(new Blob([html], { type: 'text/html' }), `${slugify(doc.name)}_avatar_obs.html`);
+    app.toast('Avatar OBS exporté');
   }
 
   app.pngtuberOpen = true;
-  window.addEventListener('keydown', onKey);
-  window.addEventListener('keyup', onKey);
+  const detachKeys = engine.attachKeys(window);
   const d = openDialog({
     title: `Mode PNGtuber — ${doc.name}`,
     full: true,
     body: wrap,
     onClose: () => {
       flushCfg.flush();
-      cancelAnimationFrame(state.raf);
-      stopMic();
-      window.removeEventListener('keydown', onKey);
-      window.removeEventListener('keyup', onKey);
+      engine.stop();
+      detachKeys();
       app.pngtuberOpen = false;
     },
   });
   d.el.querySelector('.dlg-body').style.overflow = 'hidden';
   applyBg();
   renderSide();
-  loop();
+  engine.start();
 }

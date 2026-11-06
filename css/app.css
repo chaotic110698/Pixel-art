@@ -706,3 +706,4 @@ button, .chip, .swatch, .card, .lrow, .menu-item { touch-action: manipulation; -
   max-width: calc(100vw - 16px);
   font-size: 13px;
 }
+.meter .thr2 { background: var(--accent2); }

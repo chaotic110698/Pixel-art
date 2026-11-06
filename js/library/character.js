@@ -46,6 +46,7 @@ export function autoPngtuber(doc, force = false) {
     pt.mouthGroup = mouth.id;
     pt.mouthOpen = pick(mouth, 'open', /ouvert|open/i) || mouth.children[0];
     pt.mouthClosed = pick(mouth, 'closed', /ferm|closed/i) || mouth.children[mouth.children.length - 1];
+    pt.mouthHalf = childByState(doc, mouth, 'half')?.id || mouth.children.map((id) => doc.get(id)).find((c) => /entrouv|half|mi-/i.test(c.name))?.id || null;
   }
   if (eyes && (force || !doc.get(pt.eyesGroup))) {
     pt.eyesGroup = eyes.id;

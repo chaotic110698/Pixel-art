@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Avatar PNGtuber — capture</title>
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #00ff00; font: 13px system-ui, sans-serif; }
+    #stage { position: fixed; inset: 0; display: flex; align-items: flex-end; justify-content: center; }
+    canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+    #ui { position: fixed; left: 8px; top: 8px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; color: #fff;
+          background: rgba(20, 20, 30, .8); padding: 6px 8px; border-radius: 10px; transition: opacity .3s; }
+    #ui button, #ui select { font: inherit; border: 0; border-radius: 8px; padding: 6px 10px; min-height: 36px; }
+    #ui button { background: #ff5ab4; color: #fff; cursor: pointer; }
+    body.idle #ui { opacity: 0; pointer-events: none; }
+    #msg { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #111; font-size: 16px; text-align: center; padding: 20px; }
+  </style>
+</head>
+<body>
+  <div id="stage"><canvas></canvas></div>
+  <div id="ui">
+    <button id="mic">🎤 Activer le micro</button>
+    <select id="bg" aria-label="Fond">
+      <option value="green">Fond vert</option><option value="blue">Fond bleu</option><option value="magenta">Fond magenta</option>
+      <option value="black">Fond noir</option><option value="white">Fond blanc</option><option value="transparent">Transparent</option>
+    </select>
+    <select id="expr" aria-label="Expression"></select>
+    <span>Espace = parler · les réglages se masquent seuls</span>
+  </div>
+  <div id="msg" hidden></div>
+  <script type="module" src="js/pngtuber/capture.js"></script>
+</body>
+</html>

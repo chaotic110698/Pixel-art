@@ -349,11 +349,14 @@ export function deleteExpression(app, id) {
   });
 }
 
-export function setExpressionKey(app, id, key) {
+export function setExpressionKey(app, id, key, hold = false) {
   app.history.transact('Raccourci d\'expression', () => {
     for (const e of app.doc.expressions) if (key && e.key === key) e.key = null;
     const e = app.doc.expressions.find((x) => x.id === id);
-    if (e) e.key = key || null;
+    if (e) {
+      e.key = key || null;
+      e.hold = !!(key && hold);
+    }
   });
 }
 

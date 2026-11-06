@@ -39,6 +39,11 @@ export function defaultPngtuber() {
     mouthGroup: null,
     mouthOpen: null,
     mouthClosed: null,
+    mouthHalf: null, // bouche entrouverte (facultative) : parole à faible volume
+    threshold2: 0.4, // au-dessus : bouche grande ouverte
+    breathe: true,
+    shake: true,
+    tilt: false,
     eyesGroup: null,
     eyesOpen: null,
     eyesClosed: null,

@@ -57,7 +57,7 @@ export function initExpressionsPanel(app) {
         thumb,
         h('button', { class: 'btn small grow', style: { justifyContent: 'flex-start' }, title: 'Appliquer', onclick: () => ops.applyExpression(app, e.id) },
           h('span', { class: 'name' }, e.name)),
-        e.key ? h('kbd', { title: 'Touche associée (mode PNGtuber)' }, e.key) : null,
+        e.key ? h('kbd', { title: e.hold ? 'Touche associée (temporaire : tant qu\'elle est maintenue)' : 'Touche associée (mode PNGtuber)' }, e.key + (e.hold ? ' ⏳' : '')) : null,
         more));
     }
   }
@@ -74,9 +74,15 @@ export function initExpressionsPanel(app) {
   async function askKey(e) {
     let captured = null;
     const shown = h('div', { style: { fontSize: '28px', textAlign: 'center', margin: '12px' } }, e.key || '…');
+    const holdChk = h('input', { type: 'checkbox', checked: !!e.hold });
     const d = openDialog({
       title: `Touche pour « ${e.name} »`,
-      body: [h('p', {}, 'Appuyez sur une touche (lettre ou chiffre). Elle déclenchera l\'expression en mode PNGtuber.'), shown],
+      body: [
+        h('p', {}, 'Appuyez sur une touche (lettre ou chiffre). Elle déclenchera l\'expression en mode PNGtuber, dans la fenêtre de capture et dans l\'avatar OBS.'),
+        shown,
+        h('label', { class: 'chk' }, holdChk, 'Temporaire : seulement tant que la touche est maintenue'),
+        h('p', { class: 'hint' }, 'Exemple : maintenir S pour « Surpris », puis relâcher pour revenir à l\'expression précédente.'),
+      ],
       buttons: [{ label: 'Retirer', value: 'remove' }, { label: 'Annuler', value: null }, { label: 'OK', value: 'ok', primary: true }],
     });
     const onKey = (ev) => {
@@ -90,7 +96,7 @@ export function initExpressionsPanel(app) {
     const v = await d.result;
     window.removeEventListener('keydown', onKey, true);
     if (v === 'remove') ops.setExpressionKey(app, e.id, null);
-    else if (v === 'ok' && captured) ops.setExpressionKey(app, e.id, captured);
+    else if (v === 'ok' && (captured || e.key)) ops.setExpressionKey(app, e.id, captured || e.key, holdChk.checked);
   }
 
   const lazy = debounce(render, 300);

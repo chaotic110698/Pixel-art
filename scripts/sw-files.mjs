@@ -4,7 +4,7 @@
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const roots = ['index.html', 'manifest.webmanifest', 'css', 'js', 'icons'];
+const roots = ['index.html', 'capture.html', 'manifest.webmanifest', 'css', 'js', 'icons'];
 const files = [];
 const walk = (p) => {
   if (statSync(p).isDirectory()) for (const f of readdirSync(p).sort()) walk(join(p, f));

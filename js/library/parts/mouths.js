@@ -8,6 +8,7 @@ const STYLES = [
     id: 'simple', name: 'Simple', y: 32,
     states: {
       closed: ['..........', '...pppp...', '..........', '..........'],
+      half: ['...pppp...', '..pmmmmp..', '...pppp...', '..........'],
       open: ['...pppp...', '..pmmmmp..', '..pmttmp..', '...pppp...'],
       smile: ['..p....p..', '...pppp...', '..........', '..........'],
       sad: ['...pppp...', '..p....p..', '..........', '..........'],
@@ -18,6 +19,7 @@ const STYLES = [
     id: 'wide', name: 'Large', y: 32,
     states: {
       closed: ['..........', '.pppppppp.', '..........', '..........'],
+      half: ['.pppppppp.', 'pmmmmmmmmp', '.pppppppp.', '..........'],
       open: ['.pppppppp.', 'pTTTTTTTTp', 'pmmmttmmmp', '.pppppppp.'],
       smile: ['pppppppppp', '.pTTTTTTp.', '..pppppp..', '..........'],
       sad: ['..pppppp..', '.p......p.', 'p........p', '..........'],
@@ -28,6 +30,7 @@ const STYLES = [
     id: 'cat', name: 'Chat (:3)', y: 32,
     states: {
       closed: ['.p..pp..p.', '..pp..pp..', '..........', '..........'],
+      half: ['.p..pp..p.', '..pmmmmp..', '...pppp...', '..........'],
       open: ['.p..pp..p.', '..pmmmmp..', '..pmttmp..', '...pppp...'],
       smile: ['p...pp...p', '.ppp..ppp.', '..........', '..........'],
       sad: ['..........', '..pp..pp..', '.p..pp..p.', '..........'],
@@ -38,6 +41,7 @@ const STYLES = [
     id: 'fang', name: 'Petit croc', y: 32,
     states: {
       closed: ['..........', '..pppppp..', '...T......', '..........'],
+      half: ['..pppppp..', '.pTmmmmmp.', '..pppppp..', '..........'],
       open: ['..pppppp..', '.pTmmmmmp.', '.pmmmttmp.', '..pppppp..'],
       smile: ['.p......p.', '..pppppp..', '...T......', '..........'],
       sad: ['...pppp...', '..pT...p..', '.p......p.', '..........'],
@@ -48,6 +52,7 @@ const STYLES = [
     id: 'lips', name: 'Lèvres', y: 32,
     states: {
       closed: ['...rrrr...', '..rpppprr.', '...rrrr...', '..........'],
+      half: ['..rrrrrr..', '.rpmmmmpr.', '..rrrrrr..', '..........'],
       open: ['..rrrrrr..', '.rpmmmmpr.', '.rpmttmpr.', '..rrrrrr..'],
       smile: ['.r......r.', '..rpppprr.', '...rrrr...', '..........'],
       sad: ['...rrrr...', '..rpppprr.', '.r......r.', '..........'],
@@ -58,6 +63,7 @@ const STYLES = [
 
 export const MOUTH_STATES = [
   ['closed', 'fermée'],
+  ['half', 'entrouverte'],
   ['open', 'ouverte'],
   ['smile', 'sourire'],
   ['sad', 'triste'],
