@@ -68,6 +68,7 @@ js/ui/history-panel.js, js/ui/i18n.js + i18n-en.js, shortcuts.js (touches simple
 js/ui/settings.js     fenêtre Paramètres ; thèmes (THEMES) appliqués par applyAppearance() via des variables CSS sur <html> ; SETTING_KEYS = réglages exportables
 js/ui/toolbar.js      outils regroupés (TOOL_GROUPS) avec menu de groupe, barre d'options contextuelle
 scripts/sw-files.mjs  vérifie ou régénère la liste de précache de sw.js
+icone-a-deposer/      l'utilisateur y dépose l'icône de l'appli ; `python3 scripts/make-icons.py` fabrique toutes les tailles dans icons/ (192, 512, maskable, apple-touch, favicons ; pixel art agrandi sans flou), puis sw-files --write et VERSION
 scripts/audit/        batterie de tests Playwright (run.sh, voir son README)
 ```
 

@@ -1,7 +1,7 @@
 // Service worker : fonctionnement hors ligne.
 // Pensez à incrémenter VERSION à chaque mise en ligne et à régénérer la liste
 // avec : node scripts/sw-files.mjs --write
-const VERSION = 'v15';
+const VERSION = 'v16';
 const CACHE = 'pixel-atelier-' + VERSION;
 const PRECACHE = [
   "./",
@@ -88,6 +88,9 @@ const PRECACHE = [
   "./js/util/color.js",
   "./js/util/dom.js",
   "./js/util/emitter.js",
+  "./icons/apple-touch-icon.png",
+  "./icons/favicon-16.png",
+  "./icons/favicon-32.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png"
