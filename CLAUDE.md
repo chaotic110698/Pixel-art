@@ -57,6 +57,7 @@ js/library/
   parts/3q/*.js       vue de 3/4 « portrait » tournée à droite, grilles 32×32 doublées (common : g32, art, x2, hash ; bodies BODY3Q + torso/neck ; heads + headMask ; face : yeux/sourcils/nez/bouches/barbes ; hair ; tops ; accessories)
 js/pngtuber/
   engine.js           moteur d'avatar AUTONOME (copié par toString dans l'avatar .html : aucune dépendance)
+  effects.js          effets (confettis, émotes, ambiances, voix) et décors animés : createEffects AUTONOME aussi ; grille de pixels alignée sur l'avatar ; réglages doc.pngtuber.effects (effectsConfig dans assets.js), ambiance propre au profil (profile.fxAmbient)
   assets.js           overrides (expression, bouche closed/half/open, clignement), images, réglages
   pngtuber.js         fenêtre PNGtuber de l'éditeur ; capture.js + capture.html : fenêtre de capture OBS
   standalone.js       export de l'avatar .html autonome

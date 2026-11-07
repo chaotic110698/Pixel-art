@@ -15,7 +15,7 @@ const fs = require('fs');
     }, view);
     await ev(() => window.pixelAtelier.actions.openPngtuber());
     await p.waitForTimeout(700);
-    const hash = () => ev(() => { const c = document.querySelector('.pt-stage canvas'); if (!c) return null; const g = c.getContext('2d'); const d = g.getImageData(0, 0, c.width, c.height).data; let h = 0, n = 0; for (let i = 0; i < d.length; i += 4) { if (d[i + 3]) n++; h = (h * 31 + d[i] + d[i + 1] * 7 + d[i + 3]) | 0; } return { h, n }; });
+    const hash = () => ev(() => { const c = document.querySelector('.pt-scene > canvas:not(.fx-layer)'); if (!c) return null; const g = c.getContext('2d'); const d = g.getImageData(0, 0, c.width, c.height).data; let h = 0, n = 0; for (let i = 0; i < d.length; i += 4) { if (d[i + 3]) n++; h = (h * 31 + d[i] + d[i + 1] * 7 + d[i + 3]) | 0; } return { h, n }; });
     const s0 = await hash();
     check(`[${view}] PNGtuber : avatar affiché`, s0 && s0.n > 100, JSON.stringify(s0));
     const seen = new Set([s0.h]);
@@ -45,7 +45,7 @@ const fs = require('fs');
   cap.on('console', (m) => { if (m.type() === 'error') cerrs.push(m.text()); });
   await cap.goto(`${H.BASE}capture.html?project=${id}&bg=green`);
   await cap.waitForTimeout(1500);
-  const capN = await cap.evaluate(() => { const c = document.querySelector('canvas'); if (!c || !c.width) return 0; const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i]) n++; return n; });
+  const capN = await cap.evaluate(() => { const c = document.getElementById('avatar'); if (!c || !c.width) return 0; const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i]) n++; return n; });
   check('Capture OBS : avatar affiché', capN > 100, capN);
   // suit l'éditeur (expression)
   const c1 = await cap.screenshot();

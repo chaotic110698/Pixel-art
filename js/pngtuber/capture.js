@@ -4,7 +4,8 @@
 
 import { readProject, channel } from '../storage/storage.js';
 import { createAvatar } from './engine.js';
-import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression, avatarProfiles } from './assets.js';
+import { createEffects, SCENE_NAMES } from './effects.js';
+import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression, avatarProfiles, effectsConfig } from './assets.js';
 
 const BG = { green: '#00ff00', blue: '#0047bb', magenta: '#ff00ff', black: '#000000', white: '#ffffff', transparent: 'transparent' };
 const params = new URLSearchParams(location.search);
@@ -20,9 +21,18 @@ function message(text) {
   $('msg').textContent = text;
 }
 
+let bgId = 'green';
 function setBg(v) {
-  document.body.style.background = BG[v] || v;
+  bgId = v;
+  document.body.style.background = SCENE_NAMES[v] ? '#000' : BG[v] || v;
   $('bg').value = v;
+}
+// décors animés dans la liste des fonds
+for (const [id, name] of Object.entries(SCENE_NAMES)) {
+  const o = document.createElement('option');
+  o.value = id;
+  o.textContent = name;
+  $('bg').append(o);
 }
 
 function fillExpressions() {
@@ -46,9 +56,15 @@ async function load(keepExpression = null) {
   provider = makeImageProvider(doc);
   document.title = `${doc.name} — avatar PNGtuber`;
   if (!av) {
+    const fx = createEffects({
+      stage: $('scene'), scene: $('scene'), back: $('fxb'), front: $('fxf'), bg: $('fxbg'), background: () => bgId, avatarCanvas: $('avatar'),
+      width: doc.width, height: doc.height,
+      cfg: () => (doc ? effectsConfig(doc, av?.state.profile) : {}),
+    });
     av = createAvatar({
-      canvas: document.querySelector('canvas'),
-      stage: $('stage'),
+      canvas: $('avatar'),
+      stage: $('scene'),
+      fx,
       width: doc.width,
       height: doc.height,
       getImage: (pf, ex, m, b) => provider(pf, ex, m, b),
@@ -86,6 +102,7 @@ async function boot() {
     if (m.type === 'expression') av.setExpression(m.id || null);
     if (m.type === 'profile') av.setProfile(m.id || null);
     if (m.type === 'talk') av.setManualTalk(m.on);
+    if (m.type === 'effect') av.fx?.trigger(m.id, false);
     if (m.type === 'saved') {
       const keep = av.state.expression;
       await load(keep).catch(() => {});

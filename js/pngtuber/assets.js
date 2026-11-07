@@ -58,9 +58,42 @@ export function avatarProfiles(doc) {
   return doc.profiles.map((p) => ({ id: p.id, name: p.name, key: p.key || null }));
 }
 
+// Effets liés par défaut aux expressions, d'après leur nom (tant que l'utilisateur n'a rien choisi).
+const DEFAULT_EXPR_FX = [
+  [/content|joie|happy|heureu/i, ['hearts', 'sparkles']],
+  [/f[âa]ch|col[èe]re|angry|mad/i, ['vein', 'flames']],
+  [/surpri/i, ['bang', 'lines', 'impact']],
+  [/triste|sad|pleur/i, ['tears']],
+  [/endormi|dort|sleep|zzz/i, ['zzz']],
+  [/g[êe]n|embarrass/i, ['sweat']],
+  [/question|perplex|confus/i, ['quest']],
+];
+
+/** Réglages des effets (doc.pngtuber.effects complétés ; ambiance propre au profil si définie). */
+export function effectsConfig(doc, profileId = null) {
+  const e = doc.pngtuber.effects || {};
+  let byExpr = e.byExpr;
+  if (!byExpr) {
+    byExpr = {};
+    for (const x of doc.expressions) {
+      const hit = DEFAULT_EXPR_FX.find(([rx]) => rx.test(x.name));
+      if (hit) byExpr[x.id] = hit[1];
+    }
+  }
+  const p = profileOf(doc, profileId);
+  return {
+    ambient: p && Array.isArray(p.fxAmbient) ? p.fxAmbient : e.ambient || [],
+    voice: e.voice || [],
+    keys: e.keys || {},
+    byExpr,
+    shout: e.shout || [],
+    intensity: e.intensity || 1,
+  };
+}
+
 /** Réglages utiles au moteur (copie), pour un profil donné. */
 export function avatarSettings(doc, profileId = null) {
-  return { ...pngtuberConfig(doc, profileId), hasHalf: hasHalf(doc, profileId) };
+  return { ...pngtuberConfig(doc, profileId), hasHalf: hasHalf(doc, profileId), effects: effectsConfig(doc, profileId) };
 }
 
 /** Fournisseur d'images pour le moteur, avec cache (canvas composés). */

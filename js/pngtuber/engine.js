@@ -15,6 +15,7 @@
 //   expressions()                  // [{ id, key, hold }]
 //   profiles()                     // [{ id, key }] (touches F13–F24 conseillées)
 //   initialExpression, initialProfile, onChange(state)
+//   fx                             // effets (createEffects), facultatif
 // }
 export function createAvatar(o) {
   const st = {
@@ -94,8 +95,9 @@ export function createAvatar(o) {
       st.blinkUntil = now + (c.blinkDuration || 0.15) * 1000;
       st.nextBlink = now + c.blinkEvery * 1000 * (0.7 + Math.random() * 0.6);
     }
-    // secousse quand on crie (au-dessus du 2e seuil, avec une marge)
-    const shouting = c.shake && st.level > Math.min(0.98, thr2 + 0.18);
+    // cri : au-dessus du 2e seuil, avec une marge (secousse, effets « quand je crie »)
+    st.shouting = !st.manual && st.level > Math.min(0.98, thr2 + 0.18);
+    const shouting = c.shake && st.shouting;
     st.shakeX = shouting ? Math.round((Math.random() * 2 - 1) * 2) : 0;
     st.shakeY = shouting ? Math.round((Math.random() * 2 - 1) * 2) : 0;
   }
@@ -115,8 +117,14 @@ export function createAvatar(o) {
     const tilt = c.tilt && st.talking ? Math.sin(now / 160) * 0.035 : 0;
     const dx = st.shakeX * Math.max(1, Math.round(s / 2));
     const dy = st.shakeY * Math.max(1, Math.round(s / 2));
+    // rebond élastique (squash & stretch) : l'avatar s'écrase d'un ou deux pixels à chaque syllabe
+    const squash = c.effects && (c.effects.voice || []).includes('squash') && st.talking
+      ? Math.round(Math.abs(Math.sin(now / 85)) * Math.min(1, st.level * 1.5 + (st.manual ? 0.6 : 0)) * 2) * Math.max(1, Math.round(s / 2)) : 0;
     const W = o.width * s + s * 4, H = o.height * s + s * 4;
-    const key = [st.profile, st.expression, st.mouth, blink, s, bounce, breath, tilt.toFixed(3), dx, dy, maxW, maxH, img ? 1 : 0].join('|');
+    const x = (W - o.width * s) / 2 + dx;
+    const y = H - o.height * s - s * 2 - bounce - breath + dy;
+    st.geom = { x: Math.round(x), y: Math.round(y), s, tilt, img };
+    const key = [st.profile, st.expression, st.mouth, blink, s, bounce, breath, tilt.toFixed(3), dx, dy, squash, maxW, maxH, img ? 1 : 0].join('|');
     if (key === st.lastKey) return;
     st.lastKey = key;
     if (canvas.width !== W || canvas.height !== H) {
@@ -130,21 +138,20 @@ export function createAvatar(o) {
     g.clearRect(0, 0, W, H);
     if (!img) return;
     g.imageSmoothingEnabled = false;
-    const x = (W - o.width * s) / 2 + dx;
-    const y = H - o.height * s - s * 2 - bounce - breath + dy;
     if (tilt) {
       // inclinaison autour du bas de l'avatar
       g.translate(W / 2, y + o.height * s);
       g.rotate(tilt);
       g.translate(-W / 2, -(y + o.height * s));
     }
-    g.drawImage(img, Math.round(x), Math.round(y), o.width * s, o.height * s);
+    g.drawImage(img, Math.round(x) - squash, Math.round(y) + squash, o.width * s + squash * 2, o.height * s - squash);
   }
 
   function loop() {
     const now = performance.now();
     update(now);
     draw(now);
+    if (o.fx) o.fx.frame(now, st);
     if (o.onFrame) o.onFrame(st);
     st.raf = requestAnimationFrame(loop);
   }
@@ -180,7 +187,15 @@ export function createAvatar(o) {
       return;
     }
     const ex = o.expressions().find((x) => x.key && x.key === k);
-    if (!ex) return;
+    if (!ex) {
+      // effet ponctuel associé à cette touche
+      const fid = o.fx && o.fx.keyFor(k);
+      if (fid) {
+        e.preventDefault();
+        if (e.type === 'keydown' && !e.repeat) o.fx.trigger(fid);
+      }
+      return;
+    }
     e.preventDefault();
     if (e.type === 'keydown') {
       if (e.repeat) return;
@@ -198,6 +213,7 @@ export function createAvatar(o) {
 
   return {
     state: st,
+    fx: o.fx || null,
     start() {
       cancelAnimationFrame(st.raf);
       loop();
@@ -205,6 +221,7 @@ export function createAvatar(o) {
     stop() {
       cancelAnimationFrame(st.raf);
       stopMic();
+      if (o.fx) o.fx.clear();
     },
     startMic,
     stopMic,

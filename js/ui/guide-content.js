@@ -511,6 +511,26 @@ export const GUIDE = [
         ],
       },
       {
+        id: 'effects', icon: 'star', title: T('Effets et décors', 'Effects and scenes'),
+        body: [
+          p('Section **Effets** du mode PNGtuber : 23 effets en gros pixels, alignés sur ceux du personnage.', '**Effects** section of PNGtuber mode: 23 chunky-pixel effects, aligned with the character\'s pixels.'),
+          list(
+            ['**Ponctuels** : confettis, cœurs, étincelles, feu d\'artifice, étoiles filantes, impact (flash, zoom, secousse), point d\'exclamation, point d\'interrogation, goutte de gêne, veine de colère, larmes, lignes de choc, Zzz. Cliquez sur ▶ ou associez une **touche** (bouton « Touche… » ; Retour arrière pour la retirer).',
+              '**One-shot**: confetti, hearts, sparkles, fireworks, shooting stars, impact (flash, zoom, shake), exclamation mark, question mark, sweat drop, anger vein, tears, speed lines, Zzz. Click ▶ or assign a **key** ("Key…" button; Backspace removes it).'],
+            ['**Ambiance en continu** : neige, pluie, pétales, lucioles, bulles, flammes. Si un profil est actif, l\'ambiance est propre à ce profil (ex. neige pour la tenue d\'hiver).', '**Continuous ambience**: snow, rain, petals, fireflies, bubbles, flames. When a profile is active, the ambience belongs to that profile (e.g. snow for the winter outfit).'],
+            ['**Liés à la voix** : aura qui pulse, contour arc-en-ciel, notes de musique quand on parle longtemps, rebond élastique.', '**Voice-driven**: pulsing aura, rainbow outline, music notes when talking for a long time, squash & stretch.'],
+            ['**Quand je crie** : effets lancés quand la voix dépasse nettement le seuil de grande ouverture.', '**When I shout**: effects played when the voice clearly exceeds the wide-open threshold.'],
+            ['**Liés aux expressions** : « Choisir… » pour chaque expression. Les effets ponctuels partent quand l\'expression commence, les ambiances durent tant qu\'elle est affichée. Par défaut : Content = cœurs + étincelles, Fâché = veine + flammes, Surpris = ! + lignes de choc + impact, Triste = larmes.',
+              '**Linked to expressions**: "Choose…" for each expression. One-shot effects play when the expression starts, ambiences last while it is shown. Defaults: Happy = hearts + sparkles, Angry = vein + flames, Surprised = ! + speed lines + impact, Sad = tears.'],
+            ['**Intensité** : douce, normale ou forte.', '**Intensity**: soft, normal or strong.'],
+            ['**Décors animés** (section Fond) : ciel, nuit étoilée, coucher de soleil, aurore boréale, synthwave, ville néon, espace, forêt au crépuscule, montagnes, plage, sous l\'eau, nuages pastel, motif qui défile, chambre cosy.',
+              '**Animated scenes** (Background section): sky, starry night, sunset, northern lights, synthwave, neon city, space, forest at dusk, mountains, beach, underwater, pastel clouds, scrolling pattern, cozy room.'],
+          ),
+          tip('Tout fonctionne aussi dans la fenêtre de capture (les effets déclenchés dans l\'éditeur y sont relayés) et dans l\'avatar .html (?bg=night, ?bg=synthwave…).', 'Everything also works in the capture window (effects triggered in the editor are relayed) and in the .html avatar (?bg=night, ?bg=synthwave…).'),
+          go('action:openPngtuber', 'Essayer les effets', 'Try the effects'),
+        ],
+      },
+      {
         id: 'obs', icon: 'tv', title: T('Dans OBS', 'In OBS'),
         body: [
           list(

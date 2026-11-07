@@ -9,7 +9,8 @@ import { openDialog } from '../ui/dialogs.js';
 import { icon } from '../ui/icons.js';
 import { autoPngtuber } from '../library/character.js';
 import { createAvatar } from './engine.js';
-import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression, avatarProfiles, pngtuberConfig } from './assets.js';
+import { createEffects, EFFECTS, SCENE_NAMES } from './effects.js';
+import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression, avatarProfiles, pngtuberConfig, effectsConfig } from './assets.js';
 import { channel } from '../storage/storage.js';
 
 const BACKGROUNDS = [
@@ -21,6 +22,8 @@ const BACKGROUNDS = [
   ['checker', 'Damier', null],
   ['image', 'Image…', null],
 ];
+// fonds de scène animés, dessinés en pixels par effects.js
+const SCENES = Object.entries(SCENE_NAMES).map(([id, name]) => [id, name, null]);
 
 let customBgUrl = null;
 
@@ -70,7 +73,11 @@ export function openPngtuber(app) {
   });
 
   const canvas = h('canvas', { 'aria-label': 'Aperçu PNGtuber' });
-  const stage = h('div', { class: 'pt-stage' }, canvas);
+  const fxBack = h('canvas', { class: 'fx-layer fx-back', 'aria-hidden': 'true' });
+  const fxFront = h('canvas', { class: 'fx-layer fx-front', 'aria-hidden': 'true' });
+  const fxBg = h('canvas', { class: 'fx-layer fx-bg', 'aria-hidden': 'true' });
+  const scene = h('div', { class: 'pt-scene' }, fxBg, fxBack, canvas, fxFront);
+  const stage = h('div', { class: 'pt-stage' }, scene);
   const side = h('div', { class: 'pt-side' });
   const wrap = h('div', { class: 'pt-wrap' }, stage, side);
   const provider = makeImageProvider(doc);
@@ -84,9 +91,23 @@ export function openPngtuber(app) {
   talkBtn.addEventListener('pointerdown', () => engine.setManualTalk(true));
   for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) talkBtn.addEventListener(ev, () => engine.setManualTalk(false));
 
+  const fx = createEffects({
+    stage: scene,
+    scene,
+    back: fxBack,
+    front: fxFront,
+    bg: fxBg,
+    background: () => cfg.background,
+    avatarCanvas: canvas,
+    width: doc.width,
+    height: doc.height,
+    cfg: () => effectsConfig(doc, engine?.state.profile),
+    onTrigger: (id) => channel?.postMessage({ type: 'effect', projectId: doc.id, id }),
+  });
   const engine = createAvatar({
     canvas,
-    stage,
+    stage: scene,
+    fx,
     width: doc.width,
     height: doc.height,
     getImage: provider,
@@ -100,7 +121,7 @@ export function openPngtuber(app) {
       channel?.postMessage({ type: 'profile', projectId: doc.id, id: s.profile });
       if (lastProfile !== s.profile) {
         lastProfile = s.profile;
-        renderSide(); // les sélecteurs bouche/yeux suivent le profil
+        renderSide(); // les sélecteurs bouche/yeux et l'ambiance suivent le profil
       } else renderExprChips();
     },
     onFrame: (s) => {
@@ -127,6 +148,87 @@ export function openPngtuber(app) {
 
   const exprBox = h('div');
   const profBox = h('div');
+  const fxBox = h('div', { class: 'fx-box' });
+  const FXN = Object.fromEntries(EFFECTS.map((e) => [e.id, e.name]));
+  const fxOf = (kind) => EFFECTS.filter((e) => e.kind === kind);
+  /** Modifie les réglages d'effets (une entrée d'historique, comme les autres réglages). */
+  function setFx(patch) {
+    const base = { ...(doc.pngtuber.effects || {}) };
+    if (patch.byExpr && !base.byExpr) base.byExpr = effectsConfig(doc).byExpr;
+    cfg.effects = { ...base, ...patch };
+    renderFx();
+  }
+  function setAmbient(list) {
+    const prof = activeProfile();
+    if (prof) {
+      app.history.transact('Ambiance du profil', () => { doc.profiles.find((x) => x.id === prof.id).fxAmbient = list; });
+      renderFx();
+    } else setFx({ ambient: list });
+  }
+  const toggleIn = (list, id) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
+  let capturing = null;
+  function captureKey(id, btn) {
+    if (capturing) capturing();
+    btn.textContent = 'Appuyez sur une touche…';
+    const onKey = (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      done();
+      if (e.key === 'Escape') return renderFx();
+      const keys = { ...effectsConfig(doc).keys };
+      if (e.key === 'Backspace' || e.key === 'Delete') delete keys[id];
+      else {
+        const k = /^F([1-9]|1\d|2[0-4])$/.test(e.key) ? e.key : e.key.length === 1 && /[\p{L}\p{N}]/u.test(e.key) ? e.key.toUpperCase() : null;
+        if (!k) return renderFx();
+        const clash = doc.expressions.find((x) => x.key === k) || doc.profiles.find((x) => x.key === k);
+        if (clash) { app.toast(`Touche ${k} déjà utilisée par « ${clash.name} »`, 2600); return renderFx(); }
+        for (const other of Object.keys(keys)) if (keys[other] === k) delete keys[other];
+        keys[id] = k;
+      }
+      setFx({ keys });
+    };
+    const done = () => { window.removeEventListener('keydown', onKey, true); capturing = null; };
+    capturing = done;
+    window.addEventListener('keydown', onKey, true);
+  }
+  function editExprFx(e) {
+    const cur = new Set(effectsConfig(doc).byExpr[e.id] || []);
+    const box = h('div', { class: 'fx-pick' }, [...fxOf('oneshot'), ...fxOf('ambient')].map((x) => h('label', { class: 'chk' },
+      h('input', { type: 'checkbox', checked: cur.has(x.id), onchange: (ev) => { if (ev.target.checked) cur.add(x.id); else cur.delete(x.id); } }), x.name)));
+    openDialog({
+      title: `Effets de « ${e.name} »`,
+      body: [h('p', { class: 'hint' }, 'Les effets ponctuels se déclenchent quand l\'expression commence ; les effets d\'ambiance durent tant qu\'elle est affichée.'), box],
+      buttons: [{ label: 'Annuler', value: null }, { label: 'Valider', primary: true, value: true, action: () => { const by = { ...effectsConfig(doc).byExpr, [e.id]: [...cur] }; if (!cur.size) delete by[e.id]; setFx({ byExpr: by }); } }],
+    });
+  }
+  function renderFx() {
+    clear(fxBox);
+    const c = effectsConfig(doc, engine?.state.profile);
+    const prof = activeProfile();
+    const chipsOf = (list, active, onToggle) => h('div', { class: 'chips' }, list.map((x) => h('button', {
+      class: 'chip' + (active.includes(x.id) ? ' on' : ''), 'aria-pressed': String(active.includes(x.id)), onclick: () => onToggle(x.id),
+    }, x.name)));
+    const intensity = h('div', { class: 'seg' }, [[0.6, 'Douce'], [1, 'Normale'], [1.6, 'Forte']].map(([v, l]) => h('button', { class: c.intensity === v ? 'on' : '', onclick: () => setFx({ intensity: v }) }, l)));
+    fxBox.append(
+      h('div', { class: 'row' }, h('span', { class: 'small' }, 'Intensité'), intensity),
+      h('div', { class: 'fx-sub' }, 'Déclencher (clic) · touche facultative'),
+      h('div', { class: 'fx-grid' }, fxOf('oneshot').map((x) => h('div', { class: 'fx-row' },
+        h('button', { class: 'btn small grow', onclick: () => fx.trigger(x.id) }, '▶ ', x.name),
+        h('button', { class: 'btn small fx-key', title: 'Associer une touche (Retour arrière : retirer, Échap : annuler)', 'aria-label': `Touche pour ${x.name}`, onclick: (ev) => captureKey(x.id, ev.currentTarget) }, c.keys[x.id] ? h('kbd', {}, c.keys[x.id]) : 'Touche…')))),
+      h('div', { class: 'fx-sub' }, prof ? h('span', {}, 'Ambiance en continu · profil ', h('b', { translate: 'no' }, prof.name)) : 'Ambiance en continu'),
+      chipsOf(fxOf('ambient'), c.ambient, (id) => setAmbient(toggleIn(c.ambient, id))),
+      h('div', { class: 'fx-sub' }, 'Liés à la voix'),
+      chipsOf(fxOf('voice'), c.voice, (id) => setFx({ voice: toggleIn(c.voice, id) })),
+      h('div', { class: 'fx-sub' }, 'Quand je crie'),
+      chipsOf(fxOf('oneshot'), c.shout, (id) => setFx({ shout: toggleIn(c.shout, id) })),
+      h('div', { class: 'fx-sub' }, 'Liés aux expressions'),
+      doc.expressions.length
+        ? h('div', { class: 'fx-exprs' }, doc.expressions.map((e) => h('div', { class: 'fx-row' },
+          h('span', { class: 'grow small' }, h('b', { translate: 'no' }, e.name), ' : ', (c.byExpr[e.id] || []).length ? (c.byExpr[e.id] || []).map((id, i) => [i ? ', ' : '', h('span', {}, FXN[id])]) : '—'),
+          h('button', { class: 'btn small', onclick: () => editExprFx(e) }, 'Choisir…'))))
+        : h('p', { class: 'hint' }, 'Aucune expression : créez-en dans l\'onglet Expressions.'),
+      h('p', { class: 'hint' }, 'Les effets apparaissent aussi dans la fenêtre de capture et dans l\'avatar OBS (.html).'));
+  }
   let lastProfile = null;
   function renderProfiles() {
     clear(profBox);
@@ -172,6 +274,10 @@ export function openPngtuber(app) {
         renderSide();
       },
     }, label)));
+    const sceneRow = h('div', { class: 'chips' }, SCENES.map(([id, label]) => h('button', {
+      class: 'chip' + (cfg.background === id ? ' on' : ''),
+      onclick: () => { cfg.background = id; applyBg(); renderSide(); },
+    }, label)));
     const placeMarkers = () => {
       meterThr.style.left = cfg.threshold * 100 + '%';
       meterThr2.style.left = Math.max(cfg.threshold, cfg.threshold2) * 100 + '%';
@@ -184,6 +290,7 @@ export function openPngtuber(app) {
 
     side.append(
       h('h3', {}, 'Fond'), bgRow,
+      h('div', { class: 'fx-sub' }, 'Décors animés'), sceneRow,
       h('h3', {}, 'Micro'),
       h('p', { class: 'hint' }, '🔒 Le son est analysé uniquement sur cet appareil : rien n\'est enregistré ni envoyé.'),
       h('div', { class: 'row' }, micBtn, talkBtn),
@@ -205,6 +312,8 @@ export function openPngtuber(app) {
       toggle('breathe', 'Respiration au repos'),
       toggle('shake', 'Secousse quand on crie', 'Au-dessus du seuil de grande ouverture, avec une marge'),
       toggle('tilt', 'Inclinaison en parlant'),
+      h('h3', {}, 'Effets'),
+      fxBox,
       h('h3', {}, 'Profils (tenues, personnages)'),
       profBox,
       h('h3', {}, 'Expressions'),
@@ -221,6 +330,7 @@ export function openPngtuber(app) {
     placeMarkers();
     renderProfiles();
     renderExprChips();
+    renderFx();
     micBtn.replaceChildren(icon('mic'), engine.state.stream ? 'Couper le micro' : 'Activer le micro');
     micBtn.classList.toggle('primary', !engine.state.stream);
   }
@@ -239,6 +349,11 @@ export function openPngtuber(app) {
   }
 
   function applyBg() {
+    if (SCENE_NAMES[cfg.background]) {
+      stage.style.background = '#000';
+      stage.style.backgroundImage = '';
+      return;
+    }
     const bg = BACKGROUNDS.find((b) => b[0] === cfg.background) || BACKGROUNDS[0];
     stage.style.background = '';
     stage.style.backgroundImage = '';
@@ -266,7 +381,7 @@ export function openPngtuber(app) {
   async function openCapture() {
     flushCfg.flush();
     await app.storage?.saveNow();
-    const bg = ['green', 'blue', 'magenta', 'black', 'white'].includes(cfg.background) ? cfg.background : 'green';
+    const bg = ['green', 'blue', 'magenta', 'black', 'white'].includes(cfg.background) || SCENE_NAMES[cfg.background] ? cfg.background : 'green';
     const w = window.open(`capture.html?project=${encodeURIComponent(doc.id)}&bg=${bg}`, 'pixel-atelier-capture', 'width=520,height=560');
     if (!w) app.toast('Fenêtre bloquée : autorisez les fenêtres pop-up pour ce site', 3500);
   }
@@ -285,6 +400,7 @@ export function openPngtuber(app) {
     full: true,
     body: wrap,
     onClose: () => {
+      capturing?.();
       flushCfg.flush();
       engine.stop();
       detachKeys();
