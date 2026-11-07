@@ -179,8 +179,8 @@ export function openPngtuber(app) {
     };
     const thr = h('input', { type: 'range', min: 1, max: 100, value: Math.round(cfg.threshold * 100), class: 'grow', oninput: (e) => { cfg.threshold = e.target.value / 100; placeMarkers(); } });
     const thr2 = h('input', { type: 'range', min: 1, max: 100, value: Math.round(cfg.threshold2 * 100), class: 'grow', oninput: (e) => { cfg.threshold2 = e.target.value / 100; placeMarkers(); } });
-    const blink = h('input', { type: 'number', class: 'input num', min: 0, max: 60, step: 0.5, value: cfg.blinkEvery, onchange: (e) => { cfg.blinkEvery = Math.max(0, parseFloat(e.target.value) || 0); } });
-    const blinkDur = h('input', { type: 'number', class: 'input num', min: 0.05, max: 2, step: 0.05, value: cfg.blinkDuration, onchange: (e) => { cfg.blinkDuration = Math.max(0.05, parseFloat(e.target.value) || 0.15); } });
+    const blink = h('input', { type: 'number', class: 'input num', 'aria-label': 'Clignement toutes les (s)', min: 0, max: 60, step: 0.5, value: cfg.blinkEvery, onchange: (e) => { cfg.blinkEvery = Math.max(0, parseFloat(e.target.value) || 0); } });
+    const blinkDur = h('input', { type: 'number', class: 'input num', 'aria-label': 'Durée du clignement (s)', min: 0.05, max: 2, step: 0.05, value: cfg.blinkDuration, onchange: (e) => { cfg.blinkDuration = Math.max(0.05, parseFloat(e.target.value) || 0.15); } });
 
     side.append(
       h('h3', {}, 'Fond'), bgRow,

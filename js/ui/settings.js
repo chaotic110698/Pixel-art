@@ -103,7 +103,11 @@ export function openSettings(app, initial = 'look') {
     applyAppearance(app);
     render();
   };
-  const row = (label, control, hint = null) => h('div', { class: 'set-row' },
+  const row = (label, control, hint = null) => {
+    if (control instanceof HTMLInputElement && !control.getAttribute('aria-label')) control.setAttribute('aria-label', label);
+    return rowEl(label, control, hint);
+  };
+  const rowEl = (label, control, hint = null) => h('div', { class: 'set-row' },
     h('div', { class: 'set-label' }, h('span', {}, label), hint ? h('small', { class: 'muted' }, hint) : null), control);
   const toggle = (value, onChange) => h('label', { class: 'switch' }, h('input', { type: 'checkbox', checked: !!value, onchange: (e) => onChange(e.target.checked) }), h('span'));
   const segm = (options, value, onChange) => h('div', { class: 'seg' }, options.map(([v, label]) =>
@@ -144,7 +148,7 @@ export function openSettings(app, initial = 'look') {
         row('Taille des textes et boutons', segm(Object.entries(UI_SIZES).map(([k, v]) => [k, v.name]), a.size, (v) => setUi({ size: v }))),
         h('h3', {}, 'Damier de transparence'),
         row('Couleurs du damier', segm([['auto', 'Selon le thème'], ['light', 'Clair'], ['dark', 'Sombre'], ['custom', 'Personnalisé']], u.checker || 'auto', (v) => setUi({ checker: v }))),
-        (u.checker === 'custom') ? h('div', { class: 'row' }, color(u.checkerA || '#ffffff', (v) => setUi({ checkerA: v })), color(u.checkerB || '#cccccc', (v) => setUi({ checkerB: v }))) : null,
+        ...(u.checker === 'custom' ? [h('div', { class: 'row' }, color(u.checkerA || '#ffffff', (v) => setUi({ checkerA: v })), color(u.checkerB || '#cccccc', (v) => setUi({ checkerB: v })))] : []),
       );
     } else if (tab === 'nav') {
       body.append(

@@ -53,7 +53,7 @@ js/library/
   character.js        « Nouveau personnage », expressions par défaut, réglage PNGtuber automatique
   library-ui.js       fenêtres Bibliothèque, Nouveau personnage, Recolorer, Ma bibliothèque
   parts/*.js          UN FICHIER PAR CATÉGORIE (bodies, heads, hair, eyes, brows, noses, mouths, accessories, tops, hands)
-  parts/3q/*.js       vue de 3/4 tournée à droite (common : géométrie Q, texture ; bodies BODY3Q + torso3q ; heads ; face : yeux/sourcils/nez/bouches/barbes ; hair ; tops ; accessories)
+  parts/3q/*.js       vue de 3/4 « portrait » tournée à droite, grilles 32×32 doublées (common : g32, art, x2, hash ; bodies BODY3Q + torso/neck ; heads + headMask ; face : yeux/sourcils/nez/bouches/barbes ; hair ; tops ; accessories)
 js/pngtuber/
   engine.js           moteur d'avatar AUTONOME (copié par toString dans l'avatar .html : aucune dépendance)
   assets.js           overrides (expression, bouche closed/half/open, clignement), images, réglages
@@ -66,6 +66,7 @@ js/ui/history-panel.js, js/ui/i18n.js + i18n-en.js, shortcuts.js (touches simple
 js/ui/settings.js     fenêtre Paramètres ; thèmes (THEMES) appliqués par applyAppearance() via des variables CSS sur <html> ; SETTING_KEYS = réglages exportables
 js/ui/toolbar.js      outils regroupés (TOOL_GROUPS) avec menu de groupe, barre d'options contextuelle
 scripts/sw-files.mjs  vérifie ou régénère la liste de précache de sw.js
+scripts/audit/        batterie de tests Playwright (run.sh, voir son README)
 ```
 
 ### Modèle de document
@@ -97,6 +98,8 @@ Une pièce est `{ id, name, category, build(ctx) => [{ name, z, grid } | { name,
 ## Tests manuels et automatiques
 
 Il n'y a pas de framework de test. On vérifie avec Playwright (Chromium déjà installé dans l'environnement cloud) en servant le dossier avec `python3 -m http.server`. `window.pixelAtelier` expose l'objet `app` pour piloter les outils (`app.tools.current.down/move/up(p)`) et vérifier l'état.
+
+**Avant chaque mise en ligne : `scripts/audit/run.sh`** (≈ 200 vérifications : outils à la souris, exports relus, PNGtuber/OBS/avatar, chaque pièce de la bibliothèque, chaque entrée de menu, mobile et tactile, anglais, accessibilité, hors ligne, stockage indisponible, fuzz annuler/rétablir + persistance). Il démarre lui-même le serveur s'il le faut. Un nouveau texte d'interface oublié dans `i18n-en.js` fait échouer `en` ; un `null` ajouté au DOM (par ex. `el.append(cond ? x : null)` : `append` natif écrit « null », contrairement à `h()`) est signalé comme « texte parasite ».
 
 Points à revérifier après une modification importante :
 - tactile : 2 doigts (zoom sans tracé), tape à 2 doigts (annuler) ;

@@ -216,6 +216,8 @@ function setupMinimap() {
   app.on('viewport', draw);
   app.on('doc', draw);
   app.on('state', draw);
+  app.on('frame', draw);
+  app.on('meta', draw);
   draw();
 }
 

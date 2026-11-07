@@ -7,7 +7,7 @@ import { Z } from '../../builder.js';
 import { EYE_STATES } from '../eyes.js';
 import { BROW_STATES } from '../brows.js';
 import { MOUTH_STATES } from '../mouths.js';
-import { g32, art, x2, hash } from './common.js';
+import { art, x2, hash } from './common.js';
 
 /** Deux motifs (proche, lointain) dans une grille 32×32. */
 function duo(near, far, [nx, ny], [fx, fy]) {

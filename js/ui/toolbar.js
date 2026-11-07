@@ -163,7 +163,7 @@ function check(label, value, onChange, title = '') {
 
 function numberStepper(label, value, min, max, onChange) {
   const inp = h('input', {
-    type: 'number', class: 'input num', min, max, value,
+    type: 'number', class: 'input num', min, max, value, 'aria-label': label,
     onchange: (e) => onChange(Math.max(min, Math.min(max, parseInt(e.target.value, 10) || min))),
   });
   return h('span', { class: 'opt-group' }, h('span', { class: 'lbl' }, label),
@@ -224,7 +224,7 @@ export function renderOptions(app) {
     bar.append(seg([[true, 'Contigu'], [false, 'Global']], st.fillContiguous, (v) => set({ fillContiguous: v })));
     bar.append(check('Tous les calques', st.fillSampleAll, (v) => set({ fillSampleAll: v }), 'Délimiter selon l\'image visible'));
     bar.append(h('span', { class: 'opt-group' }, h('span', { class: 'lbl' }, 'Tolérance'),
-      h('input', { type: 'range', min: 0, max: 100, value: st.fillTolerance, onchange: (e) => set({ fillTolerance: +e.target.value }) })));
+      h('input', { type: 'range', min: 0, max: 100, value: st.fillTolerance, 'aria-label': 'Tolérance', onchange: (e) => set({ fillTolerance: +e.target.value }) })));
   }
   if (t.id === 'picker') {
     bar.append(seg([[true, 'Image'], [false, 'Calque actif']], st.pickerSampleAll, (v) => set({ pickerSampleAll: v })));

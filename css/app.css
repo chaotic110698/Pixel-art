@@ -362,6 +362,8 @@ input[type='range'] { accent-color: var(--accent); min-height: 30px; }
 .lrow.group .name { font-weight: 650; }
 .lrow .badge { font-size: 10px; padding: 1px 6px; border-radius: 9px; background: var(--accent2); color: #fff; flex: none; }
 .lrow .badge.ref { background: #888; }
+.lrow .badge.icon-badge { padding: 2px 4px; display: inline-flex; align-items: center; }
+.lrow .badge.icon-badge svg { width: 12px; height: 12px; }
 .lrow .radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--muted); flex: none; margin: 0 8px; }
 .lrow .radio.on { border-color: var(--accent); background: radial-gradient(var(--accent) 45%, transparent 50%); }
 .lrow.drop-above { box-shadow: 0 -3px 0 var(--accent2); }
@@ -650,7 +652,14 @@ table.keys td:first-child { white-space: nowrap; width: 1%; }
 #variantbar .vb button:hover { background: var(--panel2); }
 #variantbar .vb .lbl { font-size: 12px; padding: 0 2px; white-space: nowrap; }
 #variantbar .vb .lbl b { color: var(--accent); font-weight: 650; }
-@media (max-width: 760px) { #variantbar { max-width: calc(100% - 16px); } #variantbar .vb .lbl { font-size: 11px; } }
+@media (max-width: 760px), (max-height: 500px) {
+  /* une seule ligne qui défile : la barre ne masque plus le dessin sur téléphone */
+  #variantbar { right: 8px; max-width: none; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; overscroll-behavior: contain; }
+  #variantbar::-webkit-scrollbar { display: none; }
+  #variantbar .vb { flex-shrink: 0; }
+  #variantbar .vb .lbl { font-size: 11px; }
+}
+@media (min-width: 761px) and (max-height: 500px) { #variantbar { right: 116px; } }
 
 /* ---------- Correctifs mobiles / iOS ---------- */
 button, .chip, .swatch, .card, .lrow, .menu-item { touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }

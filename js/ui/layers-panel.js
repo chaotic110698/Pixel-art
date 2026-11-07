@@ -120,7 +120,7 @@ export function initLayersPanel(app) {
     drawThumb(node, th);
     el.append(th);
     el.append(h('span', { class: 'name', title: doc.pathName(node), translate: 'no' }, node.name));
-    if (node.variant) el.append(h('span', { class: 'badge', title: 'Groupe de variantes : une seule visible à la fois' }, 'variantes'));
+    if (node.variant) el.append(h('span', { class: 'badge icon-badge', title: 'Groupe de variantes : une seule visible à la fois', 'aria-label': 'Groupe de variantes' }, icon('variants')));
     if (node.reference) el.append(h('span', { class: 'badge ref', title: 'Calque de référence : non exporté' }, 'réf.'));
     if (node.opacity < 1) el.append(h('span', { class: 'small muted' }, Math.round(node.opacity * 100) + '%'));
     el.append(h('button', {
@@ -207,7 +207,7 @@ export function initLayersPanel(app) {
     if (!a) return;
     const parent = doc.get(a.parent);
     const op = h('input', {
-      type: 'range', min: 0, max: 100, value: Math.round(a.opacity * 100), class: 'grow',
+      type: 'range', min: 0, max: 100, value: Math.round(a.opacity * 100), class: 'grow', 'aria-label': 'Opacité du calque',
       oninput: (e) => {
         a.opacity = e.target.value / 100;
         opLbl.textContent = e.target.value + ' %';

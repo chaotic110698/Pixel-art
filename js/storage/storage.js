@@ -4,7 +4,6 @@ import { db, prefixRange } from './db.js';
 import { setDirtyHook } from '../render/celcache.js';
 import { docToRecord, recordToDoc } from './serialize.js';
 import { composeToCanvas } from '../render/compose.js';
-import { debounce } from '../util/dom.js';
 
 export async function makeThumb(doc, size = 128) {
   const src = composeToCanvas(doc, { includeReference: false, frame: 0 });
@@ -115,6 +114,7 @@ export async function initStorage(app) {
     await db.put('kv', doc.id, 'lastProject');
   }
 
+  let failWarned = false;
   async function saveNow(showToast = false) {
     if (saving) {
       dirty = true;
@@ -128,9 +128,15 @@ export async function initStorage(app) {
       app.emit('saved', lastSaved);
       channel?.postMessage({ type: 'saved', projectId: app.doc.id });
       if (showToast) app.toast('Projet enregistré sur cet appareil');
+      failWarned = false;
     } catch (err) {
       console.error('[save]', err);
       if (showToast) app.toast('Échec de l\'enregistrement : ' + (err.message || err));
+      else if (!failWarned) {
+        // échec silencieux de la sauvegarde automatique : on prévient une fois
+        failWarned = true;
+        app.toast('Sauvegarde automatique impossible dans ce navigateur (navigation privée ou espace plein). Pensez à télécharger le fichier projet (menu ☰).', 7000);
+      }
     } finally {
       saving = false;
       if (dirty) autosave();
