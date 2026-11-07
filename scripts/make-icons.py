@@ -28,7 +28,7 @@ if '--bg' in sys.argv:
 def find_source():
     if args:
         return args[0]
-    files = sorted(f for f in glob.glob(os.path.join(DROP, '*')) if f.lower().endswith(EXT) and os.path.basename(f).lower() != 'icone-maskable.png')
+    files = sorted(f for f in glob.glob(os.path.join(DROP, '*')) if f.lower().endswith(EXT) and os.path.basename(f).lower() not in ('icone-maskable.png', 'icone-pleine.png'))
     if not files:
         sys.exit(f'Aucune image dans {DROP} : déposez-y un PNG carré (512×512 conseillé).')
     return files[0]
@@ -86,7 +86,7 @@ os.makedirs(OUT, exist_ok=True)
 outputs = {
     'icon-192.png': resized(src, 192),
     'icon-512.png': resized(src, 512),
-    'apple-touch-icon.png': on_bg(src, 180, 1.0).convert('RGB'),
+    'apple-touch-icon.png': None,  # voir plus bas
     'favicon-32.png': resized(src, 32),
     'favicon-16.png': resized(src, 16),
 }
@@ -96,6 +96,13 @@ if os.path.exists(mask_path):
 else:
     # zone de sécurité des icônes adaptatives : 80 % du diamètre
     outputs['icon-maskable-512.png'] = on_bg(src, 512, 0.8)
+# iPhone : image pleine, sans transparence (iOS arrondit lui-même les coins) :
+# icone-pleine.png si fournie, sinon la version maskable
+full_path = os.path.join(DROP, 'icone-pleine.png')
+if os.path.exists(full_path) or os.path.exists(mask_path):
+    outputs['apple-touch-icon.png'] = resized(square(Image.open(full_path if os.path.exists(full_path) else mask_path)), 180).convert('RGB')
+else:
+    outputs['apple-touch-icon.png'] = on_bg(src, 180, 1.0).convert('RGB')
 for name, im in outputs.items():
     im.save(os.path.join(OUT, name), optimize=True)
     print(f'  icons/{name} ({im.size[0]}×{im.size[1]})')

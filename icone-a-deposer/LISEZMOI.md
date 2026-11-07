@@ -13,6 +13,14 @@ téléphone, onglet du navigateur, application installée).
 - Facultatif : un second fichier nommé `icone-maskable.png` si vous voulez une version
   spéciale pour Android (icône « adaptative » découpée en rond ou en goutte). Sinon elle est
   créée automatiquement avec une marge de sécurité.
+- Facultatif : `icone-pleine.png`, version carrée sans transparence pour l'iPhone (iOS arrondit
+  lui-même les coins).
+
+## Icône actuelle
+
+`original/IMG_5208.png` est l'image déposée. Claude en a tiré `icone.png` (la tuile sombre
+arrondie, fond transparent), `icone-pleine.png` (iPhone) et `icone-maskable.png` (Android,
+contenu dans la zone de sécurité). Pour changer d'icône, remplacez ces fichiers.
 
 ## Ensuite
 
