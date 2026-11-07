@@ -430,7 +430,8 @@ export const GUIDE = [
         body: [
           steps(
             ['Menu ☰ > **Nouveau personnage**.', '☰ menu > **New character**.'],
-            ['Choisissez la **vue** : **De face** (style mignon) ou **3/4 droite** (style portrait adulte, gros pixels).', 'Choose the **view**: **Front** (cute style) or **3/4 right** (adult portrait style, chunky pixels).'],
+            ['Choisissez la **vue** : **De face** (style mignon), **3/4** (style portrait adulte, gros pixels) ou **Portrait détaillé** (grande tête de 3/4, barbe, chignon, cou ombré, au pixel près).', 'Choose the **view**: **Front** (cute style), **3/4** (adult portrait style, chunky pixels) or **Detailed portrait** (large 3/4 head, beard, bun, shaded neck, pixel-precise).'],
+            ['Pour les vues de profil, choisissez l\'**orientation** : **vers la gauche** ou **vers la droite** (les pièces sont retournées en miroir).', 'For profile views, choose the **facing**: **left** or **right** (parts are mirrored).'],
             ['Réglez les 5 couleurs (peau, cheveux, yeux, vêtements, accessoires) et chaque pièce, ou 🎲 **Au hasard**.', 'Set the 5 colors (skin, hair, eyes, clothes, accessories) and each part, or 🎲 **Random**.'],
             ['**Créer le personnage** : yeux, bouche et sourcils sont des groupes de variantes, avec 7 expressions prêtes (Neutre, Parle, Content, Triste, Surpris, Fâché, Yeux fermés) sur les touches [[1]] à [[7]].', '**Create the character**: eyes, mouth and brows are variant groups, with 7 ready expressions (Neutral, Talking, Happy, Sad, Surprised, Angry, Eyes closed) on keys [[1]] to [[7]].'],
           ),
@@ -446,6 +447,7 @@ export const GUIDE = [
             ['Un clic ajoute la pièce comme calque ou groupe de variantes, à la bonne place dans l\'empilement. **Remplacer la pièce existante** échange par exemple une coiffure contre une autre.', 'One click adds the part as a layer or variant group, at the right place in the stack. **Replace existing part** swaps for example one hairstyle for another.'],
             ['Changer les couleurs en haut de la fenêtre **recolore aussi le personnage** déjà en place (menu ☰ > Recolorer le personnage pour le faire à part).', 'Changing the colors at the top of the window **also recolors the character** already in place (☰ menu > Recolor character to do it separately).'],
             ['Les vêtements s\'ajustent automatiquement au corps choisi (fin, moyen, costaud, rond…).', 'Clothes automatically fit the chosen body (slim, medium, stocky, round…).'],
+            ['**Orientation** (vues 3/4 et Portrait détaillé) : ◀ **Vers la gauche** / **Vers la droite** ▶. Changer de sens retourne tout le personnage en place (annulable) ; les pièces ajoutées ensuite suivent le même sens.', '**Facing** (3/4 and Detailed portrait views): ◀ **Facing left** / **Facing right** ▶. Switching mirrors the whole character in place (undoable); parts added afterwards follow the same direction.'],
           ),
           go('action:openLibrary', 'Ouvrir la bibliothèque', 'Open the library'),
         ],
@@ -526,6 +528,8 @@ export const GUIDE = [
             ['**Décors animés** (section Fond) : ciel, nuit étoilée, coucher de soleil, aurore boréale, synthwave, ville néon, espace, forêt au crépuscule, montagnes, plage, sous l\'eau, nuages pastel, motif qui défile, chambre cosy.',
               '**Animated scenes** (Background section): sky, starry night, sunset, northern lights, synthwave, neon city, space, forest at dusk, mountains, beach, underwater, pastel clouds, scrolling pattern, cozy room.'],
           ),
+          p('**Stream Deck** : bouton **Icônes Stream Deck (ZIP)** de la section Effets. Il télécharge une icône 144 × 144 pour chaque effet et chaque décor, avec un fichier LISEZMOI qui liste les touches choisies dans votre projet. Sur le Stream Deck, ajoutez une action « Raccourci clavier » (Hotkey) avec la touche de l\'effet, puis glissez l\'icône sur le bouton. Le même pack est dans le dossier stream-deck/ du dépôt GitHub.',
+            '**Stream Deck**: **Stream Deck icons (ZIP)** button in the Effects section. It downloads a 144 × 144 icon for each effect and each scene, with a README listing the keys chosen in your project. On the Stream Deck, add a "Hotkey" action with the effect\'s key, then drag the icon onto the button. The same pack is in the stream-deck/ folder of the GitHub repository.'),
           tip('Tout fonctionne aussi dans la fenêtre de capture (les effets déclenchés dans l\'éditeur y sont relayés) et dans l\'avatar .html (?bg=night, ?bg=synthwave…).', 'Everything also works in the capture window (effects triggered in the editor are relayed) and in the .html avatar (?bg=night, ?bg=synthwave…).'),
           go('action:openPngtuber', 'Essayer les effets', 'Try the effects'),
         ],
@@ -535,6 +539,8 @@ export const GUIDE = [
         body: [
           list(
             ['**Fenêtre de capture** : une fenêtre avec seulement l\'avatar, qui suit vos changements dans l\'éditeur. Capturez-la dans OBS (capture de fenêtre + filtre d\'incrustation).', '**Capture window**: a window with only the avatar, following your changes in the editor. Capture it in OBS (window capture + chroma key filter).'],
+            ['**Format de la scène** (section Fond du mode PNGtuber) : 1920 × 1080, 1280 × 720, 2560 × 1440, vertical 1080 × 1920 (TikTok, Shorts), carré, 4:3, coin webcam 500 × 500, coin portrait 400 × 600, ou libre. Le cadre est affiché dans l\'éditeur ; réglez la **taille de l\'avatar** dans le cadre et sa **position** (en bas, à gauche, à droite, au centre).', '**Scene format** (Background section of PNGtuber mode): 1920 × 1080, 1280 × 720, 2560 × 1440, vertical 1080 × 1920 (TikTok, Shorts), square, 4:3, 500 × 500 webcam corner, 400 × 600 portrait corner, or free. The frame is shown in the editor; set the **avatar size** in the frame and its **position** (bottom, left, right, center).'],
+            ['La fenêtre de capture s\'ouvre directement à ce format et suit vos changements ; son bouton **Ajuster la fenêtre** lui redonne la taille exacte. Dans OBS, la source a ainsi la bonne taille sans recadrage.', 'The capture window opens directly at that format and follows your changes; its **Fit window** button restores the exact size. In OBS, the source then has the right size without cropping.'],
             ['**Avatar OBS (.html)** : un fichier autonome à ajouter dans OBS comme **source navigateur** (fichier local), au fond transparent. Paramètres d\'adresse : ?bg=green, ?mic=1, ?ui=0, ?scale=4, ?profile=F14. [[H]] masque ses boutons.', '**OBS avatar (.html)**: a standalone file to add in OBS as a **browser source** (local file), with a transparent background. URL parameters: ?bg=green, ?mic=1, ?ui=0, ?scale=4, ?profile=F14. [[H]] hides its buttons.'],
             ['**Images pour logiciels PNGtuber** (veadotube, PNGTuber Plus…) : export ZIP avec repos, parle, entrouverte, avec et sans clignement, par expression et par profil.', '**Images for PNGtuber software** (veadotube, PNGTuber Plus…): ZIP export with idle, talking, half-open, with and without blinking, per expression and profile.'],
           ),

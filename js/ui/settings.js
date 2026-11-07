@@ -1,7 +1,7 @@
 // Paramètres du site : apparence (thèmes, couleurs, taille), navigation, affichage,
 // langue, données. Les réglages vivent dans app.state (localStorage).
 
-import { h, clear, downloadBlob, pickFile } from '../util/dom.js';
+import { h, clear, downloadBlob, pickFile, keepScroll } from '../util/dom.js';
 import { openDialog, confirmDialog } from './dialogs.js';
 import { icon } from './icons.js';
 import { hexToU32, toRgba, rgbToHsl, hslToRgb, rgba, u32ToHex } from '../util/color.js';
@@ -121,11 +121,14 @@ export function openSettings(app, initial = 'look') {
   function renderTabs() {
     clear(side);
     for (const [id, label, ic] of TABS) {
-      side.append(h('button', { class: 'set-tab' + (id === tab ? ' on' : ''), onclick: () => { tab = id; renderTabs(); render(); } }, icon(ic), h('span', {}, label)));
+      side.append(h('button', { class: 'set-tab' + (id === tab ? ' on' : ''), onclick: () => { tab = id; renderTabs(); renderNow(); body.scrollTop = 0; } }, icon(ic), h('span', {}, label)));
     }
   }
 
   function render() {
+    keepScroll(body, renderNow);
+  }
+  function renderNow() {
     clear(body);
     const s = st();
     const u = s.ui || {};

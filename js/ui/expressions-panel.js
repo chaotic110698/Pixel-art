@@ -1,6 +1,6 @@
 // Panneau Expressions : bascule rapide des variantes + expressions nommées.
 
-import { h, clear, debounce } from '../util/dom.js';
+import { h, clear, debounce, keepScroll } from '../util/dom.js';
 import { icon } from './icons.js';
 import { popupMenu, promptDialog, confirmDialog, openDialog } from './dialogs.js';
 import { composeToCanvas } from '../render/compose.js';
@@ -11,6 +11,9 @@ export function initExpressionsPanel(app) {
   const panel = document.getElementById('panel-expressions');
 
   function render() {
+    keepScroll(panel, renderNow);
+  }
+  function renderNow() {
     const doc = app.doc;
     clear(panel);
     const groups = doc.variantGroups();

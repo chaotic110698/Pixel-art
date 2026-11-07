@@ -19,14 +19,16 @@
 export function createEffects(o) {
   const ONESHOT = ['confetti', 'hearts', 'sparkles', 'fireworks', 'stars', 'impact', 'bang', 'quest', 'sweat', 'vein', 'tears', 'lines', 'zzz'];
   const CONF = ['#ff3b6b', '#ffd84a', '#59c2ff', '#b6ff6a', '#b48cff', '#ffffff', '#ff9a2e'];
-  const PAL = { r: '#ff3b6b', w: '#ffffff', y: '#ffd84a', b: '#59c2ff', k: '#1b1420', n: '#ffe9a8', c: '#bff4ff' };
+  const PAL = { r: '#ff3b6b', R: '#e8262e', w: '#ffffff', y: '#ffd84a', b: '#59c2ff', k: '#140c10', n: '#ffe9a8', c: '#bff4ff' };
   const SP = {
     heart: ['rr.rr', 'rrrrr', 'rrrrr', '.rrr.', '..r..'],
     heartS: ['r.r', 'rrr', '.r.'],
     star: ['..w..', '.www.', 'wwwww', '.www.', '..w..'],
     starS: ['.y.', 'yyy', '.y.'],
-    vein: ['rr.rr', 'r...r', '.....', 'r...r', 'rr.rr'],
-    bang: ['kyk', 'kyk', 'kyk', 'kyk', '.k.', 'kyk', '.k.'],
+    // 💢 : quatre coins dont la pointe est tournée vers le centre
+    vein: ['..R.R..', '..R.R..', 'RRR.RRR', '.......', 'RRR.RRR', '..R.R..', '..R.R..'],
+    // « ! » rouge cerné de noir
+    bang: ['.kkk.', 'kRRRk', 'kRRRk', 'kRRRk', 'kRRRk', '.kRk.', '..k..', '.kkk.', 'kRRRk', '.kkk.'],
     quest: ['.www.', 'w...w', '...w.', '..w..', '.....', '..w..'],
     drop: ['.b.', 'bbb', 'bcb', '.b.'],
     tear: ['.b.', 'bcb', '.b.'],
@@ -110,10 +112,13 @@ export function createEffects(o) {
   // ---------- effets ponctuels ----------
   const FX = {
     confetti() {
-      const n = Math.round(80 * mult());
+      // une gerbe éclate au-dessus de la tête, puis les confettis retombent en voletant sur l'avatar
+      const h = H(), b = h.body, w = Math.max(6, (b.r - b.l) / 2);
+      const n = Math.round(90 * mult());
+      const top = Math.max(1, h.top - st.GH * 0.28);
       for (let i = 0; i < n; i++) {
-        const left = i % 2 === 0;
-        add({ kind: 'conf', x: left ? 1 : st.GW - 2, y: st.GH - 4, vx: (left ? 1 : -1) * rnd(0.22, 0.55) * st.GW, vy: -rnd(0.65, 1.2) * st.GH, g: st.GH * 0.95, drag: 0.985, life: rnd(2, 3.2), color: pick(CONF), flip: rnd(0, 6) });
+        if (i % 3 === 0) add({ kind: 'conf', x: h.x + rnd(-w * 1.4, w * 1.4), y: -rnd(1, st.GH * 0.25), vx: rnd(-3, 3), vy: rnd(6, 14), g: st.GH * 0.12, drag: 0.99, sway: rnd(0, 6), life: rnd(3.5, 5), color: pick(CONF), flip: rnd(0, 6) });
+        else add({ kind: 'conf', x: h.x + rnd(-2, 2), y: top, vx: rnd(-1, 1) * w * 1.6, vy: -rnd(0.12, 0.42) * st.GH, g: st.GH * 0.55, drag: 0.965, sway: rnd(0, 6), life: rnd(3, 4.5), color: pick(CONF), flip: rnd(0, 6) });
       }
     },
     hearts() {
@@ -130,8 +135,8 @@ export function createEffects(o) {
     stars() { for (let i = 0; i < Math.round(6 * mult()); i++) setTimeout(() => add({ kind: 'shoot', x: rnd(0.15, 1.3) * st.GW, y: rnd(-0.05, 0.2) * st.GH, vx: -st.GW * 0.6, vy: st.GW * 0.32, life: 1.3, layer: 0 }), i * 160); },
     impact() { st.flash = 1; st.zoom = 1; st.shake = 0.35; },
     vein() { const h = H(); st.emote = { spr: 'vein', t: 0, life: 1.6, x: h.x + (h.r - h.x) * 0.55, y: h.top + 1, pulse: true }; },
-    bang() { const h = H(); st.emote = { spr: 'bang', t: 0, life: 1.4, x: h.r + 1, y: h.top - 6 }; },
-    quest() { const h = H(); st.emote = { spr: 'quest', t: 0, life: 1.6, x: h.r + 1, y: h.top - 5, tilt: true }; },
+    bang() { const h = H(); st.emote = { spr: 'bang', t: 0, life: 1.4, x: h.r + 3, y: Math.max(1, h.top - 5) }; },
+    quest() { const h = H(); st.emote = { spr: 'quest', t: 0, life: 1.6, x: h.r + 3, y: Math.max(1, h.top - 4), tilt: true }; },
     sweat() { const h = H(); add({ kind: 'spr', spr: 'drop', x: h.l + 1, y: h.top + 2, vy: 4, life: 1.6, fade: true, layer: 2 }); },
     tears() {
       const h = H(), w = h.r - h.l;
@@ -148,8 +153,13 @@ export function createEffects(o) {
     fireflies(dt) { if (P.filter((p) => p.kind === 'fly').length < 14 * mult() && Math.random() < dt * 4) add({ kind: 'fly', x: rnd(2, st.GW - 2), y: rnd(0.15, 0.9) * st.GH, vx: rnd(-3, 3), vy: rnd(-3, 3), life: rnd(4, 7), seed: rnd(0, 6), layer: 0 }); },
     bubbles(dt) { if (Math.random() < dt * 0.05 * st.GW * mult()) add({ kind: 'spr', spr: 'bubble', x: rnd(4, st.GW - 4), y: st.GH + 2, vy: -rnd(6, 10), sway: rnd(0, 6), life: st.GH / 6 + 2, layer: 2 }); },
     flames(dt) {
-      const b = H().body;
-      for (let i = 0; i < 3; i++) if (Math.random() < dt * 0.6 * (b.r - b.l) * mult()) add({ kind: 'flame', x: rnd(b.l + 2, b.r - 2), y: b.bottom - rnd(0, 4), vx: rnd(-3, 3), vy: -rnd(14, 26), life: rnd(0.6, 1.1), layer: 0 });
+      // brasier : large, haut et dense, flammes épaisses qui rétrécissent en montant
+      const b = H().body, w = b.r - b.l, l = b.l - w * 0.15, r = b.r + w * 0.15;
+      const n = dt * 2.4 * (r - l) * mult();
+      for (let i = 0; i < 6; i++) if (Math.random() < n) {
+        const x = rnd(l, r), edge = Math.abs(x - (l + r) / 2) / ((r - l) / 2);
+        add({ kind: 'flame', x, y: b.bottom - rnd(0, 3), vx: rnd(-4, 4), vy: -rnd(22, 44) * (1.15 - edge * 0.5), sway: rnd(0, 6), sz: Math.random() < 0.6 ? 3 : 2, life: rnd(0.7, 1.5) * (1.1 - edge * 0.4), layer: 0 });
+      }
     },
     notes(dt, s) { if (st.talkTime > 1.2 && s.talking && Math.random() < dt * 3) { const h = H(); add({ kind: 'spr', spr: 'note', x: h.r + 1, y: h.cy, vx: rnd(4, 8), vy: -rnd(6, 9), sway: rnd(0, 6), life: 2, fade: true, layer: 2, color: pick(['#ffe9a8', '#ff9ccf', '#bff4ff']) }); } },
   };
@@ -212,7 +222,14 @@ export function createEffects(o) {
       case 'rain': cell(g, p.x, p.y, '#9fd3ff'); cell(g, p.x, p.y + 1, '#6fb6ff'); break;
       case 'petal': { const f = Math.floor((st.t * 6 + p.sway) % 2); cell(g, p.x, p.y, '#ff9ccf', f ? 2 : 1, f ? 1 : 2); cell(g, p.x, p.y, '#ffc4e1'); break; }
       case 'fly': { const b = (Math.sin(st.t * 4 + p.seed) + 1) / 2; if (b > 0.35) { cell(g, p.x, p.y, '#e9ff8a'); if (b > 0.8) { g.globalAlpha = 0.45; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) cell(g, p.x + dx, p.y + dy, '#b6ff6a'); } } break; }
-      case 'flame': { const k = p.age / p.life; cell(g, p.x, p.y, k < 0.25 ? '#fff3b0' : k < 0.5 ? '#ffd84a' : k < 0.75 ? '#ff7a2e' : '#c4252e'); if (k < 0.5) cell(g, p.x, p.y + 1, '#ffb43a'); break; }
+      case 'flame': {
+        const k = p.age / p.life;
+        const c = k < 0.18 ? '#fffbe0' : k < 0.38 ? '#ffe04a' : k < 0.6 ? '#ff9a2e' : k < 0.8 ? '#e8402a' : '#8a1c26';
+        const sz = Math.max(1, Math.round((p.sz || 1) * (1 - k * 0.8)));
+        cell(g, p.x - (sz >> 1), p.y, c, sz, sz);
+        if (k < 0.45) cell(g, p.x - (sz >> 1), p.y + sz, '#ffb43a', sz, 1);
+        break;
+      }
       default: break;
     }
     g.globalAlpha = 1;
@@ -508,6 +525,22 @@ export function createEffects(o) {
     frame,
     trigger,
     clear() { P.length = 0; st.emote = null; st.flash = st.zoom = st.shake = st.lines = 0; st.dirty = true; },
+    /** Vignette d'un décor (w×h pixels d'art, instant t en secondes) : icônes Stream Deck. */
+    sceneThumb(id, w, h, t = 2) {
+      if (!SCENES[id]) return null;
+      const keep = [W, Hh, T];
+      W = w; Hh = h; T = t;
+      sc.width = w; sc.height = h;
+      sg.setTransform(1, 0, 0, 1, 0, 0);
+      sg.clearRect(0, 0, w, h);
+      sg.globalAlpha = 1;
+      SCENES[id]();
+      const out = document.createElement('canvas');
+      out.width = w; out.height = h;
+      out.getContext('2d').drawImage(sc, 0, 0);
+      [W, Hh, T] = keep;
+      return out;
+    },
   };
 }
 

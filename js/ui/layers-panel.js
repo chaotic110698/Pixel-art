@@ -1,7 +1,7 @@
 // Panneau Calques : arbre (groupes, groupes de variantes), propriétés,
 // glisser-déposer via poignée (souris + tactile), miniatures.
 
-import { h, clear, debounce } from '../util/dom.js';
+import { h, clear, debounce, keepScroll } from '../util/dom.js';
 import { icon } from './icons.js';
 import { popupMenu, promptDialog, confirmDialog } from './dialogs.js';
 import { celCanvas } from '../render/celcache.js';
@@ -166,6 +166,9 @@ export function initLayersPanel(app) {
   }
 
   function render() {
+    keepScroll(tree, renderNow);
+  }
+  function renderNow() {
     const doc = app.doc;
     clear(tree);
     thumbs.clear();

@@ -65,6 +65,12 @@ export function flipDoc(app, axis) {
   const W = doc.width, H = doc.height;
   app.history.transact(axis === 'h' ? 'Miroir horizontal' : 'Miroir vertical', () => {
     remapAll(doc, (c) => (axis === 'h' ? flipH(c, W, H) : flipV(c, W, H)));
+    // personnage de bibliothèque : le gabarit suit le miroir (et le sens du profil s'inverse)
+    const t = doc.charTemplate;
+    if (axis === 'h' && t) {
+      doc.charTemplate = { ...t, ox: W - t.ox - 64 * (t.scale || 1) };
+      if (t.facing) doc.charTemplate.facing = t.facing === 'left' ? 'right' : 'left';
+    }
   });
 }
 

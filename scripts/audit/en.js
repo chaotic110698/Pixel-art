@@ -51,8 +51,17 @@ const H = require('./h.js');
         const c = p.locator('.tabs-row .chip', { hasText: cat }).first();
         if (await c.count()) { await c.click({ timeout: 2000 }).catch(() => {}); await p.waitForTimeout(250); await scan('library/' + cat); }
       }
-      const v = p.locator('.chip', { hasText: '3/4 right' }).first();
-      if (await v.count()) { await v.click({ timeout: 2000 }).catch(() => {}); await p.waitForTimeout(250); for (const cat of ['Hair', 'Eyes', 'Accessories', 'Clothes', 'Bodies']) { const c = p.locator('.tabs-row .chip', { hasText: cat }).first(); if (await c.count()) { await c.click({ timeout: 2000 }).catch(() => {}); await p.waitForTimeout(250); await scan('library3q/' + cat); } } }
+      for (const view of ['3/4', 'Detailed portrait']) {
+        const v = p.locator('.chip', { hasText: new RegExp('^' + view.replace('/', '\\/') + '$') }).first();
+        if (await v.count()) { await v.click({ timeout: 2000 }).catch(() => {}); await p.waitForTimeout(250); for (const cat of ['Hair', 'Eyes', 'Accessories', 'Clothes', 'Bodies']) { const c = p.locator('.tabs-row .chip', { hasText: cat }).first(); if (await c.count()) { await c.click({ timeout: 2000 }).catch(() => {}); await p.waitForTimeout(250); await scan(`library ${view}/${cat}`); } } }
+      }
+    }
+    if (a === 'newCharacter') {
+      for (const view of ['3q', '3qd']) {
+        await p.selectOption('.dlg label.field:has-text("View") select', view).catch(() => {});
+        await p.waitForTimeout(300);
+        await scan('newCharacter ' + view);
+      }
     }
     for (let i = 0; i < 3; i++) { await p.keyboard.press('Escape'); await p.waitForTimeout(80); }
   }

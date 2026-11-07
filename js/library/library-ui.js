@@ -1,18 +1,18 @@
 // Fenêtres : Bibliothèque, Nouveau personnage, Recolorer, Ma bibliothèque.
 
-import { h, clear, debounce, pickFile, downloadBlob, bytesToBase64, base64ToBytes, slugify } from '../util/dom.js';
+import { h, clear, debounce, keepScroll, pickFile, downloadBlob, bytesToBase64, base64ToBytes, slugify } from '../util/dom.js';
 import { openDialog, confirmDialog, promptDialog } from '../ui/dialogs.js';
 import { icon } from '../ui/icons.js';
-import { CATEGORIES, pieceById, insertPiece, previewPixels, docBodyType, templateOffset, templateOrigin, VIEWS, VIEW_BASE, viewOf, docView, bodyTypeForView } from './library.js';
+import { CATEGORIES, pieceById, insertPiece, previewPixels, docBodyType, templateOffset, templateOrigin, VIEWS, VIEW_BASE, viewOf, docView, bodyTypeForView, facingOf, needsFlip, docFacing, viewFacing } from './library.js';
 import { DEFAULT_COLORS, recolorMap, TEMPLATE } from './builder.js';
 import { ACCESSORY_SUBS } from './parts/accessories.js';
 import { BODY_TYPES } from './parts/bodies.js';
-import { buildCharacter, DEFAULT_CHARACTER, DEFAULT_CHARACTER_3Q, PORTRAIT_COLORS, autoPngtuber } from './character.js';
+import { buildCharacter, DEFAULT_CHARACTER, DEFAULT_CHARACTER_3Q, DEFAULT_CHARACTER_QD, PORTRAIT_COLORS, PORTRAIT_QD_COLORS, autoPngtuber } from './character.js';
 import { db } from '../storage/db.js';
 import { pixelsToCanvas } from '../render/compose.js';
 import { uid } from '../core/doc.js';
 import { normHex } from '../util/color.js';
-import { resizeCanvas } from '../core/image-ops.js';
+import { resizeCanvas, flipDoc } from '../core/image-ops.js';
 import { tr } from '../ui/i18n.js';
 
 const COLOR_FIELDS = [
@@ -26,18 +26,26 @@ const COLOR_FIELDS = [
 export const SKIN_TONES = ['#ffe0cc', '#f5c6a5', '#e8a87c', '#d08b5b', '#a8653a', '#7a4428', '#4e2b1b', '#c9e3a0', '#a7c7ff', '#d9b8ff'];
 export const HAIR_TONES = ['#1e1410', '#3d2314', '#6b3e26', '#a0602e', '#e0a040', '#f2d57a', '#e8e8f0', '#9a9aa8', '#e04a5a', '#ff8fc8', '#7a5cff', '#3fb5ff', '#3fcf8e'];
 
-function cropFor(cat, view = 'front') {
-  if (['eyes', 'brows', 'nose', 'mouth'].includes(cat)) return view === '3q' ? [20, 10, 52, 42] : [16, 12, 48, 44];
+function cropFor(cat, view = 'front', flip = false) {
+  const r = cropRect(cat, view);
+  return flip ? [TEMPLATE - r[2], r[1], TEMPLATE - r[0], r[3]] : r;
+}
+function cropRect(cat, view) {
+  if (['eyes', 'brows', 'nose', 'mouth'].includes(cat)) return view === '3qd' ? [12, 22, 46, 56] : view === '3q' ? [20, 10, 52, 42] : [16, 12, 48, 44];
+  if (view === '3qd' && ['hair', 'accessory', 'head'].includes(cat)) return [8, 18, 58, 64];
   if (cat === 'hair' || cat === 'accessory') return [6, 0, 58, 52];
   if (cat === 'head') return [10, 4, 54, 48];
   return [0, 0, 64, 64];
 }
 
-function layered(ids, piece, colors, bodyType, state, height = TEMPLATE) {
+/** Choix du sens d'un personnage de profil (« vers la gauche » / « vers la droite »). */
+export const FACINGS = [['left', 'Vers la gauche'], ['right', 'Vers la droite']];
+
+function layered(ids, piece, colors, bodyType, state, height = TEMPLATE, flip = false) {
   // composition dans l'ordre z des couches
   const entries = [];
   const add = (p, st = null) => {
-    const px = previewPixels(p, { colors, bodyType, state: st, height });
+    const px = previewPixels(p, { colors, bodyType, state: st, height, flip });
     const z = Math.min(...p.build({ bodyType }).map((l) => l.z));
     entries.push({ z, px, p });
   };
@@ -52,10 +60,11 @@ function layered(ids, piece, colors, bodyType, state, height = TEMPLATE) {
   return out;
 }
 
-function previewCanvas(piece, colors, { bodyType = 'moyen', size = 96, state = null } = {}) {
+function previewCanvas(piece, colors, { bodyType = 'moyen', size = 96, state = null, facing = null } = {}) {
   let px;
-  // mannequin de la même vue que la pièce (de face ou de 3/4)
+  // mannequin de la même vue que la pièce (de face ou de 3/4), tourné dans le sens du personnage
   const view = viewOf(piece);
+  const flip = needsFlip(piece, facing);
   const base = VIEW_BASE[view];
   const MANNEQUIN = [base.body, base.head];
   const FACE = base.face;
@@ -64,10 +73,10 @@ function previewCanvas(piece, colors, { bodyType = 'moyen', size = 96, state = n
     // arrière / tête / avant dans le bon ordre
     px = new Uint32Array(TEMPLATE * TEMPLATE);
     const parts = [];
-    for (const L of piece.build({ bodyType })) parts.push({ z: L.z, px: previewPixels({ ...piece, build: () => [L], id: piece.id + L.z }, { colors }) });
+    for (const L of piece.build({ bodyType })) parts.push({ z: L.z, px: previewPixels({ ...piece, build: () => [L], id: piece.id + L.z }, { colors, flip }) });
     for (const id of MANNEQUIN) {
       const p = pieceById(id);
-      parts.push({ z: p.build({})[0].z, px: previewPixels(p, { colors, bodyType }) });
+      parts.push({ z: p.build({})[0].z, px: previewPixels(p, { colors, bodyType, flip }) });
     }
     parts.sort((a, b) => a.z - b.z);
     for (const e of parts) for (let i = 0; i < px.length; i++) if (e.px[i] >>> 24) px[i] = e.px[i];
@@ -75,14 +84,14 @@ function previewCanvas(piece, colors, { bodyType = 'moyen', size = 96, state = n
     // corps entiers : aperçu en pied (64×96)
     const tall = piece.tall || (piece.category === 'top' && BODY_TYPES[bodyType]?.tall);
     const H = tall ? 96 : TEMPLATE;
-    px = layered(piece.category === 'top' ? ['body-' + bodyType] : piece.category === 'head' ? [base.body] : [], piece, colors, bodyType, state, H);
+    px = layered(piece.category === 'top' ? ['body-' + bodyType] : piece.category === 'head' ? [base.body] : [], piece, colors, bodyType, state, H, flip);
     if (tall) return drawPreview(px, 0, 0, 64, 96, size);
   } else if (piece.category === 'hands') {
     px = layered(['body-moyen', 'head-round', 'top-tshirt', ...FACE], piece, colors, 'moyen', state);
   } else {
-    px = layered([...MANNEQUIN, ...FACE], piece, colors, bodyType, state);
+    px = layered([...MANNEQUIN, ...FACE], piece, colors, bodyType, state, TEMPLATE, flip);
   }
-  const [x0, y0, x1, y1] = cropFor(piece.category, view);
+  const [x0, y0, x1, y1] = cropFor(piece.category, view, flip);
   return drawPreview(px, x0, y0, x1, y1, size);
 }
 
@@ -127,6 +136,8 @@ export function openLibrary(app, initialCat = null) {
   let colors = { ...DEFAULT_COLORS, ...(doc.charColors || app.state.charColors || {}) };
   let cat = initialCat || app.state.libraryCat || 'hair';
   let view = docView(doc) || app.state.libraryView || 'front';
+  // sens du personnage de profil : celui du projet s'il en a un, sinon le dernier choisi
+  let facing = docFacing(doc) || app.state.libraryFacing || viewFacing(view);
   let replace = true;
   const viewRow = h('div', { class: 'row', role: 'radiogroup', 'aria-label': 'Vue' });
   const grid = h('div', { class: 'cards' });
@@ -153,6 +164,29 @@ export function openLibrary(app, initialCat = null) {
     clear(viewRow);
     viewRow.append(h('span', { class: 'small muted' }, 'Vue :'),
       ...VIEWS.map((v) => h('button', { class: 'chip' + (v.id === view ? ' on' : ''), role: 'radio', 'aria-checked': String(v.id === view), onclick: () => { view = v.id; app.setState({ libraryView: view }); renderView(); renderGrid(); } }, v.name)));
+    if (view === 'front') return;
+    viewRow.append(h('span', { class: 'small muted', style: { marginLeft: '8px' } }, 'Orientation :'),
+      ...FACINGS.map(([id, name]) => h('button', {
+        class: 'chip' + (id === facing ? ' on' : ''), role: 'radio', 'aria-checked': String(id === facing),
+        title: 'Sens du profil (un personnage déjà en place est retourné en miroir, annulable)',
+        onclick: () => setFacing(id),
+      }, id === 'left' ? '◀ ' : '', name, id === 'right' ? ' ▶' : '')));
+  }
+
+  /** Change le sens : retourne le personnage déjà en place (miroir horizontal, annulable). */
+  function setFacing(id) {
+    if (id === facing) return;
+    facing = id;
+    app.setState({ libraryFacing: id });
+    const d0 = app.doc;
+    const hasProfile = [...d0.nodes.values()].some((n) => n.part && facingOf(pieceById(n.part.pieceId)));
+    if (hasProfile && d0.charTemplate?.facing !== id) {
+      flipDoc(app, 'h');
+      app.toast(id === 'left' ? 'Personnage tourné vers la gauche' : 'Personnage tourné vers la droite');
+    } else if (d0.charTemplate && d0.charTemplate.facing !== id) {
+      app.history.transact('Orientation du personnage', () => { d0.charTemplate = { ...d0.charTemplate, facing: id }; });
+    }
+    keepScroll(grid, () => { renderView(); renderGrid(); });
   }
 
   function renderTabs() {
@@ -188,10 +222,10 @@ export function openLibrary(app, initialCat = null) {
       const has = (cat) => [...app.doc.nodes.values()].some((n) => n.part?.category === cat);
       const base = VIEW_BASE[viewOf(piece)];
       if (!['body', 'head'].includes(piece.category)) {
-        if (!has('body')) { insertPiece(app.doc, pieceById(base.body), { colors }); addedBase = true; }
-        if (!has('head') && piece.category !== 'top') { insertPiece(app.doc, pieceById(base.head), { colors }); addedBase = true; }
+        if (!has('body')) { insertPiece(app.doc, pieceById(base.body), { colors, facing }); addedBase = true; }
+        if (!has('head') && piece.category !== 'top') { insertPiece(app.doc, pieceById(base.head), { colors, facing }); addedBase = true; }
       }
-      const n = insertPiece(app.doc, piece, { colors, replace: replace && (CATEGORIES.find((c) => c.id === piece.category)?.exclusive || piece.exclusiveKey) });
+      const n = insertPiece(app.doc, piece, { colors, facing, replace: replace && (CATEGORIES.find((c) => c.id === piece.category)?.exclusive || piece.exclusiveKey) });
       if (n) app.doc.activeId = n.type === 'group' ? n.children[n.children.length - 1] : n.id;
       autoPngtuber(app.doc);
       return n;
@@ -205,8 +239,7 @@ export function openLibrary(app, initialCat = null) {
     if (f.has(id)) f.delete(id);
     else f.add(id);
     app.setState({ libFavorites: [...f] });
-    renderTabs();
-    renderGrid();
+    keepScroll(grid, () => { renderTabs(); renderGrid(); });
   };
   const norm = (s) => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
@@ -215,7 +248,7 @@ export function openLibrary(app, initialCat = null) {
     const catName = CATEGORIES.find((c) => c.id === p.category)?.name || '';
     return h('div', { class: 'card lib-card' },
       h('button', { class: 'lib-pick', title: `Ajouter « ${p.name} »`, onclick: () => insert(p) },
-        previewCanvas(p, colors, { bodyType }),
+        previewCanvas(p, colors, { bodyType, facing }),
         h('span', { class: 't' }, p.name),
         showCat ? h('span', { class: 's' }, catName) : null,
         viewOf(p) === '3q' && !p.name.includes('3/4') ? h('span', { class: 's' }, '3/4') : null),
@@ -318,9 +351,15 @@ export function openLibrary(app, initialCat = null) {
 // ---------- Nouveau personnage ----------
 export function openNewCharacter(app) {
   let colors = { ...DEFAULT_COLORS, ...(app.state.charColors || {}) };
-  let view = app.state.newCharView === '3q' ? '3q' : 'front';
-  if (view === '3q') colors = { ...colors, ...PORTRAIT_COLORS };
-  const defaults = () => (view === '3q' ? DEFAULT_CHARACTER_3Q : DEFAULT_CHARACTER);
+  let view = VIEWS.some((v) => v.id === app.state.newCharView) ? app.state.newCharView : 'front';
+  const viewColors = () => (view === '3qd' ? PORTRAIT_QD_COLORS : view === '3q' ? PORTRAIT_COLORS : null);
+  if (viewColors()) colors = { ...colors, ...viewColors() };
+  const defaults = () => (view === '3qd' ? DEFAULT_CHARACTER_QD : view === '3q' ? DEFAULT_CHARACTER_3Q : DEFAULT_CHARACTER);
+  let facing = app.state.newCharFacing || viewFacing(view);
+  const facingSel = h('select', { class: 'input wide' }, FACINGS.map(([id, name]) => h('option', { value: id, selected: id === facing }, name)));
+  facingSel.addEventListener('change', () => { facing = facingSel.value; app.setState({ newCharFacing: facing }); redraw(); });
+  const facingField = h('label', { class: 'field', title: 'Sens du profil : les pièces sont retournées en miroir si besoin' }, h('span', {}, 'Orientation'), facingSel);
+  const showFacing = () => { facingField.hidden = view === 'front'; };
   let sel = { ...defaults(), accessories: [...defaults().accessories] };
   const inView = (p) => viewOf(p) === view;
   const viewSel = h('select', { class: 'input wide' }, VIEWS.map((v) => h('option', { value: v.id, selected: v.id === view }, v.name)));
@@ -329,7 +368,8 @@ export function openNewCharacter(app) {
     app.setState({ newCharView: view });
     sel = { ...defaults(), accessories: [...defaults().accessories] };
     // palette adaptée à la vue (modifiable ensuite)
-    colors = view === '3q' ? { ...colors, ...PORTRAIT_COLORS } : { ...DEFAULT_COLORS, ...(app.state.charColors || {}) };
+    colors = viewColors() ? { ...colors, ...viewColors() } : { ...DEFAULT_COLORS, ...(app.state.charColors || {}) };
+    showFacing();
     renderColors();
     renderPickers();
     redraw();
@@ -347,7 +387,7 @@ export function openNewCharacter(app) {
   const colorsBox = h('div');
 
   function drawPreview() {
-    const doc = buildCharacter({ width: 64, height: 64, colors, sel, scale: scaleChk.checked ? 2 : 1 });
+    const doc = buildCharacter({ width: 64, height: 64, colors, sel, scale: scaleChk.checked ? 2 : 1, facing: view === 'front' ? null : facing });
     autoPngtuber(doc, true);
     import('../render/compose.js').then(({ composeToCanvas }) => {
       const g = preview.getContext('2d');
@@ -373,7 +413,9 @@ export function openNewCharacter(app) {
     const acc = CATEGORIES.find((x) => x.id === 'accessory').pieces.filter(inView);
     pickers.append(h('div', { class: 'fields' },
       picker('body', 'Corps'), picker('head', 'Tête'), picker('hair', 'Coiffure'), picker('eyes', 'Yeux'),
-      picker('brows', 'Sourcils', { optional: true }), picker('nose', 'Nez', { optional: true }), picker('mouth', 'Bouche'), picker('top', 'Vêtement', { optional: true }),
+      picker('brows', 'Sourcils', { optional: true }),
+      CATEGORIES.find((x) => x.id === 'nose').pieces.some(inView) ? picker('nose', 'Nez', { optional: true }) : null,
+      picker('mouth', 'Bouche'), picker('top', 'Vêtement', { optional: true }),
       view === 'front' ? picker('hands', 'Mains', { optional: true }) : null),
     h('h3', {}, 'Accessoires'),
     h('div', { class: 'chips' }, acc.map((p) => h('button', {
@@ -401,7 +443,7 @@ export function openNewCharacter(app) {
 
   const randomize = () => {
     const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    for (const k of ['body', 'head', 'hair', 'eyes', 'brows', 'nose', 'mouth', 'top']) sel[k] = rnd(CATEGORIES.find((c) => c.id === k).pieces.filter(inView)).id;
+    for (const k of ['body', 'head', 'hair', 'eyes', 'brows', 'nose', 'mouth', 'top']) sel[k] = rnd(CATEGORIES.find((c) => c.id === k).pieces.filter(inView))?.id || null;
     colors = { ...colors, skin: rnd(SKIN_TONES.slice(0, 7)), hair: rnd(HAIR_TONES), eyes: rnd(['#3b7dd8', '#4ab06a', '#8a5a2b', '#9a5cff', '#e04a5a', '#2a2a3a']), clothes: rnd(['#4a7bd0', '#e04a5a', '#3fcf8e', '#f2a03d', '#7a5cff', '#2a2a3a', '#f0f0f4']) };
     renderPickers();
     renderColors();
@@ -417,7 +459,7 @@ export function openNewCharacter(app) {
         h('p', { class: 'hint', style: { maxWidth: '200px' } }, 'Les yeux, la bouche et les sourcils sont créés en groupes de variantes, avec des expressions prêtes (Neutre, Parle, Content…).')),
       h('div', {},
         h('div', { class: 'fields' }, h('label', { class: 'field' }, h('span', {}, 'Nom'), nameIn), h('label', { class: 'field' }, h('span', {}, 'Taille du canevas'), sizeSel),
-          h('label', { class: 'field' }, h('span', {}, 'Vue'), viewSel)),
+          h('label', { class: 'field' }, h('span', {}, 'Vue'), viewSel), facingField),
         h('label', { class: 'chk', title: 'Pièces agrandies ×2 avec lissage des diagonales (Scale2x), pour un personnage plus grand à retoucher' }, scaleChk, 'Gabarit détaillé ×2 (128 × 128)'),
         h('p', { class: 'hint' }, 'Les corps entiers agrandissent automatiquement la hauteur du canevas (gabarit 64 × 96).'),
         h('h3', {}, 'Couleurs'), colorsBox,
@@ -429,7 +471,7 @@ export function openNewCharacter(app) {
           const [w, hh] = sizeSel.value.split('x').map(Number);
           await app.storage?.saveNow();
           const s = scaleChk.checked ? 2 : 1;
-          const doc = buildCharacter({ width: w * s, height: hh * s, colors, sel, scale: s, name: nameIn.value.trim() || tr('Mon personnage') });
+          const doc = buildCharacter({ width: w * s, height: hh * s, colors, sel, scale: s, facing: view === 'front' ? null : facing, name: nameIn.value.trim() || tr('Mon personnage') });
           app.setState({ charColors: colors });
           app.setDoc(doc);
           app.toast('Personnage créé ! Essayez le mode PNGtuber 📺');
@@ -437,6 +479,7 @@ export function openNewCharacter(app) {
       },
     ],
   });
+  showFacing();
   renderPickers();
   renderColors();
   drawPreview();

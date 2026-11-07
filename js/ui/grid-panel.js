@@ -1,11 +1,14 @@
 // Panneau Grille : entièrement modulable, réglages enregistrés dans le projet.
 
-import { h, clear } from '../util/dom.js';
+import { h, clear, keepScroll } from '../util/dom.js';
 
 export function initGridPanel(app) {
   const panel = document.getElementById('panel-grid');
 
   function render() {
+    keepScroll(panel, renderNow);
+  }
+  function renderNow() {
     const g = app.doc.grid;
     const orig = { ...g }; // valeurs avant tout aperçu en direct
     clear(panel);

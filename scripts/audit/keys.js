@@ -71,7 +71,7 @@ const H = require('./h.js');
   await cap.waitForTimeout(3500); // la barre se masque
   await cap.keyboard.press('KeyG');
   await cap.waitForTimeout(200);
-  const c4 = await cap.evaluate(() => [document.getElementById('bg').value, getComputedStyle(document.body).backgroundColor]);
+  const c4 = await cap.evaluate(() => [document.getElementById('bg').value, getComputedStyle(document.getElementById('scene')).backgroundColor]);
   check('Capture : changer de fond (éditeur, liste, touche)', c2 === 'beach' && c3 === 'night' && c4[0] === 'green' && c4[1] === 'rgb(0, 255, 0)', `${c2} ${c3} ${c4}`);
   // 4. expression : combinaison
   await p.bringToFront();

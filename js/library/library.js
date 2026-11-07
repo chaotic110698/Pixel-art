@@ -17,34 +17,48 @@ import hair3q from './parts/3q/hair.js';
 import { eyes as eyes3q, brows as brows3q, noses as noses3q, mouths as mouths3q, beards as beards3q } from './parts/3q/face.js';
 import tops3q from './parts/3q/tops.js';
 import acc3q from './parts/3q/accessories.js';
+import { headsQD, hairQD, beardsQD, eyesQD, browsQD, mouthsQD, bodiesQD, topsQD } from './parts/3qd.js';
 import { TEMPLATE, roleColors, rasterize, DEFAULT_COLORS } from './builder.js';
 import { uid } from '../core/doc.js';
 import { tr } from '../ui/i18n.js';
 
 export const CATEGORIES = [
-  { id: 'body', name: 'Corps', pieces: [...bodies, ...bodies3q], exclusive: true },
-  { id: 'head', name: 'Têtes', pieces: [...heads, ...heads3q], exclusive: true },
-  { id: 'hair', name: 'Coiffures', pieces: [...hair, ...hair3q], exclusive: true },
-  { id: 'eyes', name: 'Yeux', pieces: [...eyes, ...eyes3q], exclusive: true },
-  { id: 'brows', name: 'Sourcils', pieces: [...brows, ...brows3q], exclusive: true },
+  { id: 'body', name: 'Corps', pieces: [...bodies, ...bodies3q, ...bodiesQD], exclusive: true },
+  { id: 'head', name: 'Têtes', pieces: [...heads, ...heads3q, ...headsQD], exclusive: true },
+  { id: 'hair', name: 'Coiffures', pieces: [...hair, ...hair3q, ...hairQD], exclusive: true },
+  { id: 'eyes', name: 'Yeux', pieces: [...eyes, ...eyes3q, ...eyesQD], exclusive: true },
+  { id: 'brows', name: 'Sourcils', pieces: [...brows, ...brows3q, ...browsQD], exclusive: true },
   { id: 'nose', name: 'Nez', pieces: [...noses, ...noses3q], exclusive: true },
-  { id: 'mouth', name: 'Bouches', pieces: [...mouths, ...mouths3q], exclusive: true },
-  { id: 'top', name: 'Vêtements', pieces: [...tops, ...tops3q], exclusive: true },
-  { id: 'accessory', name: 'Accessoires', pieces: [...accessories, ...beards3q, ...acc3q], exclusive: false },
+  { id: 'mouth', name: 'Bouches', pieces: [...mouths, ...mouths3q, ...mouthsQD], exclusive: true },
+  { id: 'top', name: 'Vêtements', pieces: [...tops, ...tops3q, ...topsQD], exclusive: true },
+  { id: 'accessory', name: 'Accessoires', pieces: [...accessories, ...beards3q, ...acc3q, ...beardsQD], exclusive: false },
   { id: 'hands', name: 'Mains', pieces: hands, exclusive: true },
 ];
 
-/** Vues disponibles : de face, ou de 3/4 tournée vers la droite. */
+/**
+ * Vues disponibles : de face, de 3/4 (style portrait) et « portrait détaillé » (3/4 à grande
+ * tête, d'après la 2e image de référence). Les pièces de profil portent `facing` (sens dessiné) ;
+ * le personnage d'un projet a son propre sens (doc.charTemplate.facing) : une pièce dessinée
+ * dans l'autre sens est retournée en miroir à l'insertion.
+ */
 export const VIEWS = [
   { id: 'front', name: 'De face' },
-  { id: '3q', name: '3/4 droite' },
+  { id: '3q', name: '3/4' },
+  { id: '3qd', name: 'Portrait détaillé' },
 ];
 export const viewOf = (piece) => piece?.view || 'front';
+/** Sens dessiné d'une pièce de profil ('left' | 'right'), null pour la vue de face. */
+export const facingOf = (piece) => piece?.facing || (viewOf(piece) === '3q' ? 'right' : null);
+/** La pièce doit-elle être retournée pour regarder dans le sens `facing` ? */
+export const needsFlip = (piece, facing) => !!(facing && facingOf(piece) && facingOf(piece) !== facing);
+/** Sens par défaut d'une vue. */
+export const viewFacing = (view) => (view === '3qd' ? 'left' : view === '3q' ? 'right' : null);
 
 /** Pièces de base (mannequin) d'une vue. */
 export const VIEW_BASE = {
   front: { body: 'body-moyen', head: 'head-round', face: ['eyes-dots', 'mouth-simple'] },
   '3q': { body: 'body-3q-moyen', head: 'head-3q-long', face: ['eyes-3q-natural', 'brows-3q-straight', 'nose-3q-soft', 'mouth-3q-natural'] },
+  '3qd': { body: 'body-qd-moyen', head: 'head-qd', face: ['eyes-qd', 'brows-qd', 'mouth-qd'] },
 };
 
 /** Vue dominante du document (d'après les pièces de bibliothèque présentes). */
@@ -56,11 +70,29 @@ export function docView(doc) {
   return null;
 }
 
-/** Type de corps cohérent avec la vue (les hauts 3/4 attendent un physique 3/4). */
+/** Type de corps cohérent avec la vue (les hauts de profil attendent un physique de la même vue). */
 export function bodyTypeForView(bodyType, view) {
-  const is3q = String(bodyType || '').startsWith('3q-');
-  if (view === '3q') return is3q ? bodyType : '3q-moyen';
-  return is3q ? 'moyen' : bodyType || 'moyen';
+  const b = String(bodyType || '');
+  const own = view === '3q' ? '3q-' : view === '3qd' ? 'qd-' : null;
+  if (own) return b.startsWith(own) ? b : own + 'moyen';
+  return b.startsWith('3q-') || b.startsWith('qd-') ? 'moyen' : bodyType || 'moyen';
+}
+
+/** Sens du personnage du projet (null tant qu'aucune pièce de profil n'a été posée). */
+export function docFacing(doc) {
+  if (doc.charTemplate?.facing) return doc.charTemplate.facing;
+  for (const n of doc.nodes.values()) {
+    const p = n.part && pieceById(n.part.pieceId);
+    if (p && facingOf(p)) return facingOf(p);
+  }
+  return null;
+}
+
+/** Miroir horizontal d'une grille de rôles. */
+export function flipGrid(grid) {
+  const w = grid.w, a = new Uint8Array(grid.a.length);
+  for (let y = 0; y < grid.h; y++) for (let x = 0; x < w; x++) a[y * w + x] = grid.a[y * w + w - 1 - x];
+  return { a, w, h: grid.h };
 }
 
 export function allPieces() {
@@ -152,7 +184,7 @@ export function nodesOfKind(doc, piece) {
 const LAYER_HEADS = { 'Corps entier': 'Full body', 'Cheveux arrière': 'Hair back', 'Cheveux avant': 'Hair front', Cheveux: 'Hair', Corps: 'Body', 'Tête': 'Head', Haut: 'Top', Nez: 'Nose', Main: 'Hand' };
 function trName(name) {
   if (tr('Calque') === 'Calque') return name; // interface en français
-  const m = name.match(/^(.+?) \((.+?)(, 3\/4)?\)$/);
+  const m = name.match(/^(.+?) \((.+?)(, 3\/4|, portrait)?\)$/);
   if (!m) return tr(name);
   const cap = m[2].charAt(0).toUpperCase() + m[2].slice(1);
   return `${LAYER_HEADS[m[1]] || tr(m[1])} (${tr(cap).toLowerCase()}${m[3] || ''})`;
@@ -175,14 +207,18 @@ function zIndex(doc, z) {
  * Crée les nœuds d'une pièce dans `doc` (sans historique : à appeler dans une transaction).
  * Retourne le premier nœud créé (pour le rendre actif).
  */
-export function insertPiece(doc, piece, { colors = doc.charColors || DEFAULT_COLORS, replace = true } = {}) {
+export function insertPiece(doc, piece, { colors = doc.charColors || DEFAULT_COLORS, replace = true, facing: wanted = null } = {}) {
   const ctx = { bodyType: docBodyType(doc) };
   const layers = buildPiece(piece, ctx);
   const rc = roleColors(colors);
   const origin = templateOrigin(doc, { tall: !!piece.tall });
   const { ox, oy, scale } = origin;
   if (!doc.charTemplate) doc.charTemplate = { ox, oy, scale };
-  const raster = (grid) => rasterize(scaleGrid(grid, scale), rc, doc.width, doc.height, ox, oy);
+  // sens du personnage : fixé par la première pièce de profil, puis les autres s'y alignent
+  const facing = (facingOf(piece) && (wanted || docFacing(doc))) || docFacing(doc) || facingOf(piece);
+  if (facing && doc.charTemplate.facing !== facing) doc.charTemplate = { ...doc.charTemplate, facing };
+  const flip = needsFlip(piece, facing);
+  const raster = (grid) => rasterize(scaleGrid(flip ? flipGrid(grid) : grid, scale), rc, doc.width, doc.height, ox, oy);
   if (!doc.charColors) doc.charColors = { ...colors };
   if (replace) for (const n of nodesOfKind(doc, piece)) doc.remove(n.id);
   const partMeta = (extra = {}) => ({
@@ -224,11 +260,12 @@ export function insertPiece(doc, piece, { colors = doc.charColors || DEFAULT_COL
 }
 
 /** Aperçu d'une pièce : Uint32Array 64×64 (avec mannequin optionnel). */
-export function previewPixels(piece, { colors = DEFAULT_COLORS, bodyType = 'moyen', state = null, height = TEMPLATE } = {}) {
+export function previewPixels(piece, { colors = DEFAULT_COLORS, bodyType = 'moyen', state = null, height = TEMPLATE, flip = false } = {}) {
   const rc = roleColors(colors);
   const out = new Uint32Array(TEMPLATE * height);
   for (const L of buildPiece(piece, { bodyType })) {
-    const grid = L.variants ? (L.variants.find((v) => v.state === state) || L.variants[0]).grid : L.grid;
+    let grid = L.variants ? (L.variants.find((v) => v.state === state) || L.variants[0]).grid : L.grid;
+    if (flip) grid = flipGrid(grid);
     const px = rasterize(grid, rc, TEMPLATE, height);
     for (let i = 0; i < px.length; i++) if (px[i] >>> 24) out[i] = px[i];
   }

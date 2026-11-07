@@ -4,7 +4,7 @@
 // Le rendu est assuré par engine.js, partagé avec la fenêtre de capture et
 // l'avatar exporté pour OBS.
 
-import { h, clear, pickFile, debounce, downloadBlob, slugify } from '../util/dom.js';
+import { h, clear, pickFile, debounce, downloadBlob, slugify, keepScroll } from '../util/dom.js';
 import { openDialog } from '../ui/dialogs.js';
 import { icon } from '../ui/icons.js';
 import { autoPngtuber } from '../library/character.js';
@@ -13,6 +13,7 @@ import { createEffects, EFFECTS, SCENE_NAMES } from './effects.js';
 import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression, avatarProfiles, pngtuberConfig, effectsConfig } from './assets.js';
 import { channel } from '../storage/storage.js';
 import { captureCombo, formatCombo, keyOwner } from '../ui/keycapture.js';
+import { FORMATS, ANCHORS, formatById, applyAnchor, layoutScene } from './formats.js';
 
 const BACKGROUNDS = [
   ['green', 'Vert', '#00ff00'],
@@ -206,6 +207,9 @@ export function openPngtuber(app) {
     });
   }
   function renderFx() {
+    keepScroll(fxBox, renderFxNow);
+  }
+  function renderFxNow() {
     clear(fxBox);
     const c = effectsConfig(doc, engine?.state.profile);
     const prof = activeProfile();
@@ -231,7 +235,8 @@ export function openPngtuber(app) {
           h('span', { class: 'grow small' }, h('b', { translate: 'no' }, e.name), ' : ', (c.byExpr[e.id] || []).length ? (c.byExpr[e.id] || []).map((id, i) => [i ? ', ' : '', h('span', {}, FXN[id])]) : '—'),
           h('button', { class: 'btn small', onclick: () => editExprFx(e) }, 'Choisir…'))))
         : h('p', { class: 'hint' }, 'Aucune expression : créez-en dans l\'onglet Expressions.'),
-      h('p', { class: 'hint' }, 'Les effets apparaissent aussi dans la fenêtre de capture et dans l\'avatar OBS (.html).'));
+      h('p', { class: 'hint' }, 'Les effets apparaissent aussi dans la fenêtre de capture et dans l\'avatar OBS (.html).'),
+      h('button', { class: 'btn', onclick: downloadStreamDeck, title: 'Une icône 144 × 144 par effet et par décor, avec la liste de vos touches' }, icon('download'), 'Icônes Stream Deck (ZIP)'));
   }
   let lastProfile = null;
   function renderProfiles() {
@@ -260,6 +265,9 @@ export function openPngtuber(app) {
   }
 
   function renderSide() {
+    keepScroll(side, renderSideNow);
+  }
+  function renderSideNow() {
     clear(side);
     if (!doc.variantGroups().length) {
       side.append(h('p', { class: 'hint', style: { color: 'var(--danger)' } }, 'Ce projet n\'a pas de groupe de variantes : créez un groupe « Bouche » (fermée / ouverte) ou utilisez « Nouveau personnage ».'));
@@ -322,6 +330,7 @@ export function openPngtuber(app) {
       exprBox,
       h('p', { class: 'hint' }, 'Touches : F13 à F24 pour les profils, celles associées aux expressions (onglet Expressions > ⋯ > Associer une touche ; « temporaire » = seulement tant que la touche est maintenue). Espace = parler, Échap = quitter.'),
       h('h3', {}, 'Diffusion (OBS)'),
+      frameUI(),
       h('div', { class: 'row' },
         h('button', { class: 'btn', onclick: openCapture, title: 'Fenêtre avec seulement l\'avatar, à capturer dans OBS (capture de fenêtre + incrustation chroma)' }, icon('tv'), 'Fenêtre de capture'),
         h('button', { class: 'btn', onclick: exportObs, title: 'Fichier .html autonome à ajouter dans OBS comme source navigateur (fond transparent)' }, icon('download'), 'Avatar OBS (.html)'),
@@ -335,6 +344,37 @@ export function openPngtuber(app) {
     renderFx();
     micBtn.replaceChildren(icon('mic'), engine.state.stream ? 'Couper le micro' : 'Activer le micro');
     micBtn.classList.toggle('primary', !engine.state.stream);
+  }
+
+  /** Cadre de diffusion : format de la scène, taille et position de l'avatar. */
+  function frameUI() {
+    const fmt = h('select', { class: 'input wide', 'aria-label': 'Format de la scène' },
+      FORMATS.map((f) => h('option', { value: f.id, selected: (cfg.format || 'free') === f.id }, f.name)));
+    fmt.addEventListener('change', () => { cfg.format = fmt.value; layoutFrame(); broadcastFrame(); });
+    const fillPct = Math.round((cfg.fill > 0 ? cfg.fill : 0.92) * 100);
+    const fillOut = h('span', { class: 'small', style: { width: '44px' } }, fillPct + ' %');
+    const fill = h('input', {
+      type: 'range', min: 20, max: 100, value: fillPct, class: 'grow', 'aria-label': 'Taille de l\'avatar dans le cadre',
+      oninput: (e) => { fillOut.textContent = e.target.value + ' %'; cfg.fill = e.target.value / 100; },
+      onchange: () => broadcastFrame(),
+    });
+    const anchors = h('div', { class: 'chips' }, ANCHORS.map((a) => h('button', {
+      class: 'chip' + ((cfg.anchor || 'bottom') === a.id ? ' on' : ''),
+      onclick: () => { cfg.anchor = a.id; applyAnchor(scene, a.id); broadcastFrame(); renderSide(); },
+    }, a.name)));
+    return h('div', { class: 'fields' },
+      h('label', { class: 'field' }, h('span', {}, 'Format de la scène (taille capturée)'), fmt),
+      h('label', { class: 'row nowrap' }, h('span', { class: 'small', style: { width: '92px' } }, 'Taille avatar'), fill, fillOut),
+      h('div', {}, h('span', { class: 'small' }, 'Position de l\'avatar'), anchors));
+  }
+  function layoutFrame() {
+    layoutScene(stage, scene, cfg.format || 'free');
+    applyAnchor(scene, cfg.anchor || 'bottom');
+    stage.classList.toggle('framed', (cfg.format || 'free') !== 'free');
+    engine?.refresh();
+  }
+  function broadcastFrame() {
+    channel?.postMessage({ type: 'frame', projectId: doc.id, format: cfg.format || 'free', fill: cfg.fill || 0, anchor: cfg.anchor || 'bottom' });
   }
 
   /** Change de fond (bouton, touche) et prévient la fenêtre de capture. */
@@ -385,20 +425,21 @@ export function openPngtuber(app) {
   }
 
   function applyBg() {
+    // le fond est peint dans le cadre (scene) ; autour, la zone d'aperçu reste sombre
     if (SCENE_NAMES[cfg.background]) {
-      stage.style.background = '#000';
-      stage.style.backgroundImage = '';
+      scene.style.background = '#000';
+      scene.style.backgroundImage = '';
       return;
     }
     const bg = BACKGROUNDS.find((b) => b[0] === cfg.background) || BACKGROUNDS[0];
-    stage.style.background = '';
-    stage.style.backgroundImage = '';
-    if (bg[0] === 'checker') stage.style.background = 'repeating-conic-gradient(#888 0% 25%, #bbb 0% 50%) 0 0 / 24px 24px';
+    scene.style.background = '';
+    scene.style.backgroundImage = '';
+    if (bg[0] === 'checker') scene.style.background = 'repeating-conic-gradient(#888 0% 25%, #bbb 0% 50%) 0 0 / 24px 24px';
     else if (bg[0] === 'image' && customBgUrl) {
-      stage.style.backgroundImage = `url(${customBgUrl})`;
-      stage.style.backgroundSize = 'cover';
-      stage.style.backgroundPosition = 'center';
-    } else stage.style.background = bg[2] || '#00ff00';
+      scene.style.backgroundImage = `url(${customBgUrl})`;
+      scene.style.backgroundSize = 'cover';
+      scene.style.backgroundPosition = 'center';
+    } else scene.style.background = bg[2] || '#00ff00';
   }
 
   async function toggleMic() {
@@ -418,8 +459,17 @@ export function openPngtuber(app) {
     flushCfg.flush();
     await app.storage?.saveNow();
     const bg = ['green', 'blue', 'magenta', 'black', 'white'].includes(cfg.background) || SCENE_NAMES[cfg.background] ? cfg.background : 'green';
-    const w = window.open(`capture.html?project=${encodeURIComponent(doc.id)}&bg=${bg}`, 'pixel-atelier-capture', 'width=520,height=560');
+    const f = formatById(cfg.format || 'free');
+    const dpr = window.devicePixelRatio || 1;
+    const ww = f.w ? Math.round(f.w / dpr) : 520, wh = f.h ? Math.round(f.h / dpr) : 560;
+    const w = window.open(`capture.html?project=${encodeURIComponent(doc.id)}&bg=${bg}&fmt=${f.id}`, 'pixel-atelier-capture', `width=${ww},height=${wh}`);
     if (!w) app.toast('Fenêtre bloquée : autorisez les fenêtres pop-up pour ce site', 3500);
+  }
+
+  async function downloadStreamDeck() {
+    const { streamDeckZip } = await import('./streamdeck.js');
+    downloadBlob(await streamDeckZip(doc), 'pixel-atelier_icones_stream_deck.zip');
+    app.toast('Icônes Stream Deck téléchargées');
   }
 
   async function exportObs() {
@@ -436,6 +486,7 @@ export function openPngtuber(app) {
     full: true,
     body: wrap,
     onClose: () => {
+      ro?.disconnect();
       capStop?.abort();
       flushCfg.flush();
       engine.stop();
@@ -444,6 +495,9 @@ export function openPngtuber(app) {
     },
   });
   d.el.querySelector('.dlg-body').style.overflow = 'hidden';
+  const ro = new ResizeObserver(() => layoutFrame());
+  ro.observe(stage);
+  layoutFrame();
   applyBg();
   renderSide();
   engine.start();

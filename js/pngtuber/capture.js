@@ -5,6 +5,7 @@
 import { readProject, channel } from '../storage/storage.js';
 import { createAvatar } from './engine.js';
 import { createEffects, SCENE_NAMES } from './effects.js';
+import { FORMATS, formatById, applyAnchor, layoutScene } from './formats.js';
 import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression, avatarProfiles, effectsConfig } from './assets.js';
 
 const BG = { green: '#00ff00', blue: '#0047bb', magenta: '#ff00ff', black: '#000000', white: '#ffffff', transparent: 'transparent' };
@@ -27,8 +28,26 @@ function setBg(v) {
   if (v === 'checker') v = 'transparent';
   if (!BG[v] && !SCENE_NAMES[v]) return;
   bgId = v;
-  document.body.style.background = SCENE_NAMES[v] ? '#000' : BG[v] || v;
+  // le fond est peint dans le cadre ; autour (format plus petit que la fenêtre) : noir
+  $('scene').style.background = SCENE_NAMES[v] ? '#000' : BG[v] || v;
+  document.body.style.background = v === 'transparent' ? 'transparent' : '#000';
   $('bg').value = v;
+}
+// cadre de diffusion : format, taille et position de l'avatar (suivent l'éditeur)
+const frame = { format: params.get('fmt') || null, fill: 0, anchor: null };
+function applyFrame() {
+  const f = frame.format || doc?.pngtuber.format || 'free';
+  $('fmt').value = f;
+  document.body.classList.toggle('framed', f !== 'free');
+  layoutScene($('stage'), $('scene'), f, { exact: true });
+  applyAnchor($('scene'), frame.anchor || doc?.pngtuber.anchor || 'bottom');
+  av?.refresh();
+}
+for (const f of FORMATS) {
+  const o = document.createElement('option');
+  o.value = f.id;
+  o.textContent = f.name;
+  $('fmt').append(o);
 }
 // décors animés dans la liste des fonds
 for (const [id, name] of Object.entries(SCENE_NAMES)) {
@@ -72,7 +91,7 @@ async function load(keepExpression = null) {
       width: doc.width,
       height: doc.height,
       getImage: (pf, ex, m, b) => provider(pf, ex, m, b),
-      cfg: (pf) => (doc ? avatarSettings(doc, pf) : {}),
+      cfg: (pf) => (doc ? { ...avatarSettings(doc, pf), ...(frame.fill ? { fill: frame.fill } : {}) } : {}),
       expressions: () => (doc ? avatarExpressions(doc) : []),
       profiles: () => (doc ? avatarProfiles(doc) : []),
       initialExpression: keepExpression ?? initialExpression(doc),
@@ -96,6 +115,15 @@ async function boot() {
   }
   setBg(params.get('bg') || doc.pngtuber.background || 'green');
   $('bg').addEventListener('change', () => setBg($('bg').value));
+  $('fmt').addEventListener('change', () => { frame.format = $('fmt').value; applyFrame(); });
+  $('fit').addEventListener('click', () => {
+    const f = formatById($('fmt').value);
+    if (!f.w) return;
+    const dpr = window.devicePixelRatio || 1;
+    try { window.resizeTo(Math.round(f.w / dpr) + (window.outerWidth - window.innerWidth), Math.round(f.h / dpr) + (window.outerHeight - window.innerHeight)); } catch (e) { /* refusé */ }
+  });
+  window.addEventListener('resize', applyFrame);
+  applyFrame();
   $('expr').addEventListener('change', () => av.setExpression($('expr').value || null));
   $('mic').addEventListener('click', () => {
     av.startMic().then(() => { $('mic').textContent = '🎤 Micro actif'; }).catch((e) => { $('mic').textContent = '🎤 Micro refusé (' + e.name + ')'; });
@@ -108,6 +136,7 @@ async function boot() {
     if (m.type === 'talk') av.setManualTalk(m.on);
     if (m.type === 'effect') av.fx?.trigger(m.id, false);
     if (m.type === 'background') setBg(m.id);
+    if (m.type === 'frame') { frame.format = m.format; frame.fill = m.fill; frame.anchor = m.anchor; applyFrame(); }
     if (m.type === 'saved') {
       const keep = av.state.expression;
       await load(keep).catch(() => {});

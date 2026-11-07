@@ -111,7 +111,8 @@ export function createAvatar(o) {
     const r = o.stage.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     const maxW = Math.max(1, r.width * dpr), maxH = Math.max(1, r.height * dpr);
-    const fit = Math.max(1, Math.floor(Math.min(maxW / o.width, maxH / o.height) * 0.92));
+    const fill = c.fill > 0 ? Math.max(0.1, Math.min(1, c.fill)) : 0.92;
+    const fit = Math.max(1, Math.floor(Math.min(maxW / o.width, maxH / o.height) * fill));
     const s = c.scale > 0 ? c.scale : fit;
     const bounce = c.bounce && st.talking ? Math.round(Math.abs(Math.sin(now / 90)) * Math.max(1, s * 1.5)) : 0;
     const breath = c.breathe && !st.talking ? Math.round(((Math.sin(now / 900) + 1) / 2) * Math.max(1, s * 0.6)) : 0;

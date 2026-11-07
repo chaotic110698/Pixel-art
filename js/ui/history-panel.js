@@ -1,7 +1,7 @@
 // Panneau Historique : liste des actions ; un clic revient à ce point
 // (annule ou rétablit autant d'étapes que nécessaire).
 
-import { h, clear, debounce } from '../util/dom.js';
+import { h, clear, debounce, keepScroll } from '../util/dom.js';
 
 export function initHistoryPanel(app) {
   const panel = document.getElementById('panel-history');
@@ -16,6 +16,9 @@ export function initHistoryPanel(app) {
   }
 
   function render() {
+    keepScroll(panel, renderNow);
+  }
+  function renderNow() {
     const H = app.history;
     clear(panel);
     const done = H.undoStack;

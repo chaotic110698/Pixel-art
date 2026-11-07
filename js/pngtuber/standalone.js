@@ -34,6 +34,8 @@ export async function buildStandaloneAvatar(doc) {
       blinkEvery: settings.blinkEvery, blinkDuration: settings.blinkDuration,
       bounce: settings.bounce, breathe: settings.breathe, shake: settings.shake, tilt: settings.tilt, scale: 0,
       bgKeys: settings.bgKeys || {},
+      fill: settings.fill || 0,
+      anchor: settings.anchor || 'bottom',
     },
   };
   // JSON sûr dans un <script> (pas de « </script> » possible)
@@ -117,6 +119,10 @@ const SCENES = ${JSON.stringify(SCENE_NAMES).replace(/</g, '\\u003c')};
   }
   if (!DATA.profiles.length) psel.hidden = true;
   const $ = (id) => document.getElementById(id);
+  // position de l'avatar (réglage du mode PNGtuber ; ?anchor=bottom-left|bottom-right|center)
+  const anc = params.get('anchor') || DATA.settings.anchor;
+  $('scene').style.justifyContent = anc === 'bottom-left' ? 'flex-start' : anc === 'bottom-right' ? 'flex-end' : 'center';
+  $('scene').style.alignItems = anc === 'center' ? 'center' : 'flex-end';
   const fxCfg = (pf) => DATA.fxByProfile[pf || ''] || DATA.fxByProfile[''] || {};
   let av = null;
   const fx = createEffects({

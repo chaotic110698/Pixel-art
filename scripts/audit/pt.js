@@ -5,12 +5,14 @@ const fs = require('fs');
   const { b, ctx, p, errs } = await H.open();
   const { check } = H;
   const ev = (f, a) => p.evaluate(f, a);
-  for (const view of ['front', '3q']) {
+  for (const view of ['front', '3q', '3qd']) {
     await ev(async (view) => {
       const app = window.pixelAtelier;
-      const { buildCharacter, DEFAULT_CHARACTER, DEFAULT_CHARACTER_3Q, PORTRAIT_COLORS } = await import('./js/library/character.js');
+      const ch = await import('./js/library/character.js');
       const { DEFAULT_COLORS } = await import('./js/library/builder.js');
-      app.setDoc(buildCharacter({ colors: view === '3q' ? PORTRAIT_COLORS : DEFAULT_COLORS, sel: view === '3q' ? DEFAULT_CHARACTER_3Q : DEFAULT_CHARACTER, name: 'PT ' + view }));
+      const colors = { '3q': ch.PORTRAIT_COLORS, '3qd': ch.PORTRAIT_QD_COLORS }[view] || DEFAULT_COLORS;
+      const sel = { '3q': ch.DEFAULT_CHARACTER_3Q, '3qd': ch.DEFAULT_CHARACTER_QD }[view] || ch.DEFAULT_CHARACTER;
+      app.setDoc(ch.buildCharacter({ colors, sel, name: 'PT ' + view, facing: view === '3qd' ? 'right' : null }));
       await app.storage.saveNow();
     }, view);
     await ev(() => window.pixelAtelier.actions.openPngtuber());
@@ -37,6 +39,30 @@ const fs = require('fs');
     check(`[${view}] Fermeture du mode PNGtuber`, !(await ev(() => window.pixelAtelier.pngtuberOpen)));
   }
 
+  // format de la scène (cadre 16:9) et pack d'icônes Stream Deck
+  await ev(() => window.pixelAtelier.actions.openPngtuber());
+  await p.waitForTimeout(600);
+  await p.selectOption('select[aria-label="Format de la scène"]', '1080p');
+  await p.waitForTimeout(300);
+  const ratio = await ev(() => { const r = document.querySelector('.pt-scene').getBoundingClientRect(); return r.width / r.height; });
+  check('Format 1920 × 1080 : scène en 16:9', Math.abs(ratio - 16 / 9) < 0.02, ratio.toFixed(3));
+  await p.selectOption('select[aria-label="Format de la scène"]', 'vertical');
+  await p.waitForTimeout(300);
+  const ratioV = await ev(() => { const r = document.querySelector('.pt-scene').getBoundingClientRect(); return r.width / r.height; });
+  check('Format vertical : scène en 9:16', Math.abs(ratioV - 9 / 16) < 0.02, ratioV.toFixed(3));
+  const sdBtn = p.locator('.dlg-body button', { hasText: 'Icônes Stream Deck' });
+  await sdBtn.scrollIntoViewIfNeeded().catch(() => {});
+  const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 15000 }), sdBtn.click()]);
+  const zipPath = `${H.OUT}/streamdeck.zip`;
+  await dl.saveAs(zipPath);
+  const zbuf = fs.readFileSync(zipPath);
+  let pngs = 0;
+  for (let i = 0; i + 30 < zbuf.length; i++) if (zbuf.readUInt32LE(i) === 0x04034b50) { const n = zbuf.readUInt16LE(i + 26); if (zbuf.slice(i + 30, i + 30 + n).toString().endsWith('.png')) pngs++; }
+  check('Pack Stream Deck : 37 icônes PNG', pngs === 37, pngs);
+  await p.selectOption('select[aria-label="Format de la scène"]', 'free');
+  await p.keyboard.press('Escape');
+  await p.waitForTimeout(300);
+
   // capture OBS
   const id = await ev(() => window.pixelAtelier.doc.id);
   const cap = await ctx.newPage();
@@ -54,6 +80,10 @@ const fs = require('fs');
   const c2 = await cap.screenshot();
   check('Capture OBS : suit l\'expression de l\'éditeur', !c1.equals(c2));
   await cap.screenshot({ path: `${H.OUT}/capture.png` });
+  await cap.goto(`${H.BASE}capture.html?project=${id}&bg=green&fmt=square`);
+  await cap.waitForTimeout(1000);
+  const capR = await cap.evaluate(() => { const r = document.getElementById('scene').getBoundingClientRect(); return r.width / r.height; });
+  check('Capture OBS : format carré (?fmt=square)', Math.abs(capR - 1) < 0.02, capR.toFixed(3));
   check('Capture OBS : aucune erreur', cerrs.length === 0, cerrs.join(' | '));
 
   // avatar autonome

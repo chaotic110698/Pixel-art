@@ -125,3 +125,17 @@ export function base64ToBytes(b64) {
   for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
   return out;
 }
+
+/**
+ * Reconstruit un contenu sans perdre la position de défilement : mémorise le
+ * défilement de `el` et de ses ancêtres qui défilent, exécute fn, puis le rétablit.
+ */
+export function keepScroll(el, fn) {
+  const saved = [];
+  for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+    if (n.scrollTop || n.scrollLeft) saved.push([n, n.scrollTop, n.scrollLeft]);
+  }
+  const r = fn();
+  for (const [n, t, l] of saved) { n.scrollTop = t; n.scrollLeft = l; }
+  return r;
+}

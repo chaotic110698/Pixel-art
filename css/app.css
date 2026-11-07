@@ -864,3 +864,5 @@ body.no-status #statusbar { display: none; }
 .fx-exprs { display: grid; gap: 4px; }
 .fx-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 12px; }
 .fx-bg { z-index: 0; }
+.pt-stage { background: #0b0b10; }
+.pt-stage.framed .pt-scene { box-shadow: 0 0 0 1px rgba(255, 255, 255, .28); overflow: hidden; }

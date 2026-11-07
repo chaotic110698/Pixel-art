@@ -30,8 +30,22 @@ export const DEFAULT_CHARACTER_3Q = {
   accessories: ['beard-3q-full'],
 };
 
+/** « Portrait détaillé » : grande tête, chignon et barbe (tourné vers la gauche par défaut). */
+export const DEFAULT_CHARACTER_QD = {
+  body: 'body-qd-moyen',
+  head: 'head-qd',
+  hair: 'hair-qd-bun',
+  eyes: 'eyes-qd',
+  brows: 'brows-qd',
+  mouth: 'mouth-qd',
+  top: 'top-qd-tshirt',
+  accessories: ['beard-qd-full'],
+};
+
 /** Palette chaude du style portrait (peau, cheveux bruns, yeux bleu-gris, haut brique). */
 export const PORTRAIT_COLORS = { skin: '#f5a26e', hair: '#542a2c', eyes: '#466f81', clothes: '#743931', accent: '#c9a050' };
+/** Palette du « portrait détaillé » (relevée sur l'image de référence). */
+export const PORTRAIT_QD_COLORS = { skin: '#f0b17b', hair: '#452426', eyes: '#426282', clothes: '#813d31', accent: '#c9a050' };
 
 export const EXPRESSION_PRESETS = [
   { name: 'Neutre', key: '1', eyes: 'open', mouth: 'closed', brows: 'normal' },
@@ -85,13 +99,15 @@ export function addDefaultExpressions(doc) {
 }
 
 /** Construit un nouveau document personnage. sel : { body, head, ... , accessories[] } */
-export function buildCharacter({ width = 64, height = 64, name = 'Mon personnage', colors, sel = DEFAULT_CHARACTER, scale = 1 }) {
+export function buildCharacter({ width = 64, height = 64, name = 'Mon personnage', colors, sel = DEFAULT_CHARACTER, scale = 1, facing = null }) {
   // corps entier : gabarit 64×96 ; gabarit détaillé : ×2
   const tall = !!pieceById(sel.body)?.tall;
   width = Math.max(width, 64 * scale);
   height = Math.max(height, (tall ? 96 : 64) * scale);
   const doc = new Doc(width, height, name);
   doc.charTemplate = { ox: Math.floor((width - 64 * scale) / 2), oy: height - (tall ? 96 : 64) * scale, scale };
+  // sens du profil choisi (les pièces dessinées dans l'autre sens sont retournées)
+  if (facing) doc.charTemplate.facing = facing;
   doc.palette = [...presetById('skin').colors];
   doc.charColors = { ...colors };
   const order = ['body', 'top', 'head', 'nose', 'mouth', 'eyes', 'brows', 'hair', 'hands'];
