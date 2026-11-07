@@ -189,6 +189,7 @@ export function openSettings(app, initial = 'look') {
         }), 'La page se recharge pour appliquer la langue'),
         h('h3', {}, 'Aide'),
         h('div', { class: 'row' },
+          h('button', { class: 'btn primary', onclick: () => { app.openGuide?.(); } }, icon('book'), 'Guide complet'),
           h('button', { class: 'btn', onclick: () => { app.startTutorial(); } }, icon('help'), 'Revoir le tutoriel'),
           h('button', { class: 'btn', onclick: async () => { const { showShortcuts } = await import('./shortcuts.js'); showShortcuts(app); } }, icon('keyboard'), 'Raccourcis clavier et gestes')),
       );

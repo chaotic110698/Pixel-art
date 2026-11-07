@@ -1,0 +1,664 @@
+// Contenu du guide complet (fenêtre « Guide »), en français et en anglais.
+// Chaque texte est une paire T(fr, en). Mise en forme légère dans les textes :
+//   **gras**   et   [[Touche]] (affichée comme une touche de clavier).
+// Blocs : p (paragraphe), list (puces), steps (étapes numérotées), keys (raccourcis),
+// tip (astuce), try (bouton qui ouvre l'outil ou la fonction : 'tool:pencil',
+// 'action:openLibrary', 'panel:layers', 'settings:nav', 'shortcuts', 'tutorial', 'timeline').
+
+const T = (fr, en) => ({ fr, en });
+const p = (fr, en) => ({ p: T(fr, en) });
+const tip = (fr, en) => ({ tip: T(fr, en) });
+const list = (...items) => ({ list: items.map(([fr, en]) => T(fr, en)) });
+const steps = (...items) => ({ steps: items.map(([fr, en]) => T(fr, en)) });
+const keys = (...items) => ({ keys: items.map(([k, fr, en]) => [k, T(fr, en)]) });
+const go = (target, fr, en) => ({ try: target, label: T(fr, en) });
+
+export const GUIDE = [
+  // ------------------------------------------------------------------
+  {
+    id: 'start', icon: 'help', title: T('Bien démarrer', 'Getting started'),
+    intro: T('Pixel Atelier est un éditeur de pixel art complet qui fonctionne dans le navigateur, sur ordinateur comme sur téléphone, même sans connexion. Il est pensé pour créer des personnages PNGtuber, mais convient à tout dessin en pixels.',
+      'Pixel Atelier is a complete pixel art editor that runs in the browser, on computers and phones, even offline. It is designed for PNGtuber characters but works for any pixel drawing.'),
+    sections: [
+      {
+        id: 'interface', title: T('L\'écran en un coup d\'œil', 'The screen at a glance'),
+        body: [
+          list(
+            ['**Barre du haut** : menu ☰ (fichiers, image, modes, aide), nom du projet (cliquez pour le renommer), annuler / rétablir, grille, ajuster à l\'écran, zoom, bibliothèque, mode PNGtuber, export, guide et paramètres.',
+              '**Top bar**: ☰ menu (files, image, modes, help), project name (click to rename), undo / redo, grid, fit to screen, zoom, library, PNGtuber mode, export, guide and settings.'],
+            ['**Barre d\'outils** (à gauche, en bas sur téléphone) : les outils sont rangés par familles. Un bouton affiche le dernier outil utilisé de sa famille ; un petit triangle indique qu\'il y en a d\'autres.',
+              '**Toolbar** (left, bottom on phones): tools are grouped by family. Each button shows the last tool used in its family; a small triangle means there are more.'],
+            ['**Barre d\'options** (sous la barre du haut) : les réglages de l\'outil actif (taille, forme, tramage, symétrie…).',
+              '**Options bar** (below the top bar): settings of the active tool (size, shape, dithering, symmetry…).'],
+            ['**Zone de dessin** au centre, avec la **barre de variantes** en haut à gauche (changer d\'yeux, de bouche… en un clic) et la **mini-vue** en taille réelle en haut à droite.',
+              '**Drawing area** in the middle, with the **variant bar** at the top left (switch eyes, mouth… in one click) and the real-size **mini view** at the top right.'],
+            ['**Panneaux** (à droite) : Couleurs, Calques, Expressions, Grille, Historique. Sur téléphone, ils s\'ouvrent depuis la barre du bas.',
+              '**Panels** (right): Colors, Layers, Expressions, Grid, History. On phones they open from the bottom bar.'],
+            ['**Barre d\'état** en bas de la zone de dessin : taille de l\'image, zoom, position du curseur, image d\'animation.',
+              '**Status bar** at the bottom of the drawing area: image size, zoom, cursor position, animation frame.'],
+          ),
+        ],
+      },
+      {
+        id: 'first', title: T('Premiers pas', 'First steps'),
+        body: [
+          steps(
+            ['Menu ☰ > **Nouveau dessin** pour une toile vierge (taille au choix, 32×32 ou 64×64 conseillés), ou **Nouveau personnage** pour partir d\'un personnage complet prêt pour le PNGtuber.',
+              '☰ menu > **New drawing** for a blank canvas (any size, 32×32 or 64×64 recommended), or **New character** to start from a complete character ready for PNGtuber use.'],
+            ['Choisissez une couleur dans le panneau Couleurs (clic = couleur A, clic droit ou appui long = couleur B).',
+              'Pick a color in the Colors panel (click = color A, right click or long press = color B).'],
+            ['Dessinez avec le crayon [[B]]. Clic droit = dessiner avec la couleur B. Une erreur ? [[Ctrl+Z]].',
+              'Draw with the pencil [[B]]. Right click = draw with color B. A mistake? [[Ctrl+Z]].'],
+            ['Tout est enregistré automatiquement dans le navigateur. Pour garder une copie, menu ☰ > **Enregistrer dans un fichier**.',
+              'Everything is saved automatically in the browser. To keep a copy, ☰ menu > **Save to a file**.'],
+            ['Quand c\'est prêt : bouton **Exporter** (PNG, GIF, planche, ZIP…).', 'When ready: **Export** button (PNG, GIF, sheet, ZIP…).'],
+          ),
+          go('action:newCharacter', 'Créer un personnage', 'Create a character'),
+          go('tutorial', 'Lancer la visite guidée', 'Start the guided tour'),
+        ],
+      },
+      {
+        id: 'install', title: T('Installer comme une application', 'Install as an app'),
+        body: [
+          p('Le site peut s\'installer sur l\'écran d\'accueil (téléphone) ou comme application (ordinateur) : menu du navigateur > « Installer » ou « Ajouter à l\'écran d\'accueil ». Il fonctionne ensuite hors ligne. Quand une nouvelle version est publiée, un bandeau propose de recharger.',
+            'The site can be installed on the home screen (phone) or as an app (computer): browser menu > "Install" or "Add to home screen". It then works offline. When a new version is published, a banner offers to reload.'),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'nav', icon: 'hand', title: T('Navigation et gestes', 'Navigation and gestures'),
+    intro: T('Zoomer, se déplacer dans l\'image et circuler dans l\'interface, à la souris, au clavier ou au doigt.',
+      'Zoom, move around the image and get around the interface with a mouse, keyboard or finger.'),
+    sections: [
+      {
+        id: 'mouse', title: T('Souris et pavé tactile', 'Mouse and touchpad'),
+        body: [
+          list(
+            ['**Molette** : zoom autour du curseur (par paliers ou fluide, au choix dans Paramètres > Navigation). [[Ctrl]] + molette zoome toujours.',
+              '**Wheel**: zoom around the cursor (in steps or smooth, see Settings > Navigation). [[Ctrl]] + wheel always zooms.'],
+            ['**Se déplacer** : maintenir [[Espace]] et glisser, ou glisser avec le **clic du milieu**, ou l\'outil Main [[H]].',
+              '**Pan**: hold [[Space]] and drag, drag with the **middle button**, or use the Hand tool [[H]].'],
+            ['Option « La molette déplace la vue » (Paramètres) : pratique avec un pavé tactile ; on zoome alors avec [[Ctrl]] + molette ou le pincement.',
+              '"Wheel pans the view" option (Settings): handy on a touchpad; zoom with [[Ctrl]] + wheel or pinch.'],
+          ),
+          keys(['+ / −', 'Zoom avant / arrière', 'Zoom in / out'], ['0', 'Ajuster à l\'écran', 'Fit to screen'], ['1', 'Taille réelle (100 %)', 'Actual size (100%)'], ['#', 'Grille on/off', 'Grid on/off']),
+        ],
+      },
+      {
+        id: 'touch', title: T('Écran tactile et stylet', 'Touch screen and stylus'),
+        body: [
+          list(
+            ['**1 doigt** : dessiner avec l\'outil actif.', '**1 finger**: draw with the active tool.'],
+            ['**2 doigts** : pincer pour zoomer, glisser pour déplacer la vue (sans rien dessiner).', '**2 fingers**: pinch to zoom, drag to pan (nothing is drawn).'],
+            ['**Tape à 2 doigts** : annuler. **Tape à 3 doigts** : rétablir.', '**2-finger tap**: undo. **3-finger tap**: redo.'],
+            ['**Appui long** sur une couleur : la choisir comme couleur B. Appui long sur un outil : voir les autres outils de sa famille.',
+              '**Long press** a color: set it as color B. Long press a tool: see the other tools of its family.'],
+            ['**Mode stylet** (Paramètres > Navigation) : seul le stylet dessine, un doigt déplace la vue. Idéal sur tablette.',
+              '**Stylus mode** (Settings > Navigation): only the pen draws, one finger pans. Ideal on tablets.'],
+          ),
+          go('settings:nav', 'Régler la navigation', 'Navigation settings'),
+        ],
+      },
+      {
+        id: 'ui', title: T('Circuler dans l\'interface', 'Getting around the interface'),
+        body: [
+          list(
+            ['**Familles d\'outils** : cliquez à nouveau sur l\'outil actif, faites un clic droit ou un appui long pour choisir un autre outil de la famille.',
+              '**Tool families**: click the active tool again, right click or long press to pick another tool of the family.'],
+            ['**Panneaux** : onglets en haut à droite (sur téléphone, barre du bas : Couleurs, Calques, Expressions, Pièces, PNGtuber). Glissez la poignée du tiroir vers le bas pour le fermer.',
+              '**Panels**: tabs at the top right (on phones, bottom bar: Colors, Layers, Expressions, Parts, PNGtuber). Drag the drawer handle down to close it.'],
+            ['**Fenêtres** : [[Échap]] ou ✕ pour fermer. Les menus contextuels (⋯) proposent les actions avancées.',
+              '**Windows**: [[Esc]] or ✕ to close. Context menus (⋯) hold advanced actions.'],
+            ['**Mini-vue** (en haut à droite) : l\'image en taille réelle ; un clic ajuste la vue à l\'écran.',
+              '**Mini view** (top right): the image at real size; one click fits the view.'],
+            ['**Barre de variantes** (en haut à gauche) : ‹ › pour changer la variante de chaque groupe (yeux, bouche…).',
+              '**Variant bar** (top left): ‹ › to change the variant of each group (eyes, mouth…).'],
+          ),
+          go('shortcuts', 'Voir tous les raccourcis', 'See all shortcuts'),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'draw', icon: 'pencil', title: T('Outils de dessin', 'Drawing tools'),
+    intro: T('Chaque outil se choisit dans la barre d\'outils ou avec sa touche. Ses réglages apparaissent dans la barre d\'options. Le clic gauche utilise la couleur A, le clic droit la couleur B.',
+      'Pick each tool in the toolbar or with its key. Its settings appear in the options bar. Left click uses color A, right click color B.'),
+    sections: [
+      {
+        id: 'pencil', icon: 'pencil', title: T('Crayon [[B]]', 'Pencil [[B]]'),
+        body: [
+          p('Pose des pixels nets. C\'est l\'outil de base du pixel art.', 'Places crisp pixels. The basic pixel art tool.'),
+          list(
+            ['**Taille** (1 à 64) et forme **carrée** ou **ronde**. [[[]] et [[]]] changent la taille.', '**Size** (1 to 64) and **square** or **round** shape. [[[]] and [[]]] change the size.'],
+            ['**Pixel perfect** (taille 1) : retire automatiquement les pixels en trop dans les courbes, pour des traits propres.', '**Pixel perfect** (size 1): automatically removes extra pixels in curves for clean lines.'],
+            ['**Remplacer** : ne peint que sur la couleur touchée au début du trait (pratique pour recolorer une zone sans déborder).', '**Replace**: only paints over the color touched at the start of the stroke (handy to recolor an area without spilling).'],
+            ['[[Maj]] + clic : trace une ligne droite depuis le dernier point.', '[[Shift]] + click: draws a straight line from the last point.'],
+            ['[[Alt]] maintenu : pipette temporaire.', 'Hold [[Alt]]: temporary color picker.'],
+            ['Tramage et symétrie : voir « Options communes ».', 'Dithering and symmetry: see "Common options".'],
+          ),
+          go('tool:pencil', 'Prendre le crayon', 'Use the pencil'),
+        ],
+      },
+      {
+        id: 'eraser', icon: 'eraser', title: T('Gomme [[E]]', 'Eraser [[E]]'),
+        body: [
+          p('Rend les pixels transparents. Mêmes réglages que le crayon (taille, forme, pixel perfect). Le clic droit efface aussi.',
+            'Makes pixels transparent. Same settings as the pencil (size, shape, pixel perfect). Right click also erases.'),
+          go('tool:eraser', 'Prendre la gomme', 'Use the eraser'),
+        ],
+      },
+      {
+        id: 'shade', icon: 'shade', title: T('Ombrage [[K]]', 'Shading [[K]]'),
+        body: [
+          p('Éclaircit ou assombrit les pixels existants en suivant l\'ordre de la **palette** : passer sur un pixel prend la couleur voisine dans la palette. Idéal pour poser lumières et ombres sans changer de couleur.',
+            'Lightens or darkens existing pixels following the **palette** order: going over a pixel takes the neighbouring palette color. Ideal for light and shadow without switching colors.'),
+          list(
+            ['**Éclaircir** / **Assombrir** dans la barre d\'options ; le clic droit fait l\'inverse.', '**Lighten** / **Darken** in the options bar; right click does the opposite.'],
+            ['La palette doit contenir des teintes rangées du clair au foncé (par exemple une palette de peau).', 'The palette should contain shades ordered from light to dark (for example a skin palette).'],
+          ),
+          go('tool:shade', 'Essayer l\'ombrage', 'Try shading'),
+        ],
+      },
+      {
+        id: 'fill', icon: 'fill', title: T('Remplissage [[G]]', 'Fill [[G]]'),
+        body: [
+          list(
+            ['**Contigu** : remplit la zone touchée ; **Global** : remplace cette couleur partout dans le calque.', '**Contiguous**: fills the touched area; **Global**: replaces that color everywhere on the layer.'],
+            ['**Tous les calques** : les limites viennent de l\'image visible (pratique pour colorier sous un contour placé sur un autre calque).', '**All layers**: boundaries come from the visible image (handy to color under line art on another layer).'],
+            ['**Tolérance** : accepte les couleurs proches.', '**Tolerance**: accepts similar colors.'],
+            ['Avec le **tramage**, la zone est remplie d\'un motif.', 'With **dithering**, the area is filled with a pattern.'],
+            ['Une sélection active limite le remplissage.', 'An active selection limits the fill.'],
+          ),
+          go('tool:fill', 'Prendre le pot de peinture', 'Use the fill tool'),
+        ],
+      },
+      {
+        id: 'gradient', icon: 'gradient', title: T('Dégradé tramé [[J]]', 'Dithered gradient [[J]]'),
+        body: [
+          p('Glissez du point de départ (couleur A) au point d\'arrivée (couleur B). Le dégradé est construit en pixels tramés, sans couleurs intermédiaires floues.',
+            'Drag from the start point (color A) to the end point (color B). The gradient is built with dithered pixels, without blurry in-between colors.'),
+          list(
+            ['**Linéaire** ou **Radial**.', '**Linear** or **Radial**.'],
+            ['**Tout le calque** ou **Zone touchée** (la zone de couleur sous le point de départ).', '**Whole layer** or **Touched area** (the color area under the start point).'],
+            ['**Tramé** désactivé : deux aplats nets. La sélection limite la zone.', '**Dithered** off: two flat areas. The selection limits the area.'],
+          ),
+          go('tool:gradient', 'Essayer le dégradé', 'Try the gradient'),
+        ],
+      },
+      {
+        id: 'picker', icon: 'picker', title: T('Pipette [[I]]', 'Color picker [[I]]'),
+        body: [
+          list(
+            ['Clic : prend la couleur comme couleur A ; clic droit : couleur B. On peut glisser pour viser.', 'Click: takes the color as color A; right click: color B. You can drag to aim.'],
+            ['**Image** (ce que l\'on voit) ou **Calque actif** seulement.', '**Image** (what you see) or **Active layer** only.'],
+            ['**Revenir à l\'outil précédent** après avoir pris la couleur.', '**Return to the previous tool** after picking.'],
+            ['Raccourci : maintenir [[Alt]] avec le crayon.', 'Shortcut: hold [[Alt]] with the pencil.'],
+          ),
+          go('tool:picker', 'Prendre la pipette', 'Use the color picker'),
+        ],
+      },
+      {
+        id: 'shapes', icon: 'rect', title: T('Ligne [[L]], rectangle [[U]], ellipse [[O]]', 'Line [[L]], rectangle [[U]], ellipse [[O]]'),
+        body: [
+          list(
+            ['Glissez du premier coin au second ; l\'aperçu suit le curseur.', 'Drag from the first corner to the second; the preview follows the cursor.'],
+            ['[[Maj]] : carré, cercle, ou ligne à 45°.', '[[Shift]]: square, circle, or 45° line.'],
+            ['**Épaisseur** du trait, **Contour** ou **Plein** (rectangle, ellipse). [[F]] bascule plein / contour.', '**Thickness**, **Outline** or **Filled** (rectangle, ellipse). [[F]] toggles filled / outline.'],
+            ['Avec la grille aimantée (panneau Grille), les formes s\'alignent sur les cellules.', 'With a snapping grid (Grid panel), shapes align to cells.'],
+          ),
+          go('tool:rect', 'Dessiner un rectangle', 'Draw a rectangle'),
+        ],
+      },
+      {
+        id: 'common', icon: 'sliders', title: T('Options communes', 'Common options'),
+        body: [
+          list(
+            ['**Tramage** [[D]] : peint avec un motif (damier, lignes, points…). « A + vide » alterne couleur et transparence, « A + B » alterne les deux couleurs.',
+              '**Dithering** [[D]]: paints with a pattern (checker, lines, dots…). "A + empty" alternates color and transparency, "A + B" alternates both colors.'],
+            ['**Symétrie** [[S]] : ⇆ gauche/droite, ⇅ haut/bas, ✛ les deux. Les axes s\'affichent sur le dessin. Parfait pour un visage de face.',
+              '**Symmetry** [[S]]: ⇆ left/right, ⇅ top/bottom, ✛ both. Axes are shown on the drawing. Perfect for a front-facing face.'],
+            ['**Dessin enroulé** (mode tuiles) : un trait qui sort d\'un bord revient par l\'autre.', '**Wrapped drawing** (tile mode): a stroke leaving one edge comes back on the other.'],
+            ['[[X]] échange les couleurs A et B.', '[[X]] swaps colors A and B.'],
+          ),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'select', icon: 'select', title: T('Sélection et transformation', 'Selection and transform'),
+    intro: T('Sélectionner une partie du dessin pour la déplacer, la copier, la retourner ou la faire tourner. Les fourmis (pointillés animés) montrent la sélection.',
+      'Select part of the drawing to move, copy, flip or rotate it. Marching ants show the selection.'),
+    sections: [
+      {
+        id: 'select-tools', icon: 'select', title: T('Rectangle [[M]], lasso [[Q]], baguette magique [[W]]', 'Rectangle [[M]], lasso [[Q]], magic wand [[W]]'),
+        body: [
+          list(
+            ['**Rectangle** : glisser pour encadrer. **Lasso** : dessiner le contour à main levée. **Baguette** : clic sur une couleur pour sélectionner la zone.', '**Rectangle**: drag to frame. **Lasso**: draw the outline freehand. **Wand**: click a color to select its area.'],
+            ['Modes : **Nouvelle**, **+ Ajouter**, **− Retirer** (pour combiner plusieurs sélections).', 'Modes: **New**, **+ Add**, **− Subtract** (to combine selections).'],
+            ['Baguette : **Contigu** ou **Même couleur partout** ; **Image visible** pour se baser sur tous les calques.', 'Wand: **Contiguous** or **Same color everywhere**; **Visible image** to use all layers.'],
+            ['Une sélection limite le crayon, le remplissage, le dégradé et la gomme à son intérieur.', 'A selection limits the pencil, fill, gradient and eraser to its inside.'],
+          ),
+          keys(['Ctrl+A', 'Tout sélectionner', 'Select all'], ['Ctrl+D / Échap', 'Désélectionner', 'Deselect'], ['Ctrl+Maj+I', 'Inverser la sélection', 'Invert selection'], ['Suppr', 'Effacer la sélection', 'Clear selection']),
+          go('tool:select', 'Prendre la sélection rectangle', 'Use rectangle select'),
+        ],
+      },
+      {
+        id: 'move', icon: 'move', title: T('Déplacer [[V]] et main [[H]]', 'Move [[V]] and hand [[H]]'),
+        body: [
+          list(
+            ['**Déplacer** : glisse la sélection (ou tout le calque s\'il n\'y a pas de sélection). Avec [[Ctrl]] ou [[Alt]], c\'est une **copie** qui se déplace.',
+              '**Move**: drags the selection (or the whole layer if nothing is selected). With [[Ctrl]] or [[Alt]], a **copy** is moved.'],
+            ['Le contenu déplacé « flotte » au-dessus du calque jusqu\'à **Valider** ([[Entrée]]) ; [[Échap]] annule.', 'Moved content "floats" above the layer until you **Confirm** ([[Enter]]); [[Esc]] cancels.'],
+            ['Les **flèches** déplacent de 1 pixel, [[Maj]] + flèches de 8.', '**Arrow keys** move by 1 pixel, [[Shift]] + arrows by 8.'],
+            ['Sur un calque de référence, Déplacer fait glisser l\'image de référence.', 'On a reference layer, Move drags the reference image.'],
+            ['**Main** : déplace seulement la vue.', '**Hand**: only pans the view.'],
+          ),
+          go('tool:move', 'Prendre l\'outil Déplacer', 'Use the Move tool'),
+        ],
+      },
+      {
+        id: 'transform', icon: 'transform', title: T('Retourner, tourner, mettre à l\'échelle', 'Flip, rotate, scale'),
+        body: [
+          list(
+            ['Miroir horizontal [[Maj+H]], vertical [[Maj+V]], rotation 90° [[Maj+R]] : boutons dans la barre d\'options des outils de sélection.', 'Horizontal flip [[Shift+H]], vertical [[Shift+V]], 90° rotation [[Shift+R]]: buttons in the selection tools options bar.'],
+            ['**Rotation libre / échelle** [[Ctrl+T]] : curseurs d\'angle, de largeur et de hauteur, angles rapides (−90° à 90°), proportions liées, et **Lissage pixel art** (rotation de type RotSprite qui évite les pixels cassés).',
+              '**Free rotate / scale** [[Ctrl+T]]: angle, width and height sliders, quick angles (−90° to 90°), linked proportions and **Pixel art smoothing** (RotSprite-like rotation that avoids broken pixels).'],
+            ['**Copier** [[Ctrl+C]], **Couper** [[Ctrl+X]], **Coller** [[Ctrl+V]]. Une image copiée depuis un autre logiciel se colle aussi.', '**Copy** [[Ctrl+C]], **Cut** [[Ctrl+X]], **Paste** [[Ctrl+V]]. An image copied from another app can be pasted too.'],
+            ['Menu ☰ > **Recadrer sur la sélection** réduit l\'image à la sélection.', '☰ menu > **Crop to selection** shrinks the image to the selection.'],
+          ),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'colors', icon: 'palette', title: T('Couleurs et palettes', 'Colors and palettes'),
+    intro: T('Deux couleurs sont actives : **A** (clic gauche) et **B** (clic droit). Elles apparaissent en bas de la barre d\'outils.',
+      'Two colors are active: **A** (left click) and **B** (right click). They are shown at the bottom of the toolbar.'),
+    sections: [
+      {
+        id: 'pick', title: T('Choisir une couleur', 'Picking a color'),
+        body: [
+          list(
+            ['Dans la palette : clic = A, clic droit ou appui long = B.', 'In the palette: click = A, right click or long press = B.'],
+            ['Clic sur les pastilles A / B (barre d\'outils) ou **Sélecteur avancé** : teinte, saturation, luminosité et code hexadécimal.', 'Click the A / B swatches (toolbar) or **Advanced picker**: hue, saturation, brightness and hex code.'],
+            ['**Récentes** : les dernières couleurs utilisées.', '**Recent**: the last colors used.'],
+            ['[[X]] échange A et B.', '[[X]] swaps A and B.'],
+          ),
+          go('panel:colors', 'Ouvrir le panneau Couleurs', 'Open the Colors panel'),
+        ],
+      },
+      {
+        id: 'palettes', title: T('Gérer les palettes', 'Managing palettes'),
+        body: [
+          list(
+            ['**Charger une palette** : palettes prédéfinies (PICO-8, Endesga 32, Game Boy, Sweetie 16, peaux et cheveux…).', '**Load a palette**: built-in palettes (PICO-8, Endesga 32, Game Boy, Sweetie 16, skin and hair…).'],
+            ['**+ Ajouter A** ajoute la couleur A ; menu ⋯ : retirer, trier par teinte, vider, **extraire une palette** depuis une image ou depuis le dessin.', '**+ Add A** adds color A; ⋯ menu: remove, sort by hue, clear, **extract a palette** from an image or from the drawing.'],
+            ['Import et export : .hex, .gpl (GIMP, Aseprite), .json, .pal.', 'Import and export: .hex, .gpl (GIMP, Aseprite), .json, .pal.'],
+            ['**Remplacer une couleur** (menu ☰ > Image) : change une couleur partout, sur un ou tous les calques.', '**Replace a color** (☰ menu > Image): changes a color everywhere, on one or all layers.'],
+          ),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'layers', icon: 'layers', title: T('Calques, groupes et variantes', 'Layers, groups and variants'),
+    intro: T('Les calques sont des feuilles transparentes empilées : on peut dessiner chaque partie séparément, puis les montrer, cacher ou réorganiser.',
+      'Layers are stacked transparent sheets: draw each part separately, then show, hide or reorder them.'),
+    sections: [
+      {
+        id: 'basics', title: T('Les bases', 'Basics'),
+        body: [
+          list(
+            ['Boutons du panneau : nouveau calque [[Ctrl+Maj+N]], nouveau groupe, nouveau groupe de variantes, dupliquer [[Ctrl+J]], fusionner vers le bas [[Ctrl+E]], monter, descendre, supprimer.', 'Panel buttons: new layer [[Ctrl+Shift+N]], new group, new variant group, duplicate [[Ctrl+J]], merge down [[Ctrl+E]], move up, move down, delete.'],
+            ['👁 masque / affiche, 🔒 verrouille (empêche de dessiner dessus). Double-clic ou [[F2]] pour renommer.', '👁 hides / shows, 🔒 locks (prevents drawing). Double-click or [[F2]] to rename.'],
+            ['Glisser la poignée ⋮⋮ pour réorganiser ou ranger un calque dans un groupe.', 'Drag the ⋮⋮ handle to reorder or put a layer in a group.'],
+            ['**Opacité** du calque actif sous la liste. [[Alt+↑]] / [[Alt+↓]] change de calque actif.', 'Active layer **opacity** below the list. [[Alt+↑]] / [[Alt+↓]] change the active layer.'],
+            ['**Sélection multiple** (✓, ou [[Ctrl]]/[[Maj]] + clic) : grouper, dupliquer, masquer, fusionner ou supprimer plusieurs calques d\'un coup.', '**Multi-select** (✓, or [[Ctrl]]/[[Shift]] + click): group, duplicate, hide, merge or delete several layers at once.'],
+            ['Menu ⋯ : effacer le contenu, aplatir un groupe, ajouter à ma bibliothèque, importer une image…', '⋯ menu: clear content, flatten a group, add to my library, import an image…'],
+          ),
+          go('panel:layers', 'Ouvrir le panneau Calques', 'Open the Layers panel'),
+        ],
+      },
+      {
+        id: 'variants', icon: 'variants', title: T('Groupes de variantes', 'Variant groups'),
+        body: [
+          p('Un groupe de variantes n\'affiche **qu\'un seul** de ses calques à la fois : les yeux ouverts / fermés / contents, les bouches, les tenues… On choisit la variante active avec le bouton rond, la barre de variantes sur le dessin, ou [[Tab]].',
+            'A variant group shows **only one** of its layers at a time: open / closed / happy eyes, mouths, outfits… Pick the active variant with the round button, the variant bar on the drawing, or [[Tab]].'),
+          tip('Les variantes sont la base des expressions et du mode PNGtuber.', 'Variants are the basis of expressions and PNGtuber mode.'),
+        ],
+      },
+      {
+        id: 'reference', icon: 'ref', title: T('Calque de référence', 'Reference layer'),
+        body: [
+          p('Menu ☰ > **Importer une image de référence** : l\'image s\'affiche nette, en pleine résolution et semi-transparente, pour décalquer ou s\'inspirer. Elle n\'est **jamais exportée**. Déplacez-la avec l\'outil Déplacer, réglez sa taille et son opacité dans le panneau Calques.',
+            '☰ menu > **Import a reference image**: the image is shown crisp, at full resolution and semi-transparent, to trace or for inspiration. It is **never exported**. Move it with the Move tool, set its size and opacity in the Layers panel.'),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'image', icon: 'crop', title: T('Image et canevas', 'Image and canvas'),
+    intro: T('Les opérations sur toute l\'image se trouvent dans le menu ☰ > Image. Toutes s\'annulent.', 'Whole-image operations are in the ☰ menu > Image. All of them can be undone.'),
+    sections: [
+      {
+        id: 'size', title: T('Taille, recadrage, orientation', 'Size, crop, orientation'),
+        body: [
+          list(
+            ['**Taille de l\'image / du canevas** : agrandir le canevas (avec un point d\'ancrage) ou mettre l\'image à l\'échelle (au plus proche voisin, sans flou).', '**Image / canvas size**: enlarge the canvas (with an anchor point) or scale the image (nearest neighbour, no blur).'],
+            ['**Recadrer** sur la sélection ou sur le contenu (retire les bords vides).', '**Crop** to the selection or to the content (removes empty borders).'],
+            ['**Miroir** horizontal ou vertical, **rotation** de 90°.', 'Horizontal or vertical **flip**, 90° **rotation**.'],
+          ),
+        ],
+      },
+      {
+        id: 'effects', icon: 'outline', title: T('Remplacer une couleur et contour automatique', 'Replace a color and automatic outline'),
+        body: [
+          list(
+            ['**Remplacer une couleur** : choisissez l\'ancienne et la nouvelle couleur, sur le calque actif ou tous les calques.', '**Replace a color**: choose the old and new color, on the active layer or all layers.'],
+            ['**Contour automatique** : ajoute un contour de la couleur A autour du dessin du calque (à l\'extérieur ou sur le bord intérieur, avec ou sans les coins).', '**Automatic outline**: adds an outline in color A around the layer drawing (outside or on the inner edge, with or without corners).'],
+          ),
+          go('action:outlineDialog', 'Contour automatique…', 'Automatic outline…'),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'grid', icon: 'grid', title: T('Grille et mode tuiles', 'Grid and tile mode'),
+    intro: T('La grille aide à construire des sprites réguliers ; le mode tuiles sert à dessiner des motifs qui se répètent sans couture.', 'The grid helps build regular sprites; tile mode is for drawing seamless repeating patterns.'),
+    sections: [
+      {
+        id: 'grid', title: T('Grille', 'Grid'),
+        body: [
+          list(
+            ['[[#]] ou le bouton grille l\'affiche. Panneau **Grille** : largeur et hauteur des cellules, décalage, lignes principales toutes les N cellules, couleurs et épaisseurs.', '[[#]] or the grid button shows it. **Grid** panel: cell width and height, offset, major lines every N cells, colors and thickness.'],
+            ['**Aimanter** : lignes, rectangles, ellipses, sélections et déplacements s\'alignent sur les cellules.', '**Snap**: lines, rectangles, ellipses, selections and moves align to cells.'],
+            ['**Grille de pixels** au fort zoom (Paramètres > Affichage).', '**Pixel grid** at high zoom (Settings > Display).'],
+          ),
+          go('panel:grid', 'Ouvrir le panneau Grille', 'Open the Grid panel'),
+        ],
+      },
+      {
+        id: 'tiles', icon: 'tiles', title: T('Mode tuiles [[T]]', 'Tile mode [[T]]'),
+        body: [
+          p('Le dessin est répété tout autour pour voir le raccord. Avec **Dessin enroulé**, un trait qui dépasse un bord continue de l\'autre côté. Exportez ensuite une **planche de tuiles** depuis la fenêtre d\'export.',
+            'The drawing is repeated all around to check the seam. With **Wrapped drawing**, a stroke crossing an edge continues on the other side. Then export a **tile sheet** from the export window.'),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'anim', icon: 'film', title: T('Animation', 'Animation'),
+    intro: T('Menu ☰ > **Animation (timeline)** ouvre la frise des images en bas de l\'écran.', '☰ menu > **Animation (timeline)** opens the frame strip at the bottom of the screen.'),
+    sections: [
+      {
+        id: 'frames', title: T('Images et lecture', 'Frames and playback'),
+        body: [
+          list(
+            ['Boutons : nouvelle image vide, dupliquer l\'image, **image liée** (mêmes pixels, modifiés ensemble), délier, déplacer, supprimer.', 'Buttons: new empty frame, duplicate frame, **linked frame** (same pixels, edited together), unlink, move, delete.'],
+            ['▶ lit l\'animation en boucle ; **FPS** règle la vitesse. Double-clic sur une image : sa durée propre (ms).', '▶ plays the animation in a loop; **FPS** sets the speed. Double-click a frame: its own duration (ms).'],
+            ['**Onion skin** [[N]] : affiche en transparence l\'image précédente et la suivante pour dessiner le mouvement.', '**Onion skin** [[N]]: shows the previous and next frames faintly to draw motion.'],
+          ),
+          go('timeline', 'Ouvrir la timeline', 'Open the timeline'),
+        ],
+      },
+      {
+        id: 'tags', title: T('Balises', 'Tags'),
+        body: [
+          p('[[Maj]] + clic sur les images pour choisir une plage, puis **Nouvelle balise** (ex. « Marche », « Saut »). Cliquer sur une balise la lit en boucle. Les exports GIF, planche et images peuvent produire **une animation par balise**.',
+            '[[Shift]] + click frames to choose a range, then **New tag** (e.g. "Walk", "Jump"). Clicking a tag loops it. GIF, sheet and frame exports can produce **one animation per tag**.'),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'library', icon: 'book', title: T('Bibliothèque et personnages', 'Library and characters'),
+    intro: T('Plus de 150 pièces originales à assembler : corps, têtes, coiffures, yeux, sourcils, nez, bouches, vêtements, accessoires, mains. Tout reste modifiable pixel par pixel.',
+      'More than 150 original parts to assemble: bodies, heads, hair, eyes, brows, noses, mouths, clothes, accessories, hands. Everything stays editable pixel by pixel.'),
+    sections: [
+      {
+        id: 'newchar', icon: 'user', title: T('Nouveau personnage', 'New character'),
+        body: [
+          steps(
+            ['Menu ☰ > **Nouveau personnage**.', '☰ menu > **New character**.'],
+            ['Choisissez la **vue** : **De face** (style mignon) ou **3/4 droite** (style portrait adulte, gros pixels).', 'Choose the **view**: **Front** (cute style) or **3/4 right** (adult portrait style, chunky pixels).'],
+            ['Réglez les 5 couleurs (peau, cheveux, yeux, vêtements, accessoires) et chaque pièce, ou 🎲 **Au hasard**.', 'Set the 5 colors (skin, hair, eyes, clothes, accessories) and each part, or 🎲 **Random**.'],
+            ['**Créer le personnage** : yeux, bouche et sourcils sont des groupes de variantes, avec 7 expressions prêtes (Neutre, Parle, Content, Triste, Surpris, Fâché, Yeux fermés) sur les touches [[1]] à [[7]].', '**Create the character**: eyes, mouth and brows are variant groups, with 7 ready expressions (Neutral, Talking, Happy, Sad, Surprised, Angry, Eyes closed) on keys [[1]] to [[7]].'],
+          ),
+          tip('« Gabarit détaillé ×2 » double la taille (128×128) avec des diagonales lissées. Les corps entiers agrandissent la hauteur du canevas.', '"Detailed template ×2" doubles the size (128×128) with smoothed diagonals. Full bodies enlarge the canvas height.'),
+          go('action:newCharacter', 'Nouveau personnage…', 'New character…'),
+        ],
+      },
+      {
+        id: 'parts', icon: 'book', title: T('Ajouter des pièces', 'Adding parts'),
+        body: [
+          list(
+            ['Bouton **Bibliothèque** (ou « Pièces » sur téléphone) : catégories, **Vue** (de face / 3/4), **recherche** et ★ **favoris**.', '**Library** button (or "Parts" on phones): categories, **View** (front / 3/4), **search** and ★ **favorites**.'],
+            ['Un clic ajoute la pièce comme calque ou groupe de variantes, à la bonne place dans l\'empilement. **Remplacer la pièce existante** échange par exemple une coiffure contre une autre.', 'One click adds the part as a layer or variant group, at the right place in the stack. **Replace existing part** swaps for example one hairstyle for another.'],
+            ['Changer les couleurs en haut de la fenêtre **recolore aussi le personnage** déjà en place (menu ☰ > Recolorer le personnage pour le faire à part).', 'Changing the colors at the top of the window **also recolors the character** already in place (☰ menu > Recolor character to do it separately).'],
+            ['Les vêtements s\'ajustent automatiquement au corps choisi (fin, moyen, costaud, rond…).', 'Clothes automatically fit the chosen body (slim, medium, stocky, round…).'],
+          ),
+          go('action:openLibrary', 'Ouvrir la bibliothèque', 'Open the library'),
+        ],
+      },
+      {
+        id: 'mylib', icon: 'star', title: T('Ma bibliothèque', 'My library'),
+        body: [
+          p('Gardez vos propres pièces : panneau Calques > ⋯ > **Ajouter à ma bibliothèque** (calque ou groupe entier, variantes comprises). Retrouvez-les dans l\'onglet ★ Ma bibliothèque, renommez-les, exportez-les ou importez celles d\'un autre appareil.',
+            'Keep your own parts: Layers panel > ⋯ > **Add to my library** (layer or whole group, variants included). Find them in the ★ My library tab, rename, export them or import those from another device.'),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'expr', icon: 'face', title: T('Expressions et profils', 'Expressions and profiles'),
+    intro: T('Onglet **Expressions** : changer de variante d\'un clic, mémoriser des expressions et des profils (tenues, personnages).', '**Expressions** tab: switch variants in one click, save expressions and profiles (outfits, characters).'),
+    sections: [
+      {
+        id: 'expressions', icon: 'face', title: T('Expressions', 'Expressions'),
+        body: [
+          list(
+            ['Une expression mémorise la variante choisie dans chaque groupe (ex. « Content » = yeux contents + bouche souriante + sourcils hauts).', 'An expression stores the chosen variant of each group (e.g. "Happy" = happy eyes + smiling mouth + raised brows).'],
+            ['Réglez les variantes, puis **Enregistrer l\'expression actuelle**. Un clic sur son nom l\'applique.', 'Set the variants, then **Save current expression**. Click its name to apply it.'],
+            ['Menu ⋯ : mettre à jour, renommer, **associer une touche** (lettre ou chiffre), monter, descendre, supprimer.', '⋯ menu: update, rename, **assign a key** (letter or digit), move up, move down, delete.'],
+            ['**Temporaire** : l\'expression ne dure que tant que la touche est maintenue (ex. maintenir S pour « Surpris »).', '**Temporary**: the expression only lasts while the key is held (e.g. hold S for "Surprised").'],
+          ),
+          go('panel:expressions', 'Ouvrir l\'onglet Expressions', 'Open the Expressions tab'),
+        ],
+      },
+      {
+        id: 'profiles', icon: 'user', title: T('Profils (F13 à F24)', 'Profiles (F13 to F24)'),
+        body: [
+          p('Un profil mémorise les calques visibles, les variantes et les réglages bouche/yeux du PNGtuber. Exemple : un même projet avec une tenue d\'été et une tenue d\'hiver, ou deux personnages.',
+            'A profile stores visible layers, variants and the PNGtuber mouth/eye settings. Example: one project with a summer and a winter outfit, or two characters.'),
+          steps(
+            ['Montrez / cachez les calques de la tenue voulue.', 'Show / hide the layers of the outfit you want.'],
+            ['**Enregistrer l\'état actuel comme profil**, puis choisissez sa touche de **F13** à **F24**.', '**Save current state as profile**, then pick its key from **F13** to **F24**.'],
+            ['Appuyez sur la touche dans l\'éditeur, le mode PNGtuber, la fenêtre de capture ou l\'avatar OBS.', 'Press the key in the editor, PNGtuber mode, the capture window or the OBS avatar.'],
+          ),
+          tip('Les touches F13 à F24 n\'existent pas sur la plupart des claviers : programmez-les sur un Stream Deck ou avec un logiciel de macros. La fenêtre qui reçoit la touche doit avoir le focus.', 'Keys F13 to F24 do not exist on most keyboards: assign them on a Stream Deck or with macro software. The window receiving the key must have focus.'),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'pngtuber', icon: 'tv', title: T('Mode PNGtuber et diffusion', 'PNGtuber mode and streaming'),
+    intro: T('Votre personnage s\'anime avec votre voix : la bouche s\'ouvre quand vous parlez, les yeux clignent, les touches changent d\'expression.', 'Your character comes alive with your voice: the mouth opens when you speak, the eyes blink, keys change expressions.'),
+    sections: [
+      {
+        id: 'pt-use', icon: 'mic', title: T('Utiliser le mode PNGtuber', 'Using PNGtuber mode'),
+        body: [
+          list(
+            ['Bouton **Mode PNGtuber** (écran) en haut. **Activer le micro** : le son est analysé uniquement sur votre appareil, rien n\'est enregistré ni envoyé.', '**PNGtuber mode** button (screen) at the top. **Enable microphone**: sound is analyzed only on your device, nothing is recorded or sent.'],
+            ['**Seuil de parole** et **grande ouverture** : la jauge montre votre volume (rose = parole, violet = bouche grande ouverte). Sans micro : **Maintenir pour parler** ou [[Espace]].', '**Talk threshold** and **wide open**: the meter shows your volume (pink = talking, purple = wide open mouth). Without a mic: **Hold to talk** or [[Space]].'],
+            ['**Bouche** : variantes fermée / entrouverte / ouverte. **Yeux** : ouverts / fermés et fréquence du clignement.', '**Mouth**: closed / half-open / open variants. **Eyes**: open / closed and blink rate.'],
+            ['**Animations** : rebond et inclinaison en parlant, respiration au repos, secousse quand on crie.', '**Animations**: bounce and tilt while talking, breathing at rest, shake when shouting.'],
+            ['Fond : vert, bleu, magenta (pour l\'incrustation), noir, blanc, damier ou une image.', 'Background: green, blue, magenta (for chroma key), black, white, checker or an image.'],
+            ['Touches d\'expressions ([[1]]–[[7]]…) et de profils ([[F13]]–[[F24]]) actives.', 'Expression keys ([[1]]–[[7]]…) and profile keys ([[F13]]–[[F24]]) work.'],
+          ),
+          go('action:openPngtuber', 'Ouvrir le mode PNGtuber', 'Open PNGtuber mode'),
+        ],
+      },
+      {
+        id: 'obs', icon: 'tv', title: T('Dans OBS', 'In OBS'),
+        body: [
+          list(
+            ['**Fenêtre de capture** : une fenêtre avec seulement l\'avatar, qui suit vos changements dans l\'éditeur. Capturez-la dans OBS (capture de fenêtre + filtre d\'incrustation).', '**Capture window**: a window with only the avatar, following your changes in the editor. Capture it in OBS (window capture + chroma key filter).'],
+            ['**Avatar OBS (.html)** : un fichier autonome à ajouter dans OBS comme **source navigateur** (fichier local), au fond transparent. Paramètres d\'adresse : ?bg=green, ?mic=1, ?ui=0, ?scale=4, ?profile=F14. [[H]] masque ses boutons.', '**OBS avatar (.html)**: a standalone file to add in OBS as a **browser source** (local file), with a transparent background. URL parameters: ?bg=green, ?mic=1, ?ui=0, ?scale=4, ?profile=F14. [[H]] hides its buttons.'],
+            ['**Images pour logiciels PNGtuber** (veadotube, PNGTuber Plus…) : export ZIP avec repos, parle, entrouverte, avec et sans clignement, par expression et par profil.', '**Images for PNGtuber software** (veadotube, PNGTuber Plus…): ZIP export with idle, talking, half-open, with and without blinking, per expression and profile.'],
+          ),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'export', icon: 'download', title: T('Exporter', 'Export'),
+    intro: T('Bouton **Exporter** [[Ctrl+Maj+E]]. Les exports sont toujours au pixel près : agrandissement au plus proche voisin, transparence conservée, jamais de flou.', '**Export** button [[Ctrl+Shift+E]]. Exports are always pixel-exact: nearest-neighbour scaling, transparency kept, never blurry.'),
+    sections: [
+      {
+        id: 'kinds', title: T('Formats', 'Formats'),
+        body: [
+          list(
+            ['**Image (PNG)** : l\'image telle qu\'affichée.', '**Image (PNG)**: the image as displayed.'],
+            ['**Pack PNGtuber complet (ZIP)** : image, calques, variantes, expressions, profils et manifest.json.', '**Complete PNGtuber pack (ZIP)**: image, layers, variants, expressions, profiles and manifest.json.'],
+            ['**Images pour logiciels PNGtuber**, **Avatar OBS (.html)** : voir le chapitre PNGtuber.', '**Images for PNGtuber software**, **OBS avatar (.html)**: see the PNGtuber chapter.'],
+            ['**Photoshop (PSD)** : calques et groupes conservés (Photoshop, GIMP, Krita, Photopea).', '**Photoshop (PSD)**: layers and groups kept (Photoshop, GIMP, Krita, Photopea).'],
+            ['**Calque par calque**, **par variante**, **par expression**, **par profil**, **toutes les combinaisons** (ZIP).', '**Layer by layer**, **per variant**, **per expression**, **per profile**, **all combinations** (ZIP).'],
+            ['**Spritesheet / planche de tuiles**, **GIF animé**, **images d\'animation séparées**.', '**Spritesheet / tile sheet**, **animated GIF**, **separate animation frames**.'],
+          ),
+        ],
+      },
+      {
+        id: 'options', title: T('Options', 'Options'),
+        body: [
+          list(
+            ['**Échelle** ×1 à ×16 (ou personnalisée jusqu\'à ×64) : la taille finale s\'affiche.', '**Scale** ×1 to ×16 (or custom up to ×64): the final size is shown.'],
+            ['**Recadrage** : taille du canevas, boîte commune autour du contenu (alignement conservé) ou chaque image séparément.', '**Crop**: canvas size, common box around the content (alignment kept) or each image separately.'],
+            ['Planche : colonnes, espacement et fichier JSON. Animations : une par balise. ZIP : inclure le fichier projet.', 'Sheet: columns, spacing and JSON file. Animations: one per tag. ZIP: include the project file.'],
+          ),
+          go('action:exportDialog', 'Ouvrir l\'export', 'Open export'),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'files', icon: 'folder', title: T('Projets, fichiers et historique', 'Projects, files and history'),
+    intro: T('Vos projets sont enregistrés automatiquement dans ce navigateur. Les fichiers servent à les sauvegarder ailleurs ou à les partager.', 'Your projects are saved automatically in this browser. Files are for backing them up elsewhere or sharing them.'),
+    sections: [
+      {
+        id: 'projects', icon: 'folder', title: T('Mes projets', 'My projects'),
+        body: [
+          list(
+            ['Menu ☰ > **Mes projets** [[Ctrl+O]] : ouvrir, renommer, dupliquer, supprimer, avec miniatures.', '☰ menu > **My projects** [[Ctrl+O]]: open, rename, duplicate, delete, with thumbnails.'],
+            ['La sauvegarde automatique se règle dans Paramètres > Affichage (rapide, toutes les 5 s, ou désactivée). [[Ctrl+S]] enregistre tout de suite.', 'Autosave is set in Settings > Display (fast, every 5 s, or off). [[Ctrl+S]] saves right away.'],
+            ['En navigation privée ou si l\'espace est plein, un message prévient : téléchargez alors le fichier projet.', 'In private browsing or when storage is full, a message warns you: then download the project file.'],
+          ),
+          go('action:openProjects', 'Mes projets…', 'My projects…'),
+        ],
+      },
+      {
+        id: 'filesio', icon: 'save', title: T('Fichiers', 'Files'),
+        body: [
+          list(
+            ['**Enregistrer dans un fichier** [[Ctrl+Maj+S]] : fichier projet .pxa.json. Sur ordinateur (Chrome, Edge), le fichier reste lié et [[Ctrl+S]] le met à jour.', '**Save to a file** [[Ctrl+Shift+S]]: .pxa.json project file. On desktop (Chrome, Edge), the file stays linked and [[Ctrl+S]] updates it.'],
+            ['**Ouvrir un fichier** : projet .pxa.json, ZIP exporté avec son projet, ou fichier **Aseprite** (.ase, .aseprite).', '**Open a file**: .pxa.json project, ZIP exported with its project, or **Aseprite** file (.ase, .aseprite).'],
+            ['**Importer une image comme calque** (PNG, JPEG, GIF, WebP) ou la coller avec [[Ctrl+V]].', '**Import an image as a layer** (PNG, JPEG, GIF, WebP) or paste it with [[Ctrl+V]].'],
+          ),
+        ],
+      },
+      {
+        id: 'history', icon: 'undo', title: T('Annuler et historique', 'Undo and history'),
+        body: [
+          p('Tout s\'annule : [[Ctrl+Z]], [[Ctrl+Y]], boutons ↶ ↷, tape à 2 ou 3 doigts. Le panneau **Historique** liste les actions : un clic sur une ligne ramène l\'image à ce moment.',
+            'Everything can be undone: [[Ctrl+Z]], [[Ctrl+Y]], ↶ ↷ buttons, 2- or 3-finger tap. The **History** panel lists actions: click a line to bring the image back to that moment.'),
+          go('panel:history', 'Ouvrir l\'historique', 'Open history'),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'settings', icon: 'settings', title: T('Paramètres et raccourcis', 'Settings and shortcuts'),
+    intro: T('Bouton ⚙ (en haut à droite) ou menu ☰ > Paramètres.', '⚙ button (top right) or ☰ menu > Settings.'),
+    sections: [
+      {
+        id: 'set-tabs', title: T('Les onglets', 'The tabs'),
+        body: [
+          list(
+            ['**Apparence** : 7 thèmes (sombre, clair, minuit, forêt, sépia, pastel, contraste élevé), couleurs personnalisées, taille de l\'interface, damier de transparence.', '**Appearance**: 7 themes (dark, light, midnight, forest, sepia, pastel, high contrast), custom colors, interface size, transparency checker.'],
+            ['**Navigation** : molette, zoom fluide, sens inversé, mode stylet, gestes à 2 et 3 doigts, mode gaucher, animations réduites.', '**Navigation**: wheel, smooth zoom, inverted direction, stylus mode, 2- and 3-finger gestures, left-handed mode, reduced motion.'],
+            ['**Affichage** : grille de pixels, curseur du pinceau, barre de variantes, mini-vue, barre d\'état, confirmation avant suppression, sauvegarde automatique.', '**Display**: pixel grid, brush cursor, variant bar, mini view, status bar, delete confirmation, autosave.'],
+            ['**Langue et aide** : français ou anglais, tutoriel, raccourcis. **Données** : exporter, importer ou réinitialiser vos réglages.', '**Language and help**: French or English, tutorial, shortcuts. **Data**: export, import or reset your settings.'],
+          ),
+          go('settings:look', 'Ouvrir les paramètres', 'Open settings'),
+        ],
+      },
+      {
+        id: 'keys', icon: 'keyboard', title: T('Raccourcis clavier', 'Keyboard shortcuts'),
+        body: [
+          keys(
+            ['B / E / K', 'Crayon / gomme / ombrage', 'Pencil / eraser / shading'],
+            ['G / J / I', 'Remplissage / dégradé / pipette', 'Fill / gradient / picker'],
+            ['L / U / O', 'Ligne / rectangle / ellipse', 'Line / rectangle / ellipse'],
+            ['M / Q / W', 'Sélection / lasso / baguette', 'Select / lasso / wand'],
+            ['V / H', 'Déplacer / main', 'Move / hand'],
+            ['Ctrl+Z / Ctrl+Y', 'Annuler / rétablir', 'Undo / redo'],
+            ['?', 'Liste complète des raccourcis', 'Full shortcut list'],
+          ),
+          p('Menu ☰ > **Personnaliser les raccourcis** : changez la touche de chaque outil et action.', '☰ menu > **Customize shortcuts**: change the key of each tool and action.'),
+          go('shortcuts', 'Tous les raccourcis', 'All shortcuts'),
+        ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'tips', icon: 'star', title: T('Astuces et questions', 'Tips and FAQ'),
+    intro: T('Quelques réponses rapides.', 'A few quick answers.'),
+    sections: [
+      {
+        id: 'faq', title: T('Questions fréquentes', 'Frequently asked questions'),
+        body: [
+          list(
+            ['**Mon dessin est flou à l\'export ?** Non : les exports agrandissent au plus proche voisin. Si une image paraît floue, c\'est l\'aperçu du logiciel qui la lisse.', '**Is my export blurry?** No: exports scale with nearest neighbour. If an image looks blurry, the viewing software is smoothing it.'],
+            ['**Je ne peux pas dessiner ?** Le calque est peut-être verrouillé 🔒, masqué 👁, c\'est un groupe ou un calque de référence : choisissez un calque normal.', '**Can\'t draw?** The layer may be locked 🔒, hidden 👁, a group or a reference layer: pick a normal layer.'],
+            ['**Où sont mes projets ?** Dans ce navigateur, sur cet appareil. Pour changer d\'appareil, enregistrez un fichier projet et ouvrez-le de l\'autre côté.', '**Where are my projects?** In this browser, on this device. To switch devices, save a project file and open it on the other side.'],
+            ['**Le micro ne marche pas ?** Autorisez-le pour ce site dans le navigateur ; il faut une page en https ou un fichier local.', '**Microphone not working?** Allow it for this site in the browser; an https page or a local file is required.'],
+            ['**Revenir à zéro** : Paramètres > Données > Réinitialiser (vos projets sont conservés).', '**Start over**: Settings > Data > Reset (your projects are kept).'],
+          ),
+        ],
+      },
+      {
+        id: 'pro', title: T('Astuces de pixel art', 'Pixel art tips'),
+        body: [
+          list(
+            ['Travaillez petit (32×32 ou 64×64) et zoomez : chaque pixel compte.', 'Work small (32×32 or 64×64) and zoom in: every pixel counts.'],
+            ['Utilisez peu de couleurs, rangées du clair au foncé : l\'outil Ombrage devient alors très efficace.', 'Use few colors, ordered from light to dark: the Shading tool then becomes very effective.'],
+            ['Activez **Pixel perfect** pour des contours propres, et la **symétrie** pour un visage de face.', 'Turn on **Pixel perfect** for clean outlines, and **symmetry** for a front-facing face.'],
+            ['Regardez la **mini-vue** : c\'est la taille réelle, celle que verront les spectateurs.', 'Watch the **mini view**: it is the real size viewers will see.'],
+          ),
+        ],
+      },
+    ],
+  },
+];
+
+/** Section d'aide correspondant à un outil (pour le bouton « ? » de la barre d'options). */
+export const TOOL_SECTION = {
+  pencil: ['draw', 'pencil'], eraser: ['draw', 'eraser'], shade: ['draw', 'shade'], fill: ['draw', 'fill'], gradient: ['draw', 'gradient'],
+  picker: ['draw', 'picker'], line: ['draw', 'shapes'], rect: ['draw', 'shapes'], ellipse: ['draw', 'shapes'],
+  select: ['select', 'select-tools'], lasso: ['select', 'select-tools'], wand: ['select', 'select-tools'], move: ['select', 'move'], hand: ['select', 'move'],
+};

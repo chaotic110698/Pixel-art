@@ -50,6 +50,10 @@ function setupTopbar() {
   set('btn-export', 'download', () => app.actions.exportDialog());
   set('btn-settings', 'settings', () => openSettings(app));
   app.openSettings = (tab) => openSettings(app, tab);
+  // guide complet (chargé à la demande)
+  app.openGuide = async (chapter = null, section = null) => (await import('./ui/guide.js')).openGuide(app, chapter, section);
+  app.openToolGuide = async () => (await import('./ui/guide.js')).openToolGuide(app);
+  set('btn-guide', 'book', () => app.openGuide());
   const syncHist = () => {
     undo.disabled = !app.history.canUndo();
     redo.disabled = !app.history.canRedo();

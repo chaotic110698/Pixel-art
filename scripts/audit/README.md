@@ -12,6 +12,7 @@ Tests de bout en bout pilotés par Playwright (Chromium), sans dépendance dans 
 | pt | mode PNGtuber (face et 3/4), capture OBS, avatar .html autonome |
 | lib | chaque pièce de la bibliothèque et chaque état, 30 personnages au hasard, recoloration |
 | ui | chaque entrée du menu, boutons des panneaux, thèmes, aide |
+| guide | guide complet : 5 accès (barre d'outils, barre du haut, F1, « ? », menu), 16 chapitres, recherche, boutons « Essayer », mobile, anglais |
 | misc | hors ligne (service worker), tuiles, grille, historique, expressions, tutoriel |
 | mobile | 4 appareils : débordements, barre du bas, fenêtres, tactile (1 et 2 doigts) |
 | a11y | libellés accessibles, saisie isolée des raccourcis |

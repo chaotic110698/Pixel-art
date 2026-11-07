@@ -31,7 +31,7 @@ export const SHORTCUTS = [
     ['0', 'Ajuster à l\'écran'], ['1', 'Taille réelle (100 %)'], ['#', 'Grille on/off'], ['T', 'Mode tuiles on/off'], ['N', 'Onion skin on/off'],
   ]],
   ['Fichier', [
-    ['Ctrl+S', 'Enregistrer (navigateur + fichier lié)'], ['Ctrl+Maj+S', 'Enregistrer dans un fichier…'], ['Ctrl+O', 'Projets'], ['Ctrl+Maj+E', 'Exporter'], ['?', 'Cette aide'],
+    ['F1', 'Guide complet (ouvert sur l\'outil actif)'], ['Ctrl+S', 'Enregistrer (navigateur + fichier lié)'], ['Ctrl+Maj+S', 'Enregistrer dans un fichier…'], ['Ctrl+O', 'Projets'], ['Ctrl+Maj+E', 'Exporter'], ['?', 'Cette aide'],
   ]],
   ['Profils', [
     ['F13 … F24', 'Changer de profil (tenue / personnage), voir onglet Expressions'],
@@ -258,6 +258,7 @@ export function initShortcuts(app) {
     if (e.key === 'Enter' && sel.floating) return run(() => sel.commitFloating());
     if ((e.key === 'Delete' || e.key === 'Backspace') && !e.repeat) return run(() => A.deleteSelection());
     if (e.key === 'F2') return run(() => app.renameActive?.());
+    if (e.key === 'F1') return run(() => app.openToolGuide?.());
     if (e.key === 'Tab') {
       return run(() => {
         const a = app.doc.active;

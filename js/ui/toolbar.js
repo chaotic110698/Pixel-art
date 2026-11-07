@@ -100,6 +100,9 @@ export function initToolbar(app, { openColorEditor }) {
   const c2 = h('button', { class: 'c2', title: 'Couleur secondaire (clic : modifier)', 'aria-label': 'Couleur secondaire', onclick: () => openColorEditor('secondary') }, h('i'));
   const chip = h('div', { class: 'color-chip' }, c1, c2);
   const swap = h('button', { class: 'icon-btn small', title: 'Échanger les couleurs (X)', 'aria-label': 'Échanger les couleurs', onclick: () => app.swapColors() }, icon('swap'));
+  // guide complet, juste au-dessus des couleurs
+  bar.append(h('div', { class: 'tb-help' },
+    h('button', { class: 'icon-btn', title: 'Guide complet : outils, navigation, fonctionnalités (F1)', 'aria-label': 'Guide', onclick: () => app.openGuide?.() }, icon('book'))));
   bar.append(h('div', { class: 'tb-colors' }, chip, swap));
 
   const refresh = () => {
@@ -131,7 +134,7 @@ export function initToolbar(app, { openColorEditor }) {
     renderOptions(app);
   });
   // clés d'état qui n'affectent pas la barre d'options (évite de la reconstruire à chaque trait)
-  const IGNORED = new Set(['primary', 'secondary', 'recent', 'charColors', 'libraryCat', 'exportScale', 'exportCrop', 'exportIncludeProject', 'lastExportKind', 'tutorialDone', 'lastPalette', 'theme', 'showMinimap', 'showVariantBar', 'showPixelGrid', 'wheelPans', 'onion', 'toolGroupLast', 'libFavorites', 'ui']);
+  const IGNORED = new Set(['primary', 'secondary', 'recent', 'charColors', 'libraryCat', 'exportScale', 'exportCrop', 'exportIncludeProject', 'lastExportKind', 'tutorialDone', 'lastPalette', 'theme', 'showMinimap', 'showVariantBar', 'showPixelGrid', 'wheelPans', 'onion', 'toolGroupLast', 'libFavorites', 'ui', 'guideChapter']);
   app.on('state', (patch) => {
     refresh();
     if (patch && Object.keys(patch).length && Object.keys(patch).every((k) => IGNORED.has(k))) return;
@@ -299,4 +302,5 @@ export function renderOptions(app) {
   if (st.tileMode && (paint || t.id === 'fill')) {
     bar.append(check('Dessin enroulé', st.tileWrap, (v) => set({ tileWrap: v }), 'Le trait qui sort d\'un bord revient par l\'autre'));
   }
+  bar.append(h('button', { class: 'icon-btn small opt-help', title: 'Comment utiliser cet outil ? (F1)', 'aria-label': 'Aide sur cet outil', onclick: () => app.openToolGuide?.() }, icon('help')));
 }

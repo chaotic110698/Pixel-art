@@ -10,7 +10,8 @@ const STEPS = [
   { emoji: '🎨', title: 'Couleurs et calques', sel: '#sidebar', mobileSel: '#mobilenav', text: 'Choisissez vos couleurs dans la palette (clic = couleur A, clic droit ou appui long = couleur B). Organisez votre dessin en calques, groupes et variantes.' },
   { emoji: '🧑‍🎤', title: 'Créer un PNGtuber', sel: '#btn-library', mobileSel: '#mobilenav', text: '« Nouveau personnage » (menu ☰) crée une base avec yeux et bouche déjà organisés en variantes. La bibliothèque (bouton « Pièces » sur téléphone) ajoute coiffures, accessoires, vêtements… Tout reste modifiable pixel par pixel.' },
   { emoji: '📺', title: 'Tester et exporter', sel: '#btn-pngtuber', mobileSel: '#mobilenav', text: 'Le mode PNGtuber anime la bouche avec votre micro (traité localement) et fait cligner les yeux. Exportez ensuite en PNG : image, calque par calque, variantes, expressions… avec un fichier manifest.json.' },
-  { emoji: '💾', title: 'Sauvegarde automatique', sel: '#btn-menu', text: 'Vos projets sont enregistrés automatiquement dans le navigateur. Le menu ☰ donne accès à vos projets, à l\'export et à l\'aide. Bon dessin !' },
+  { emoji: '💾', title: 'Sauvegarde automatique', sel: '#btn-menu', text: 'Vos projets sont enregistrés automatiquement dans le navigateur. Le menu ☰ donne accès à vos projets, à l\'export et à l\'aide.' },
+  { emoji: '📖', title: 'Guide complet', sel: '.tb-help button', mobileSel: '#btn-menu', text: 'Pour tout savoir sur chaque outil, la navigation et toutes les fonctionnalités, ouvrez le Guide : bouton livre au-dessus des couleurs, touche F1 (aide sur l\'outil actif), bouton « ? » de la barre d\'options ou menu ☰ > Guide complet. Bon dessin !' },
 ];
 
 export function startTutorial(app) {

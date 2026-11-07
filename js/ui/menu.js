@@ -43,6 +43,7 @@ export function openMainMenu(app, anchor) {
     { label: 'Paramètres (thème, couleurs, navigation…)', icon: 'settings', action: () => app.openSettings() },
     { label: 'Langue : English', icon: 'help', action: () => { app.setState({ lang: st.lang === 'en' ? 'fr' : 'en' }); app.savePrefs.flush(); app.storage?.saveNow().finally(() => location.reload()); } },
     { heading: 'Aide' },
+    { label: 'Guide complet (outils, navigation, fonctionnalités)…', icon: 'book', hint: 'F1', action: () => app.openGuide() },
     { label: 'Raccourcis clavier et gestes', icon: 'keyboard', hint: '?', action: () => showShortcuts(app) },
     { label: 'Personnaliser les raccourcis…', icon: 'key', action: () => openKeymapDialog(app) },
     { label: 'Revoir le tutoriel', icon: 'help', action: () => app.startTutorial() },
