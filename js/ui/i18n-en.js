@@ -51,6 +51,8 @@ export const EN = {
 
   // ----- outils -----
   'Crayon': 'Pencil',
+  'Dessin': 'Drawing',
+  'Formes': 'Shapes',
   'Gomme': 'Eraser',
   'Remplissage': 'Fill',
   'Pipette': 'Eyedropper',

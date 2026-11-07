@@ -42,6 +42,8 @@ const PATTERNS = [
   [/^Palette (.+)$/, (m, a) => (EN['Palette ' + a] ? EN['Palette ' + a] : `Palette ${a}`)],
   [/^Symétrie : (.+)$/, (m, a) => `Symmetry: ${{ aucune: 'none', 'verticale (gauche/droite)': 'vertical (left/right)', 'horizontale (haut/bas)': 'horizontal (top/bottom)', 'les deux': 'both' }[a] || a}`],
   [/^★ Favoris \((\d+)\)$/, (m, n) => `★ Favorites (${n})`],
+  [/^(.+) \((.+)\) — clic droit ou appui long : autres outils$/, (m, a, k) => `${tr(a)} (${k}) — right click or long press: other tools`],
+  [/^(Dessin|Remplissage|Formes|Sélection|Déplacer) : (.+)$/, (m, a, b) => `${tr(a)}: ${tr(b)}`],
   [/^Opacité : (\d+) %$/, (m, a) => `Opacity: ${a}%`],
   [/^(\d+) %$/, (m, a) => `${a}%`],
   [/^(\d+) couleurs (importées|extraites)$/, (m, n, w) => `${n} colors ${w === 'importées' ? 'imported' : 'extracted'}`],

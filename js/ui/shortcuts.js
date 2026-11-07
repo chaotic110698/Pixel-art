@@ -3,7 +3,7 @@
 import { h } from '../util/dom.js';
 import { isTyping } from './input.js';
 import { openDialog, anyDialogOpen, closeTopDialog, closePopups } from './dialogs.js';
-import { cycleSymmetry } from './toolbar.js';
+import { cycleSymmetry, closeFlyout } from './toolbar.js';
 import * as ops from '../core/layer-ops.js';
 
 export const SHORTCUTS = [
@@ -153,6 +153,10 @@ export function initShortcuts(app) {
   });
 
   window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.querySelector('.tool-flyout')) {
+      closeFlyout();
+      return;
+    }
     if (e.key === 'Escape' && (anyDialogOpen() || document.querySelector('.popup-menu'))) {
       closePopups();
       closeTopDialog();

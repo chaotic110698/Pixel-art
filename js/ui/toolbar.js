@@ -8,54 +8,130 @@ const TOOL_ICONS = {
   pencil: 'pencil', eraser: 'eraser', fill: 'fill', picker: 'picker', line: 'line', rect: 'rect',
   ellipse: 'ellipse', select: 'select', lasso: 'lasso', wand: 'wand', move: 'move', hand: 'hand', shade: 'shade', gradient: 'gradient',
 };
-const ORDER = ['pencil', 'eraser', 'fill', 'picker', 'shade', 'gradient', '|', 'line', 'rect', 'ellipse', '|', 'select', 'lasso', 'wand', 'move', '|', 'hand'];
+// Outils regroupés par famille : un bouton par groupe (dernier outil utilisé),
+// les autres outils du groupe dans un petit menu.
+export const TOOL_GROUPS = [
+  { id: 'draw', name: 'Dessin', tools: ['pencil', 'eraser', 'shade'] },
+  { id: 'fill', name: 'Remplissage', tools: ['fill', 'gradient'] },
+  { id: 'picker', name: 'Pipette', tools: ['picker'] },
+  { id: 'shapes', name: 'Formes', tools: ['line', 'rect', 'ellipse'] },
+  { id: 'select', name: 'Sélection', tools: ['select', 'lasso', 'wand'] },
+  { id: 'nav', name: 'Déplacer', tools: ['move', 'hand'] },
+];
+
+export function groupOf(toolId) {
+  return TOOL_GROUPS.find((g) => g.tools.includes(toolId));
+}
+
+function openFlyout(app, group, anchor) {
+  closeFlyout();
+  const mobile = window.matchMedia('(max-width: 760px)').matches;
+  const fly = h('div', { class: 'tool-flyout', role: 'menu', 'aria-label': group.name },
+    h('div', { class: 'menu-heading' }, group.name),
+    group.tools.map((id) => {
+      const t = app.tools.get(id);
+      return h('button', {
+        class: 'menu-item' + (app.tools.current.id === id ? ' checked' : ''),
+        role: 'menuitem',
+        onclick: () => { closeFlyout(); app.tools.select(id); },
+      }, icon(TOOL_ICONS[id]), h('span', { class: 'lbl' }, t.name), h('kbd', {}, t.key));
+    }));
+  document.body.append(fly);
+  const r = anchor.getBoundingClientRect();
+  const fw = fly.offsetWidth, fh = fly.offsetHeight;
+  let x, y;
+  if (mobile) {
+    x = Math.min(window.innerWidth - fw - 8, Math.max(8, r.left));
+    y = r.top - fh - 6;
+  } else {
+    x = r.right + 6;
+    y = Math.min(window.innerHeight - fh - 8, Math.max(8, r.top));
+  }
+  fly.style.left = x + 'px';
+  fly.style.top = Math.max(8, y) + 'px';
+  setTimeout(() => document.addEventListener('pointerdown', onOutside, true), 0);
+  function onOutside(e) {
+    if (!fly.contains(e.target)) closeFlyout();
+  }
+  fly._cleanup = () => document.removeEventListener('pointerdown', onOutside, true);
+}
+
+export function closeFlyout() {
+  for (const f of document.querySelectorAll('.tool-flyout')) {
+    f._cleanup?.();
+    f.remove();
+  }
+}
 
 export function initToolbar(app, { openColorEditor }) {
   const bar = document.getElementById('toolbar');
-  const buttons = new Map();
-  for (const id of ORDER) {
-    if (id === '|') {
-      bar.append(h('div', { class: 'tb-sep' }));
-      continue;
-    }
-    const t = app.tools.get(id);
-    const b = h('button', {
-      class: 'icon-btn',
-      title: `${t.name} (${t.key})`,
-      'aria-label': t.name,
-      dataset: { tool: id },
-      onclick: () => app.tools.select(id),
-    }, icon(TOOL_ICONS[id]));
-    buttons.set(id, b);
-    bar.append(b);
+  const buttons = new Map(); // groupId -> bouton
+  const lastOf = () => ({ ...(app.state.toolGroupLast || {}) });
+  const toolsBox = h('div', { class: 'tb-tools' });
+  for (const g of TOOL_GROUPS) {
+    const b = h('button', { class: 'icon-btn tb-group' + (g.tools.length > 1 ? ' multi' : ''), dataset: { group: g.id } });
+    let timer = null, longPressed = false;
+    b.addEventListener('pointerdown', (e) => {
+      longPressed = false;
+      if (g.tools.length > 1) timer = setTimeout(() => { longPressed = true; openFlyout(app, g, b); }, 450);
+      void e;
+    });
+    const stop = () => clearTimeout(timer);
+    b.addEventListener('pointerup', stop);
+    b.addEventListener('pointerleave', stop);
+    b.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      if (g.tools.length > 1) openFlyout(app, g, b);
+    });
+    b.addEventListener('click', () => {
+      if (longPressed) return;
+      const cur = app.tools.current.id;
+      // re-cliquer sur le groupe actif ouvre la liste de ses outils
+      if (g.tools.includes(cur) && g.tools.length > 1) return openFlyout(app, g, b);
+      app.tools.select(lastOf()[g.id] || g.tools[0]);
+    });
+    buttons.set(g.id, b);
+    toolsBox.append(b);
   }
-  bar.append(h('div', { class: 'tb-sep' }));
-  const sym = h('button', { class: 'icon-btn', title: 'Symétrie (S)', 'aria-label': 'Symétrie', onclick: () => cycleSymmetry(app) }, icon('symmetry'));
-  const dith = h('button', { class: 'icon-btn', title: 'Tramage / dithering (D)', 'aria-label': 'Tramage', onclick: () => app.setState({ dither: !app.state.dither }) }, icon('dither'));
-  bar.append(sym, dith);
-  bar.append(h('div', { class: 'tb-sep' }));
+  bar.append(toolsBox);
 
-  // pastilles couleur primaire / secondaire
+  // pastilles couleur primaire / secondaire (en bas)
   const c1 = h('button', { class: 'c1', title: 'Couleur principale (clic : modifier)', 'aria-label': 'Couleur principale', onclick: () => openColorEditor('primary') }, h('i'));
   const c2 = h('button', { class: 'c2', title: 'Couleur secondaire (clic : modifier)', 'aria-label': 'Couleur secondaire', onclick: () => openColorEditor('secondary') }, h('i'));
   const chip = h('div', { class: 'color-chip' }, c1, c2);
   const swap = h('button', { class: 'icon-btn small', title: 'Échanger les couleurs (X)', 'aria-label': 'Échanger les couleurs', onclick: () => app.swapColors() }, icon('swap'));
-  bar.append(chip, swap);
+  bar.append(h('div', { class: 'tb-colors' }, chip, swap));
 
   const refresh = () => {
-    for (const [id, b] of buttons) b.classList.toggle('active', app.tools.current.id === id);
-    sym.classList.toggle('active', app.state.symmetry !== 'none');
-    dith.classList.toggle('active', app.state.dither);
+    const cur = app.tools.current.id;
+    const last = lastOf();
+    for (const g of TOOL_GROUPS) {
+      const b = buttons.get(g.id);
+      const shown = g.tools.includes(cur) ? cur : last[g.id] || g.tools[0];
+      const t = app.tools.get(shown);
+      b.replaceChildren(icon(TOOL_ICONS[shown]));
+      b.classList.toggle('active', g.tools.includes(cur));
+      const others = g.tools.length > 1 ? ' — clic droit ou appui long : autres outils' : '';
+      b.title = `${t.name} (${t.key})${others}`;
+      b.setAttribute('aria-label', g.tools.length > 1 ? `${g.name} : ${t.name}` : t.name);
+      b.dataset.tool = shown;
+    }
     c1.querySelector('i').style.background = app.state.primary;
     c2.querySelector('i').style.background = app.state.secondary;
     app.input?.updateCursor();
   };
-  app.on('tool', () => {
+  app.on('tool', (t) => {
+    // mémoriser le dernier outil de chaque groupe
+    const g = t && groupOf(t.id);
+    if (g && (app.state.toolGroupLast || {})[g.id] !== t.id) {
+      app.state.toolGroupLast = { ...(app.state.toolGroupLast || {}), [g.id]: t.id };
+      app.savePrefs();
+    }
     refresh();
     renderOptions(app);
   });
   // clés d'état qui n'affectent pas la barre d'options (évite de la reconstruire à chaque trait)
-  const IGNORED = new Set(['primary', 'secondary', 'recent', 'charColors', 'libraryCat', 'exportScale', 'exportCrop', 'exportIncludeProject', 'lastExportKind', 'tutorialDone', 'lastPalette', 'theme', 'showMinimap', 'showVariantBar', 'showPixelGrid', 'wheelPans', 'onion']);
+  const IGNORED = new Set(['primary', 'secondary', 'recent', 'charColors', 'libraryCat', 'exportScale', 'exportCrop', 'exportIncludeProject', 'lastExportKind', 'tutorialDone', 'lastPalette', 'theme', 'showMinimap', 'showVariantBar', 'showPixelGrid', 'wheelPans', 'onion', 'toolGroupLast', 'libFavorites', 'ui']);
   app.on('state', (patch) => {
     refresh();
     if (patch && Object.keys(patch).length && Object.keys(patch).every((k) => IGNORED.has(k))) return;
@@ -63,12 +139,7 @@ export function initToolbar(app, { openColorEditor }) {
     renderOptions(app);
   });
   app.on('color', refresh);
-  app.on('keymap', () => {
-    for (const [id, b] of buttons) {
-      const t = app.tools.get(id);
-      b.title = `${t.name} (${t.key})`;
-    }
-  });
+  app.on('keymap', refresh);
   refresh();
   renderOptions(app);
 }

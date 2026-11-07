@@ -727,3 +727,27 @@ button, .chip, .swatch, .card, .lrow, .menu-item { touch-action: manipulation; -
 .lib-card .fav { position: absolute; top: 2px; right: 2px; border: 0; background: color-mix(in srgb, var(--bg2) 80%, transparent); border-radius: 8px; min-width: 34px; min-height: 34px; font-size: 18px; color: var(--muted); }
 .lib-card .fav.on { color: #ffcf33; }
 input[type='search'] { margin-bottom: 8px; }
+
+/* ---------- Barre d'outils regroupée ---------- */
+#toolbar { justify-content: space-between; }
+.tb-tools { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.tb-colors { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 8px; border-top: 1px solid var(--line); }
+.tb-group.multi::after {
+  content: ''; position: absolute; right: 4px; bottom: 4px;
+  border-left: 5px solid transparent; border-bottom: 5px solid currentColor; opacity: .55;
+}
+.tool-flyout {
+  position: fixed; z-index: 210; background: var(--bg2); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: var(--shadow); padding: 6px; min-width: 210px;
+}
+@media (max-width: 760px) {
+  #toolbar { justify-content: space-between; }
+  .tb-tools { flex-direction: row; gap: 2px; }
+  .tb-colors { flex-direction: row; border-top: 0; border-left: 1px solid var(--line); padding: 0 0 0 6px; }
+}
+@media (max-width: 400px) {
+  #toolbar .icon-btn { width: 40px; min-width: 40px; padding: 0 2px; }
+  .tb-colors { padding-left: 4px; }
+  .color-chip { width: 36px; height: 36px; }
+  .color-chip .c1, .color-chip .c2 { width: 23px; height: 23px; }
+}
