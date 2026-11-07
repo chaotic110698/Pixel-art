@@ -62,6 +62,8 @@ capture.html          page de capture (lit IndexedDB, suit l'éditeur via Broadc
 js/storage/           db.js (IndexedDB), serialize.js, storage.js (autosave incrémental), project-file.js (fichiers, File System Access), aseprite.js (import .ase), projects-ui.js
 js/export/psd.js      export Photoshop (calques, dossiers « lsct », noms Unicode « luni »)
 js/ui/history-panel.js, js/ui/i18n.js + i18n-en.js, shortcuts.js (touches simples personnalisables : singleKeyActions)
+js/ui/settings.js     fenêtre Paramètres ; thèmes (THEMES) appliqués par applyAppearance() via des variables CSS sur <html> ; SETTING_KEYS = réglages exportables
+js/ui/toolbar.js      outils regroupés (TOOL_GROUPS) avec menu de groupe, barre d'options contextuelle
 scripts/sw-files.mjs  vérifie ou régénère la liste de précache de sw.js
 ```
 

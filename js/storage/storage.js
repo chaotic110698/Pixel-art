@@ -137,7 +137,18 @@ export async function initStorage(app) {
     }
   }
 
-  const autosave = debounce(() => saveNow(false), 1500);
+  // délai réglable (Paramètres > Affichage) ; 0 = sauvegarde automatique désactivée
+  let autoTimer = null;
+  const autosave = () => {
+    clearTimeout(autoTimer);
+    const delay = app.state.autosaveDelay ?? 1500;
+    if (!delay) return;
+    autoTimer = setTimeout(() => saveNow(false), delay);
+  };
+  autosave.flush = () => {
+    clearTimeout(autoTimer);
+    if ((app.state.autosaveDelay ?? 1500) || saving) saveNow(false);
+  };
   app.on('changed', autosave);
   app.on('pixels', autosave);
   app.on('doc', autosave);

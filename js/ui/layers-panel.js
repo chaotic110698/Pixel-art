@@ -20,7 +20,7 @@ export function initLayersPanel(app) {
     tb('merge', 'Fusionner vers le bas', () => ops.mergeDown(app)),
     tb('up', 'Monter', () => ops.moveNode(app, app.doc.activeId, 1)),
     tb('down', 'Descendre', () => ops.moveNode(app, app.doc.activeId, -1)),
-    tb('trash', 'Supprimer', () => (multi.size > 1 ? ops.removeNodes(app, [...multi]) : ops.removeNode(app))),
+    tb('trash', 'Supprimer', () => app.confirmDelete()),
     moreBtn);
   // sélection de plusieurs calques (Ctrl/Maj + clic, ou mode tactile)
   const multi = new Set();
@@ -327,11 +327,25 @@ export function initLayersPanel(app) {
   app.on('pixels', refreshThumbs);
   app.on('frame', refreshThumbs);
   app.renameActive = () => app.doc.active && renameNode(app.doc.active);
+  // suppression avec confirmation selon le réglage (Paramètres > Affichage)
   app.confirmDelete = async () => {
+    const mode = app.state.confirmDelete || 'groups';
+    if (multi.size > 1) {
+      const ids = [...multi];
+      if (mode !== 'never' && !(await confirmDialog(`Supprimer ${ids.length} éléments ?`, { danger: true, ok: 'Supprimer' }))) return;
+      ops.removeNodes(app, ids);
+      multi.clear();
+      return;
+    }
     const a = app.doc.active;
     if (!a) return;
-    if (a.type === 'group' && a.children.length && !(await confirmDialog(`Supprimer le groupe « ${a.name} » et son contenu ?`, { danger: true, ok: 'Supprimer' }))) return;
+    const ask = mode === 'always' || (mode === 'groups' && a.type === 'group' && a.children.length);
+    if (ask) {
+      const msg = a.type === 'group' ? `Supprimer le groupe « ${a.name} » et son contenu ?` : `Supprimer le calque « ${a.name} » ?`;
+      if (!(await confirmDialog(msg, { danger: true, ok: 'Supprimer' }))) return;
+    }
     ops.removeNode(app);
   };
+
   render();
 }

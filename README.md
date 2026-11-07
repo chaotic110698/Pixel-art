@@ -31,7 +31,8 @@
   - au choix, recadrage commun (l'alignement est conservé) ou image par image.
 - **Projets** : sauvegarde automatique et incrémentale dans le navigateur (IndexedDB), liste avec miniatures, renommage, duplication, suppression, fichier projet `.pxa.json` sans perte (téléchargement et ouverture).
 - **Confort** : raccourcis personnalisables, panneau **Historique** (revenir à n'importe quelle étape), enregistrement direct dans un fichier de l'ordinateur (Chrome/Edge), import de fichiers **Aseprite** (.ase), export **PSD** (calques et groupes), interface en **français ou anglais** (menu ☰).
-- Tutoriel au premier lancement, thème clair ou sombre.
+- **Paramètres** (bouton ⚙ ou menu ☰) : 7 thèmes (sombre, clair, minuit, forêt, sépia, pastel, contraste élevé), couleurs personnalisées, taille de l'interface, damier, molette (zoom par paliers ou progressif, déplacement, inversion), mode **stylet seulement** (le doigt déplace la vue), gestes à 2/3 doigts, mode gaucher, réduction des animations, éléments affichés, confirmation de suppression, délai de sauvegarde, export/import/réinitialisation des réglages.
+- Tutoriel au premier lancement.
 
 ## Raccourcis principaux
 

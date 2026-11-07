@@ -93,7 +93,14 @@ export class Input {
           app.tools.current.cancel();
           this.drawingId = null;
         }
+        // un doigt qui déplaçait la vue (mode stylet) laisse la place au geste
+        if (this.panning?.touch) this.panning = null;
         this.startGesture();
+        return;
+      }
+      // mode « stylet seulement » : un doigt déplace la vue au lieu de dessiner
+      if (app.state.touchDraw === 'pen') {
+        this.panning = { x: e.clientX, y: e.clientY, id: e.pointerId, touch: true };
         return;
       }
     }
@@ -172,8 +179,8 @@ export class Input {
       if (this.pointers.size === 0) {
         const dt = performance.now() - g.t;
         if (!cancelled && dt < 320 && g.maxMove < 14 && !g.moved) {
-          if (g.count === 2) app.history.undo();
-          else if (g.count >= 3) app.history.redo();
+          if (g.count === 2 && app.state.twoFingerUndo !== false) app.history.undo();
+          else if (g.count >= 3 && app.state.threeFingerRedo !== false) app.history.redo();
         }
         this.gesture = null;
       }
@@ -249,11 +256,16 @@ export class Input {
     const vp = this.app.viewport;
     const r = this.canvas.getBoundingClientRect();
     const sx = e.clientX - r.left, sy = e.clientY - r.top;
+    const st = this.app.state;
+    const inv = st.wheelInvert ? -1 : 1;
     if (e.ctrlKey) {
       // pincement trackpad : zoom continu
       vp.zoomAt(vp.zoom * Math.exp(-e.deltaY * 0.01), sx, sy);
-    } else if (this.app.state.wheelPans && !e.altKey) {
-      vp.panBy(-e.deltaX, -e.deltaY);
+    } else if (st.wheelPans && !e.altKey) {
+      vp.panBy(-e.deltaX * inv, -e.deltaY * inv);
+    } else if (st.wheelZoom === 'smooth') {
+      const d = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaY;
+      vp.zoomAt(vp.zoom * Math.exp(-d * 0.0025 * inv), sx, sy);
     } else {
       if (Math.abs(e.deltaY) < 1 && Math.abs(e.deltaX) > 0) {
         vp.panBy(-e.deltaX, 0);
@@ -263,7 +275,7 @@ export class Input {
       const d = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaY;
       this.wheelAcc = (this.wheelAcc || 0) + d;
       if (Math.abs(this.wheelAcc) < 40) return;
-      vp.stepZoom(this.wheelAcc < 0 ? 1 : -1, sx, sy);
+      vp.stepZoom((this.wheelAcc < 0 ? 1 : -1) * inv, sx, sy);
       this.wheelAcc = 0;
     }
   }

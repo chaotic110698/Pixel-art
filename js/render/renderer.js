@@ -4,6 +4,7 @@
 import { celCanvas, markDirty, createCanvas } from './celcache.js';
 import { composeOnCtx } from './compose.js';
 import { pixelsToCanvas } from './compose.js';
+import { checkerColors } from '../ui/settings.js';
 
 export class Renderer {
   constructor(app, canvas) {
@@ -178,10 +179,10 @@ export class Renderer {
       const c = document.createElement('canvas');
       c.width = c.height = s * 2;
       const g = c.getContext('2d');
-      const dark = this.app.state.theme === 'dark';
-      g.fillStyle = dark ? '#6a6a78' : '#ffffff';
+      const [ca, cb] = checkerColors(this.app.state);
+      g.fillStyle = ca;
       g.fillRect(0, 0, s * 2, s * 2);
-      g.fillStyle = dark ? '#575764' : '#d9dbe4';
+      g.fillStyle = cb;
       g.fillRect(0, 0, s, s);
       g.fillRect(s, s, s, s);
       this.checker = c;
@@ -316,7 +317,7 @@ export class Renderer {
     ctx.restore();
 
     // curseur pinceau
-    if (this.hover && tool?.showBrush && !app.input?.gesture) {
+    if (this.hover && tool?.showBrush && !app.input?.gesture && st.showBrushCursor !== false) {
       const size = tool.brushSize ? tool.brushSize() : 1;
       const [hx, hy] = this.hover;
       const off = Math.floor((size - 1) / 2);

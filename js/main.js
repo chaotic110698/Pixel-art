@@ -15,6 +15,7 @@ import { initShortcuts } from './ui/shortcuts.js';
 import { openMainMenu } from './ui/menu.js';
 import { createActions } from './ui/actions.js';
 import { startTutorial } from './ui/tutorial.js';
+import { applyAppearance, openSettings } from './ui/settings.js';
 import { setLanguage, tr } from './ui/i18n.js';
 import { composeToCanvas } from './render/compose.js';
 import * as ops from './core/layer-ops.js';
@@ -24,12 +25,10 @@ window.pixelAtelier = app; // pratique pour le débogage
 
 function setupTheme() {
   app.setTheme = (t) => {
-    app.setState({ theme: t });
-    document.documentElement.dataset.theme = t;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', t === 'dark' ? '#1b1b24' : '#ffffff');
-    app.renderer?.resetTheme();
+    app.setState({ ui: { ...(app.state.ui || {}), theme: t === 'light' ? 'clair' : t === 'dark' ? 'sombre' : t } });
+    applyAppearance(app);
   };
-  document.documentElement.dataset.theme = app.state.theme;
+  applyAppearance(app);
 }
 
 function setupTopbar() {
@@ -49,6 +48,8 @@ function setupTopbar() {
   set('btn-library', 'book', () => app.actions.openLibrary());
   set('btn-pngtuber', 'tv', () => app.actions.openPngtuber());
   set('btn-export', 'download', () => app.actions.exportDialog());
+  set('btn-settings', 'settings', () => openSettings(app));
+  app.openSettings = (tab) => openSettings(app, tab);
   const syncHist = () => {
     undo.disabled = !app.history.canUndo();
     redo.disabled = !app.history.canRedo();

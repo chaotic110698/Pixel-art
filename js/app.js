@@ -16,6 +16,7 @@ import { Input } from './ui/input.js';
 import { hexToU32, normHex } from './util/color.js';
 import { presetById } from './core/palettes.js';
 import { debounce } from './util/dom.js';
+import { SETTING_KEYS } from './ui/settings.js';
 
 const PREFS_KEY = 'pixelatelier.prefs.v1';
 
@@ -112,6 +113,17 @@ export class App extends Emitter {
     Object.assign(this.state, patch);
     this.emit('state', patch);
     this.renderer?.requestRender();
+  }
+
+  /** Remet les réglages du site par défaut (les projets ne sont pas touchés). */
+  resetPrefs() {
+    for (const k of SETTING_KEYS) {
+      if (k in DEFAULT_STATE) this.state[k] = Array.isArray(DEFAULT_STATE[k]) ? [...DEFAULT_STATE[k]] : DEFAULT_STATE[k];
+      else delete this.state[k];
+    }
+    this.emit('state', {});
+    this.emit('keymap');
+    this.savePrefs.flush();
   }
 
   // ---------- Couleurs ----------
