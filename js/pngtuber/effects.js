@@ -80,11 +80,17 @@ export function createEffects(o) {
     const k = o.avatarCanvas.width ? (ar.width * dpr) / o.avatarCanvas.width : 1;
     const px = geom.s * k; // pixels écran par pixel du dessin
     st.U = Math.max(1, px * unit);
-    st.ax = (ar.left - sr.left) * dpr + geom.x * k; // coin haut-gauche de l'image de l'avatar
-    st.ay = (ar.top - sr.top) * dpr + geom.y * k;
+    // ancrage fixe (avatar au repos) : la grille du fond et des effets ne suit pas
+    // la respiration, le rebond ni la secousse ; seul le contour (aura) suit l'avatar
+    const bx = (ar.left - sr.left) * dpr + (geom.bx ?? geom.x) * k;
+    const by = (ar.top - sr.top) * dpr + (geom.by ?? geom.y) * k;
+    st.ax = bx;
+    st.ay = by;
+    st.mx = (ar.left - sr.left) * dpr + geom.x * k; // position réelle (en mouvement)
+    st.my = (ar.top - sr.top) * dpr + geom.y * k;
     st.px = px;
-    st.ox = ((st.ax % st.U) + st.U) % st.U;
-    st.oy = ((st.ay % st.U) + st.U) % st.U;
+    st.ox = ((bx % st.U) + st.U) % st.U;
+    st.oy = ((by % st.U) + st.U) % st.U;
     st.GW = Math.ceil(W / st.U) + 1;
     st.GH = Math.ceil(H / st.U) + 1;
     st.geom = geom;
@@ -227,11 +233,11 @@ export function createEffects(o) {
     g.globalAlpha = alpha;
     g.imageSmoothingEnabled = false;
     if (geom.tilt) {
-      const cx = st.ax + (o.width * px) / 2, by = st.ay + o.height * px;
+      const cx = st.mx + (o.width * px) / 2, by = st.my + o.height * px;
       g.translate(cx, by); g.rotate(geom.tilt); g.translate(-cx, -by);
     }
     const e = grow * px;
-    g.drawImage(r.tint, st.ax - unit * px - e, st.ay - unit * px - e, (o.width + unit * 2) * px + e * 2, (o.height + unit * 2) * px + e * 2);
+    g.drawImage(r.tint, st.mx - unit * px - e, st.my - unit * px - e, (o.width + unit * 2) * px + e * 2, (o.height + unit * 2) * px + e * 2);
     g.restore();
   }
 
@@ -502,10 +508,6 @@ export function createEffects(o) {
     frame,
     trigger,
     clear() { P.length = 0; st.emote = null; st.flash = st.zoom = st.shake = st.lines = 0; st.dirty = true; },
-    keyFor(k) {
-      const keys = cfg().keys || {};
-      return Object.keys(keys).find((id) => keys[id] && keys[id].toUpperCase() === k) || null;
-    },
   };
 }
 

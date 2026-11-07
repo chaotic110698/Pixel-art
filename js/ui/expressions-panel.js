@@ -5,6 +5,7 @@ import { icon } from './icons.js';
 import { popupMenu, promptDialog, confirmDialog, openDialog } from './dialogs.js';
 import { composeToCanvas } from '../render/compose.js';
 import * as ops from '../core/layer-ops.js';
+import { captureCombo, formatCombo, keyOwner } from './keycapture.js';
 
 export function initExpressionsPanel(app) {
   const panel = document.getElementById('panel-expressions');
@@ -47,7 +48,7 @@ export function initExpressionsPanel(app) {
       more.addEventListener('click', () => popupMenu(more, [
         { label: 'Mettre à jour avec l\'état actuel', icon: 'save', action: () => ops.updateExpression(app, e.id) },
         { label: 'Renommer', icon: 'pencil', action: async () => { const n = await promptDialog('Nom', e.name, { title: 'Renommer l\'expression' }); if (n) ops.renameExpression(app, e.id, n); } },
-        { label: e.key ? `Raccourci : ${e.key} (changer)` : 'Associer une touche…', icon: 'key', action: () => askKey(e) },
+        { label: e.key ? `Raccourci : ${formatCombo(e.key)} (changer)` : 'Associer une touche…', icon: 'key', action: () => askKey(e) },
         { label: 'Monter', icon: 'up', action: () => ops.moveExpression(app, e.id, -1) },
         { label: 'Descendre', icon: 'down', action: () => ops.moveExpression(app, e.id, 1) },
         { sep: true },
@@ -57,7 +58,7 @@ export function initExpressionsPanel(app) {
         thumb,
         h('button', { class: 'btn small grow', style: { justifyContent: 'flex-start' }, title: 'Appliquer', onclick: () => ops.applyExpression(app, e.id) },
           h('span', { class: 'name', translate: 'no' }, e.name)),
-        e.key ? h('kbd', { title: e.hold ? 'Touche associée (temporaire : tant qu\'elle est maintenue)' : 'Touche associée (mode PNGtuber)' }, e.key + (e.hold ? ' ⏳' : '')) : null,
+        e.key ? h('kbd', { title: e.hold ? 'Touche associée (temporaire : tant qu\'elle est maintenue)' : 'Touche associée (mode PNGtuber)' }, formatCombo(e.key) + (e.hold ? ' ⏳' : '')) : null,
         more));
     }
     renderProfiles();
@@ -82,10 +83,23 @@ export function initExpressionsPanel(app) {
       g.imageSmoothingEnabled = false;
       const k = Math.min(80 / doc.width, 80 / doc.height);
       g.drawImage(src, (80 - doc.width * k) / 2, (80 - doc.height * k) / 2, doc.width * k, doc.height * k);
-      const keySel = h('select', { class: 'input', 'aria-label': 'Touche du profil', title: 'Touche du profil', style: { width: '78px' } },
+      const custom = p.key && !ops.PROFILE_KEYS.includes(p.key);
+      const keySel = h('select', { class: 'input', 'aria-label': 'Touche du profil', title: 'Touche du profil (F13–F24 ou une combinaison)', style: { width: '96px' } },
         h('option', { value: '' }, '—'),
-        ops.PROFILE_KEYS.map((k) => h('option', { value: k, selected: p.key === k }, k)));
-      keySel.addEventListener('change', () => ops.setProfileKey(app, p.id, keySel.value || null));
+        ops.PROFILE_KEYS.map((k) => h('option', { value: k, selected: p.key === k }, k)),
+        custom ? h('option', { value: p.key, selected: true }, formatCombo(p.key)) : null,
+        h('option', { value: '__combo' }, 'Autre touche…'));
+      keySel.addEventListener('change', async () => {
+        if (keySel.value !== '__combo') return ops.setProfileKey(app, p.id, keySel.value || null);
+        keySel.options[keySel.selectedIndex].textContent = 'Appuyez…';
+        const k = await captureCombo((t) => { keySel.options[keySel.selectedIndex].textContent = t; });
+        if (k === null) return render();
+        if (k) {
+          const owner = keyOwner(app.doc, k, { kind: 'profile', id: p.id });
+          if (owner) { app.toast(`Touche ${formatCombo(k)} déjà utilisée par « ${owner} »`, 2600); return render(); }
+        }
+        ops.setProfileKey(app, p.id, k || null);
+      });
       const more = h('button', { class: 'icon-btn small', title: 'Options', 'aria-label': 'Options du profil' }, icon('more'));
       more.addEventListener('click', () => popupMenu(more, [
         { label: 'Mettre à jour avec l\'état actuel', icon: 'save', action: () => ops.updateProfile(app, p.id) },
@@ -113,28 +127,34 @@ export function initExpressionsPanel(app) {
 
   async function askKey(e) {
     let captured = null;
-    const shown = h('div', { style: { fontSize: '28px', textAlign: 'center', margin: '12px' } }, e.key || '…');
+    const shown = h('div', { style: { fontSize: '28px', textAlign: 'center', margin: '12px' } }, e.key ? formatCombo(e.key) : '…');
     const holdChk = h('input', { type: 'checkbox', checked: !!e.hold });
     const d = openDialog({
       title: `Touche pour « ${e.name} »`,
       body: [
-        h('p', {}, 'Appuyez sur une touche (lettre ou chiffre). Elle déclenchera l\'expression en mode PNGtuber, dans la fenêtre de capture et dans l\'avatar OBS.'),
+        h('p', {}, 'Appuyez sur une touche (lettre, chiffre, F1–F24) ou une combinaison (ex. Ctrl+Maj+1, Alt+H). Elle déclenchera l\'expression en mode PNGtuber, dans la fenêtre de capture et dans l\'avatar OBS.'),
         shown,
         h('label', { class: 'chk' }, holdChk, 'Temporaire : seulement tant que la touche est maintenue'),
         h('p', { class: 'hint' }, 'Exemple : maintenir S pour « Surpris », puis relâcher pour revenir à l\'expression précédente.'),
       ],
       buttons: [{ label: 'Retirer', value: 'remove' }, { label: 'Annuler', value: null }, { label: 'OK', value: 'ok', primary: true }],
     });
-    const onKey = (ev) => {
-      if (ev.key.length === 1 && /[\p{L}\p{N}]/u.test(ev.key)) {
-        captured = ev.key.toUpperCase();
-        shown.textContent = captured;
-        ev.preventDefault();
+    // capture en continu tant que la fenêtre est ouverte (Échap ferme la fenêtre)
+    const stop = new AbortController();
+    d.result.then(() => stop.abort());
+    (async () => {
+      for (;;) {
+        const k = await captureCombo((t) => { shown.textContent = t; }, stop.signal);
+        if (k === undefined) break;
+        if (k === null) { d.close(null); break; }
+        if (k === '') { d.close('remove'); break; }
+        const owner = keyOwner(app.doc, k, { kind: 'expr', id: e.id });
+        if (owner) { shown.textContent = formatCombo(k) + ' ✖'; app.toast(`Touche ${formatCombo(k)} déjà utilisée par « ${owner} »`, 2400); continue; }
+        captured = k;
+        shown.textContent = formatCombo(k);
       }
-    };
-    window.addEventListener('keydown', onKey, true);
+    })();
     const v = await d.result;
-    window.removeEventListener('keydown', onKey, true);
     if (v === 'remove') ops.setExpressionKey(app, e.id, null);
     else if (v === 'ok' && (captured || e.key)) ops.setExpressionKey(app, e.id, captured || e.key, holdChk.checked);
   }

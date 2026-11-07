@@ -64,6 +64,7 @@ js/pngtuber/
 capture.html          page de capture (lit IndexedDB, suit l'éditeur via BroadcastChannel « pixel-atelier »)
 js/storage/           db.js (IndexedDB), serialize.js, storage.js (autosave incrémental), project-file.js (fichiers, File System Access), aseprite.js (import .ase), projects-ui.js
 js/export/psd.js      export Photoshop (calques, dossiers « lsct », noms Unicode « luni »)
+js/ui/keycapture.js   raccourcis PNGtuber : touche simple ou combinaison (« Ctrl+Maj+1 »), capture (captureCombo), conflits (keyOwner) ; même lecture que engine.js (chiffres lus sur la touche physique)
 js/ui/guide.js        fenêtre « Guide » (sommaire, recherche, boutons « Essayer ») ; contenu bilingue dans guide-content.js (paires T(fr, en), **gras**, [[touche]])
 js/ui/history-panel.js, js/ui/i18n.js + i18n-en.js, shortcuts.js (touches simples personnalisables : singleKeyActions)
 js/ui/settings.js     fenêtre Paramètres ; thèmes (THEMES) appliqués par applyAppearance() via des variables CSS sur <html> ; SETTING_KEYS = réglages exportables

@@ -33,6 +33,7 @@ export async function buildStandaloneAvatar(doc) {
       threshold: settings.threshold, threshold2: settings.threshold2, hasHalf: settings.hasHalf,
       blinkEvery: settings.blinkEvery, blinkDuration: settings.blinkDuration,
       bounce: settings.bounce, breathe: settings.breathe, shake: settings.shake, tilt: settings.tilt, scale: 0,
+      bgKeys: settings.bgKeys || {},
     },
   };
   // JSON sûr dans un <script> (pas de « </script> » possible)
@@ -127,6 +128,7 @@ const SCENES = ${JSON.stringify(SCENE_NAMES).replace(/</g, '\\u003c')};
     canvas: $('avatar'),
     stage: $('scene'),
     fx,
+    onBackground: (id) => { const v = id === 'checker' ? 'transparent' : id; if (v === 'image') return; bg = v; applyBg(); bgSel.value = bg; },
     width: DATA.width,
     height: DATA.height,
     getImage,

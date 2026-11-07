@@ -12,6 +12,7 @@ import { createAvatar } from './engine.js';
 import { createEffects, EFFECTS, SCENE_NAMES } from './effects.js';
 import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression, avatarProfiles, pngtuberConfig, effectsConfig } from './assets.js';
 import { channel } from '../storage/storage.js';
+import { captureCombo, formatCombo, keyOwner } from '../ui/keycapture.js';
 
 const BACKGROUNDS = [
   ['green', 'Vert', '#00ff00'],
@@ -108,6 +109,7 @@ export function openPngtuber(app) {
     canvas,
     stage: scene,
     fx,
+    onBackground: (id) => setBackground(id),
     width: doc.width,
     height: doc.height,
     getImage: provider,
@@ -166,30 +168,32 @@ export function openPngtuber(app) {
     } else setFx({ ambient: list });
   }
   const toggleIn = (list, id) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
-  let capturing = null;
-  function captureKey(id, btn) {
-    if (capturing) capturing();
+  let capturing = false;
+  let capStop = null;
+  /** Noms affichés des effets et des fonds (conflits de touches). */
+  const KEY_NAMES = () => ({ ...FXN, ...Object.fromEntries([...BACKGROUNDS, ...SCENES].map(([id, n]) => [id, n])) });
+  /** Attend un raccourci (touche ou combinaison) et l'enregistre dans `store` (keys des effets ou bgKeys). */
+  async function captureKey(kind, id, btn, onDone) {
+    if (capturing) return;
+    capturing = true;
     btn.textContent = 'Appuyez sur une touche…';
-    const onKey = (e) => {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      done();
-      if (e.key === 'Escape') return renderFx();
-      const keys = { ...effectsConfig(doc).keys };
-      if (e.key === 'Backspace' || e.key === 'Delete') delete keys[id];
-      else {
-        const k = /^F([1-9]|1\d|2[0-4])$/.test(e.key) ? e.key : e.key.length === 1 && /[\p{L}\p{N}]/u.test(e.key) ? e.key.toUpperCase() : null;
-        if (!k) return renderFx();
-        const clash = doc.expressions.find((x) => x.key === k) || doc.profiles.find((x) => x.key === k);
-        if (clash) { app.toast(`Touche ${k} déjà utilisée par « ${clash.name} »`, 2600); return renderFx(); }
-        for (const other of Object.keys(keys)) if (keys[other] === k) delete keys[other];
-        keys[id] = k;
-      }
-      setFx({ keys });
-    };
-    const done = () => { window.removeEventListener('keydown', onKey, true); capturing = null; };
-    capturing = done;
-    window.addEventListener('keydown', onKey, true);
+    capStop = new AbortController();
+    const k = await captureCombo((t) => { btn.textContent = t; }, capStop.signal);
+    capturing = false;
+    if (k === undefined) return;
+    if (k === null) return onDone(null);
+    if (k) {
+      const owner = keyOwner(doc, k, { kind, id }, KEY_NAMES());
+      if (owner) { app.toast(`Touche ${formatCombo(k)} déjà utilisée par « ${owner} »`, 2600); return onDone(null); }
+    }
+    onDone(k);
+  }
+  function setFxKey(id, k) {
+    if (k === null) return renderFx();
+    const keys = { ...effectsConfig(doc).keys };
+    if (k) keys[id] = k;
+    else delete keys[id];
+    setFx({ keys });
   }
   function editExprFx(e) {
     const cur = new Set(effectsConfig(doc).byExpr[e.id] || []);
@@ -214,7 +218,7 @@ export function openPngtuber(app) {
       h('div', { class: 'fx-sub' }, 'Déclencher (clic) · touche facultative'),
       h('div', { class: 'fx-grid' }, fxOf('oneshot').map((x) => h('div', { class: 'fx-row' },
         h('button', { class: 'btn small grow', onclick: () => fx.trigger(x.id) }, '▶ ', x.name),
-        h('button', { class: 'btn small fx-key', title: 'Associer une touche (Retour arrière : retirer, Échap : annuler)', 'aria-label': `Touche pour ${x.name}`, onclick: (ev) => captureKey(x.id, ev.currentTarget) }, c.keys[x.id] ? h('kbd', {}, c.keys[x.id]) : 'Touche…')))),
+        h('button', { class: 'btn small fx-key', title: 'Associer une touche ou une combinaison (ex. Ctrl+Maj+C ; Retour arrière : retirer, Échap : annuler)', 'aria-label': `Touche pour ${x.name}`, onclick: (ev) => captureKey('fx', x.id, ev.currentTarget, (k) => setFxKey(x.id, k)) }, c.keys[x.id] ? h('kbd', {}, formatCombo(c.keys[x.id])) : 'Touche…')))),
       h('div', { class: 'fx-sub' }, prof ? h('span', {}, 'Ambiance en continu · profil ', h('b', { translate: 'no' }, prof.name)) : 'Ambiance en continu'),
       chipsOf(fxOf('ambient'), c.ambient, (id) => setAmbient(toggleIn(c.ambient, id))),
       h('div', { class: 'fx-sub' }, 'Liés à la voix'),
@@ -260,7 +264,8 @@ export function openPngtuber(app) {
     if (!doc.variantGroups().length) {
       side.append(h('p', { class: 'hint', style: { color: 'var(--danger)' } }, 'Ce projet n\'a pas de groupe de variantes : créez un groupe « Bouche » (fermée / ouverte) ou utilisez « Nouveau personnage ».'));
     }
-    const bgRow = h('div', { class: 'chips' }, BACKGROUNDS.map(([id, label]) => h('button', {
+    const bgKeys = doc.pngtuber.bgKeys || {};
+    const chip = ([id, label]) => h('button', {
       class: 'chip' + (cfg.background === id ? ' on' : ''),
       onclick: async () => {
         if (id === 'image') {
@@ -269,15 +274,12 @@ export function openPngtuber(app) {
           if (customBgUrl) URL.revokeObjectURL(customBgUrl);
           customBgUrl = URL.createObjectURL(f);
         }
-        cfg.background = id;
-        applyBg();
-        renderSide();
+        setBackground(id);
       },
-    }, label)));
-    const sceneRow = h('div', { class: 'chips' }, SCENES.map(([id, label]) => h('button', {
-      class: 'chip' + (cfg.background === id ? ' on' : ''),
-      onclick: () => { cfg.background = id; applyBg(); renderSide(); },
-    }, label)));
+    }, label, bgKeys[id] ? h('kbd', { style: { marginLeft: '6px' } }, formatCombo(bgKeys[id])) : null);
+    const bgRow = h('div', { class: 'chips' }, BACKGROUNDS.map(chip));
+    const sceneRow = h('div', { class: 'chips' }, SCENES.map(chip),
+      h('button', { class: 'chip', onclick: openBgKeys, title: 'Associer une touche ou une combinaison à chaque fond' }, '⌨ Touches des fonds…'));
     const placeMarkers = () => {
       meterThr.style.left = cfg.threshold * 100 + '%';
       meterThr2.style.left = Math.max(cfg.threshold, cfg.threshold2) * 100 + '%';
@@ -333,6 +335,40 @@ export function openPngtuber(app) {
     renderFx();
     micBtn.replaceChildren(icon('mic'), engine.state.stream ? 'Couper le micro' : 'Activer le micro');
     micBtn.classList.toggle('primary', !engine.state.stream);
+  }
+
+  /** Change de fond (bouton, touche) et prévient la fenêtre de capture. */
+  function setBackground(id) {
+    if (id === 'image' && !customBgUrl) return;
+    cfg.background = id;
+    applyBg();
+    renderSide();
+    channel?.postMessage({ type: 'background', projectId: doc.id, id });
+  }
+  function openBgKeys() {
+    const body = h('div');
+    const render = () => {
+      const keys = doc.pngtuber.bgKeys || {};
+      clear(body);
+      body.append(h('p', { class: 'hint' }, 'Associez une touche (ex. B) ou une combinaison (ex. Ctrl+Maj+1) à chaque fond. Elles marchent dans le mode PNGtuber, la fenêtre de capture et l\'avatar OBS (.html). Retour arrière : retirer, Échap : annuler.'),
+        h('div', { class: 'fx-grid' }, [...BACKGROUNDS.filter(([id]) => id !== 'image'), ...SCENES].map(([id, label]) => h('div', { class: 'fx-row' },
+          h('span', { class: 'grow' }, label),
+          h('button', {
+            class: 'btn small fx-key', 'aria-label': `Touche pour ${label}`,
+            onclick: (ev) => captureKey('bg', id, ev.currentTarget, (k) => {
+              if (k !== null) {
+                const next = { ...(doc.pngtuber.bgKeys || {}) };
+                if (k) next[id] = k;
+                else delete next[id];
+                cfg.bgKeys = next;
+              }
+              render();
+              renderSide();
+            }),
+          }, keys[id] ? h('kbd', {}, formatCombo(keys[id])) : 'Touche…')))));
+    };
+    render();
+    openDialog({ title: 'Touches des fonds', wide: true, body, buttons: [{ label: 'Fermer', primary: true, value: true }] });
   }
 
   function autoPick(which) {
@@ -400,7 +436,7 @@ export function openPngtuber(app) {
     full: true,
     body: wrap,
     onClose: () => {
-      capturing?.();
+      capStop?.abort();
       flushCfg.flush();
       engine.stop();
       detachKeys();

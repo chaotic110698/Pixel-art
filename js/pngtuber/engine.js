@@ -16,6 +16,7 @@
 //   profiles()                     // [{ id, key }] (touches F13–F24 conseillées)
 //   initialExpression, initialProfile, onChange(state)
 //   fx                             // effets (createEffects), facultatif
+//   onBackground(id)               // touche de fond pressée (cfg().bgKeys)
 // }
 export function createAvatar(o) {
   const st = {
@@ -123,7 +124,9 @@ export function createAvatar(o) {
     const W = o.width * s + s * 4, H = o.height * s + s * 4;
     const x = (W - o.width * s) / 2 + dx;
     const y = H - o.height * s - s * 2 - bounce - breath + dy;
-    st.geom = { x: Math.round(x), y: Math.round(y), s, tilt, img };
+    // position de repos (sans rebond, respiration ni secousse) : sert d'ancrage fixe au fond et aux effets
+    const by = H - o.height * s - s * 2;
+    st.geom = { x: Math.round(x), y: Math.round(y), bx: Math.round((W - o.width * s) / 2), by: Math.round(by), s, tilt, img };
     const key = [st.profile, st.expression, st.mouth, blink, s, bounce, breath, tilt.toFixed(3), dx, dy, squash, maxW, maxH, img ? 1 : 0].join('|');
     if (key === st.lastKey) return;
     st.lastKey = key;
@@ -169,46 +172,96 @@ export function createAvatar(o) {
     if (o.onChange) o.onChange(st);
   }
 
-  // touches : expression normale (bascule) ou temporaire (tant que la touche est maintenue)
+  // ---------- raccourcis : touche simple (« C », « 1 », « F13 ») ou combinaison (« Ctrl+Maj+1 ») ----------
+  // Les chiffres sont lus sur la touche physique : sur un clavier AZERTY, « 1 » marche sans Maj.
+  function keyName(e) {
+    const code = e.code || '';
+    let m = code.match(/^(?:Digit|Numpad)(\d)$/);
+    if (m) return m[1];
+    if (/^F\d{1,2}$/.test(e.key || '')) return e.key;
+    if (!e.key || e.key.length !== 1 || e.key === ' ') return null;
+    m = code.match(/^Key([A-Z])$/);
+    // Alt (Option sur Mac) change le caractère : on garde alors la lettre de la touche
+    if ((e.altKey || e.ctrlKey) && m && !/^[a-z]$/i.test(e.key)) return m[1];
+    return e.key.toUpperCase();
+  }
+  function comboOf(e) {
+    const n = keyName(e);
+    if (!n) return null;
+    return [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Maj', e.metaKey && 'Cmd', n].filter(Boolean).join('+');
+  }
+  /** La touche enregistrée `k` correspond-elle à l'évènement ? (Maj ignorée pour une touche simple) */
+  function matches(e, k) {
+    if (!k) return false;
+    k = String(k).replace(/Shift\+/g, 'Maj+').replace(/Meta\+/g, 'Cmd+');
+    const n = keyName(e);
+    if (!n) return false;
+    if (!k.includes('+') || k.length === 1) return !e.ctrlKey && !e.altKey && !e.metaKey && k.toUpperCase() === n;
+    return comboOf(e) === k;
+  }
+  /** Touche principale d'un raccourci (relâchement d'une expression temporaire). */
+  const mainKey = (k) => { const p = String(k || '').split('+'); return (p[p.length - 1] || '+').toUpperCase(); };
+
+  // touches : profil, expression normale (bascule) ou temporaire (tant que la touche est maintenue),
+  // effet ponctuel, fond
   function onKey(e) {
     const t = e.target;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
-    if (e.code === 'Space') {
+    if (e.code === 'Space' && !e.ctrlKey && !e.altKey && !e.metaKey) {
       st.manual = e.type === 'keydown';
       e.preventDefault();
       return;
     }
-    const k = (e.key || '').toUpperCase();
-    // profils (tenues / personnages), en général sur F13–F24
-    const pf = o.profiles ? o.profiles().find((x) => x.key && x.key.toUpperCase() === k) : null;
-    if (pf) {
-      e.preventDefault();
-      if (e.type === 'keydown' && !e.repeat) setProfile(pf.id);
-      return;
-    }
-    const ex = o.expressions().find((x) => x.key && x.key === k);
-    if (!ex) {
-      // effet ponctuel associé à cette touche
-      const fid = o.fx && o.fx.keyFor(k);
-      if (fid) {
-        e.preventDefault();
-        if (e.type === 'keydown' && !e.repeat) o.fx.trigger(fid);
+    const down = e.type === 'keydown';
+    if (!down) {
+      // relâchement d'une expression temporaire : seule la touche principale compte
+      const n = keyName(e);
+      if (st.held !== null && n) {
+        const ex = o.expressions().find((x) => x.hold && x.id === st.expression && mainKey(x.key) === n);
+        if (ex) {
+          st.expression = st.held || null;
+          st.held = null;
+          st.lastKey = '';
+          if (o.onChange) o.onChange(st);
+        }
       }
       return;
     }
-    e.preventDefault();
-    if (e.type === 'keydown') {
+    const c = cfg();
+    // profils (tenues / personnages), en général sur F13–F24
+    const pf = o.profiles ? o.profiles().find((x) => matches(e, x.key)) : null;
+    if (pf) {
+      e.preventDefault();
+      if (!e.repeat) setProfile(pf.id);
+      return;
+    }
+    const ex = o.expressions().find((x) => matches(e, x.key));
+    if (ex) {
+      e.preventDefault();
       if (e.repeat) return;
       if (ex.hold) {
         if (st.held === null) st.held = st.expression || '';
         st.expression = ex.id;
       } else setExpression(ex.id);
-    } else if (ex.hold && st.held !== null && st.expression === ex.id) {
-      st.expression = st.held || null;
-      st.held = null;
+      st.lastKey = '';
+      if (o.onChange) o.onChange(st);
+      return;
     }
-    st.lastKey = '';
-    if (o.onChange) o.onChange(st);
+    // effet ponctuel associé à cette touche
+    const fk = (c.effects && c.effects.keys) || {};
+    const fid = o.fx ? Object.keys(fk).find((id) => matches(e, fk[id])) : null;
+    if (fid) {
+      e.preventDefault();
+      if (!e.repeat) o.fx.trigger(fid);
+      return;
+    }
+    // fond associé à cette touche
+    const bk = c.bgKeys || {};
+    const bid = o.onBackground ? Object.keys(bk).find((id) => matches(e, bk[id])) : null;
+    if (bid) {
+      e.preventDefault();
+      if (!e.repeat) o.onBackground(bid);
+    }
   }
 
   return {

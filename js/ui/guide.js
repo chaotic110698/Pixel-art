@@ -8,8 +8,17 @@ import { icon } from './icons.js';
 import { openDialog } from './dialogs.js';
 import { getLang } from './i18n.js';
 import { GUIDE, TOOL_SECTION } from './guide-content.js';
+import { tr } from './i18n.js';
+import { formatCombo } from './keycapture.js';
+import { singleKeyActions } from './shortcuts.js';
+import { EFFECTS, SCENE_NAMES } from '../pngtuber/effects.js';
+
+const BG_NAMES = { green: 'Vert', blue: 'Bleu', magenta: 'Magenta', black: 'Noir', white: 'Blanc', checker: 'Damier', ...SCENE_NAMES };
 
 const L = (t) => (t ? (getLang() === 'en' ? t.en : t.fr) : '');
+const KEY_EN = { Maj: 'Shift', Suppr: 'Del', 'Entrée': 'Enter', 'Échap': 'Esc', 'Flèches': 'Arrows', Espace: 'Space', 'Retour arrière': 'Backspace', 'Clic droit': 'Right click', 'Clic milieu': 'Middle click', Molette: 'Wheel', 'Appui long': 'Long press', '1 doigt': '1 finger', '2 doigts': '2 fingers', 'Tape à 2 doigts': '2-finger tap', 'Tape à 3 doigts': '3-finger tap' };
+/** Nom de touche affiché dans la langue de l'interface. */
+const keyLabel = (k) => (getLang() === 'en' ? (KEY_EN[k] || k.split('+').map((x) => KEY_EN[x] || x).join('+')) : k);
 const norm = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 /** Texte avec **gras** et [[touche]]. */
@@ -19,7 +28,7 @@ function rich(text) {
   let last = 0, m;
   while ((m = re.exec(text))) {
     if (m.index > last) out.push(text.slice(last, m.index));
-    out.push(m[1] !== undefined ? h('strong', {}, m[1]) : h('kbd', {}, m[2]));
+    out.push(m[1] !== undefined ? h('strong', {}, m[1]) : h('kbd', {}, keyLabel(m[2])));
     last = re.lastIndex;
   }
   if (last < text.length) out.push(text.slice(last));
@@ -73,9 +82,28 @@ export function openGuide(app, chapterId = null, sectionId = null) {
     if (b.tip) return h('p', { class: 'guide-tip' }, icon('star'), h('span', {}, rich(L(b.tip))));
     if (b.list) return h('ul', {}, b.list.map((t) => h('li', {}, rich(L(t)))));
     if (b.steps) return h('ol', {}, b.steps.map((t) => h('li', {}, rich(L(t)))));
-    if (b.keys) return h('dl', { class: 'guide-keys' }, b.keys.map(([k, t]) => [h('dt', {}, k.split(' / ').map((x, i) => [i ? ' / ' : '', h('kbd', {}, x)])), h('dd', {}, rich(L(t)))]));
+    if (b.keys) return h('dl', { class: 'guide-keys' }, b.keys.map(([k, t]) => [h('dt', {}, k.split(' / ').map((x, i) => [i ? ' / ' : '', h('kbd', {}, keyLabel(x))])), h('dd', {}, rich(L(t)))]));
+    if (b.dyn) return dynBlock(b.dyn);
     if (b.try) return h('button', { class: 'btn small guide-try', onclick: () => act(b.try) }, icon('chevronRight'), L(b.label));
     return null;
+  }
+
+  /** Listes générées : touches simples de l'éditeur, raccourcis choisis dans ce projet. */
+  function dynBlock(kind) {
+    const rows = [];
+    const row = (k, label) => [h('dt', {}, h('kbd', {}, k)), h('dd', {}, label)];
+    if (kind === 'editor') {
+      for (const a of singleKeyActions(app)) rows.push(row(a.key ? keyLabel(a.key.toUpperCase()) : '—', tr(a.label)));
+    } else if (kind === 'project') {
+      const doc = app.doc;
+      const names = { ...Object.fromEntries(EFFECTS.map((x) => [x.id, x.name])), ...BG_NAMES };
+      for (const e of doc.expressions) if (e.key) rows.push(row(formatCombo(e.key), [L({ fr: 'Expression ', en: 'Expression ' }), h('b', { translate: 'no' }, e.name), e.hold ? L({ fr: ' (temporaire)', en: ' (temporary)' }) : '']));
+      for (const pf of doc.profiles) if (pf.key) rows.push(row(formatCombo(pf.key), [L({ fr: 'Profil ', en: 'Profile ' }), h('b', { translate: 'no' }, pf.name)]));
+      for (const [id, k] of Object.entries(doc.pngtuber.effects?.keys || {})) if (k) rows.push(row(formatCombo(k), [L({ fr: 'Effet : ', en: 'Effect: ' }), tr(names[id] || id)]));
+      for (const [id, k] of Object.entries(doc.pngtuber.bgKeys || {})) if (k) rows.push(row(formatCombo(k), [L({ fr: 'Fond : ', en: 'Background: ' }), tr(names[id] || id)]));
+      if (!rows.length) return h('p', { class: 'hint' }, L({ fr: 'Aucun raccourci choisi dans ce projet pour l\'instant.', en: 'No shortcut chosen in this project yet.' }));
+    }
+    return h('dl', { class: 'guide-keys' }, rows);
   }
 
   function sectionEl(ch, sec) {

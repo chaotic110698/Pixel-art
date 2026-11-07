@@ -23,6 +23,9 @@ function message(text) {
 
 let bgId = 'green';
 function setBg(v) {
+  // fonds de l'éditeur sans équivalent ici : damier -> transparent, image -> inchangé
+  if (v === 'checker') v = 'transparent';
+  if (!BG[v] && !SCENE_NAMES[v]) return;
   bgId = v;
   document.body.style.background = SCENE_NAMES[v] ? '#000' : BG[v] || v;
   $('bg').value = v;
@@ -65,6 +68,7 @@ async function load(keepExpression = null) {
       canvas: $('avatar'),
       stage: $('scene'),
       fx,
+      onBackground: (id) => setBg(id),
       width: doc.width,
       height: doc.height,
       getImage: (pf, ex, m, b) => provider(pf, ex, m, b),
@@ -103,6 +107,7 @@ async function boot() {
     if (m.type === 'profile') av.setProfile(m.id || null);
     if (m.type === 'talk') av.setManualTalk(m.on);
     if (m.type === 'effect') av.fx?.trigger(m.id, false);
+    if (m.type === 'background') setBg(m.id);
     if (m.type === 'saved') {
       const keep = av.state.expression;
       await load(keep).catch(() => {});

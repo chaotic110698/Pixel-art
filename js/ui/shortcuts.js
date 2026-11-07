@@ -6,6 +6,7 @@ import { openDialog, anyDialogOpen, closeTopDialog, closePopups } from './dialog
 import { cycleSymmetry, closeFlyout } from './toolbar.js';
 import * as ops from '../core/layer-ops.js';
 import { channel } from '../storage/storage.js';
+import { matchesCombo } from './keycapture.js';
 
 export const SHORTCUTS = [
   ['Outils', [
@@ -36,6 +37,10 @@ export const SHORTCUTS = [
   ['Profils', [
     ['F13 … F24', 'Changer de profil (tenue / personnage), voir onglet Expressions'],
   ]],
+  ['Mode PNGtuber', [
+    ['Espace', 'Parler (maintenir)'], ['Échap', 'Quitter le mode PNGtuber'],
+    ['Touches choisies', 'Expressions, profils, effets et fonds (touche ou combinaison, ex. Ctrl+Maj+1)'],
+  ]],
   ['Tactile', [
     ['1 doigt', 'Dessiner'], ['2 doigts', 'Zoomer / déplacer'], ['Tape à 2 doigts', 'Annuler la dernière action'], ['Tape à 3 doigts', 'Rétablir'], ['Appui long sur une couleur', 'Choisir comme couleur B'],
   ]],
@@ -49,7 +54,11 @@ export function showShortcuts(app = null) {
       shortcutTable(app).map(([cat, list]) => h('div', {},
         h('h3', { style: { margin: '0 0 6px' } }, cat),
         h('table', { class: 'keys' }, list.map(([k, d]) => h('tr', {}, h('td', {}, h('kbd', {}, k)), h('td', {}, d))))))),
-    buttons: app ? [{ label: 'Personnaliser les touches…', action: () => { openKeymapDialog(app); return true; } }, { label: 'Fermer', value: null, primary: true }] : [],
+    buttons: app ? [
+      { label: 'Lexique complet', action: () => { app.openGuide?.('lexique'); return true; } },
+      { label: 'Personnaliser les touches…', action: () => { openKeymapDialog(app); return true; } },
+      { label: 'Fermer', value: null, primary: true },
+    ] : [],
   });
 }
 
@@ -188,15 +197,18 @@ export function initShortcuts(app) {
     }
     if (anyDialogOpen()) return;
 
-    // profils (tenues / personnages) sur F13–F24 : appliqués dans l'éditeur et transmis à la fenêtre de capture
-    if (/^F(1[3-9]|2[0-4])$/.test(e.key)) {
-      const pf = app.doc.profiles.find((p) => p.key === e.key);
+    // profils (tenues / personnages) : F13–F24 ou combinaison, appliqués dans l'éditeur et transmis à la fenêtre de capture
+    {
+      const pf = app.doc.profiles.find((p) => p.key && matchesCombo(e, p.key));
       if (pf) {
         e.preventDefault();
-        ops.applyProfile(app, pf.id);
-        channel?.postMessage({ type: 'profile', projectId: app.doc.id, id: pf.id });
+        if (!e.repeat) {
+          ops.applyProfile(app, pf.id);
+          channel?.postMessage({ type: 'profile', projectId: app.doc.id, id: pf.id });
+        }
+        return;
       }
-      return;
+      if (/^F(1[3-9]|2[0-4])$/.test(e.key)) return;
     }
 
     const run = (fn) => {

@@ -470,7 +470,7 @@ export const GUIDE = [
           list(
             ['Une expression mémorise la variante choisie dans chaque groupe (ex. « Content » = yeux contents + bouche souriante + sourcils hauts).', 'An expression stores the chosen variant of each group (e.g. "Happy" = happy eyes + smiling mouth + raised brows).'],
             ['Réglez les variantes, puis **Enregistrer l\'expression actuelle**. Un clic sur son nom l\'applique.', 'Set the variants, then **Save current expression**. Click its name to apply it.'],
-            ['Menu ⋯ : mettre à jour, renommer, **associer une touche** (lettre ou chiffre), monter, descendre, supprimer.', '⋯ menu: update, rename, **assign a key** (letter or digit), move up, move down, delete.'],
+            ['Menu ⋯ : mettre à jour, renommer, **associer une touche** (lettre, chiffre ou combinaison comme [[Ctrl+Maj+1]]), monter, descendre, supprimer.', '⋯ menu: update, rename, **assign a key** (letter, digit or a combination like [[Ctrl+Shift+1]]), move up, move down, delete.'],
             ['**Temporaire** : l\'expression ne dure que tant que la touche est maintenue (ex. maintenir S pour « Surpris »).', '**Temporary**: the expression only lasts while the key is held (e.g. hold S for "Surprised").'],
           ),
           go('panel:expressions', 'Ouvrir l\'onglet Expressions', 'Open the Expressions tab'),
@@ -641,6 +641,90 @@ export const GUIDE = [
           p('Menu ☰ > **Personnaliser les raccourcis** : changez la touche de chaque outil et action.', '☰ menu > **Customize shortcuts**: change the key of each tool and action.'),
           go('shortcuts', 'Tous les raccourcis', 'All shortcuts'),
         ],
+      },
+    ],
+  },
+  // ------------------------------------------------------------------
+  {
+    id: 'lexique', icon: 'keyboard', title: T('Lexique des raccourcis', 'Shortcut glossary'),
+    intro: T('Tous les raccourcis utilisables, au même endroit. La dernière section liste les touches que vous avez choisies dans ce projet.', 'Every available shortcut in one place. The last section lists the keys you chose in this project.'),
+    sections: [
+      {
+        id: 'lx-combo', icon: 'key', title: T('Créer un raccourci à plusieurs touches', 'Creating a multi-key shortcut'),
+        body: [
+          p('Partout où l\'on associe une touche (expressions, profils, effets, fonds), on peut aussi enregistrer une **combinaison** : maintenez [[Ctrl]], [[Alt]] et/ou [[Maj]] puis appuyez sur la touche (ex. [[Ctrl+Maj+1]], [[Alt+B]]). [[Retour arrière]] retire le raccourci, [[Échap]] annule.',
+            'Wherever you assign a key (expressions, profiles, effects, backgrounds), you can also record a **combination**: hold [[Ctrl]], [[Alt]] and/or [[Shift]] then press the key (e.g. [[Ctrl+Shift+1]], [[Alt+B]]). [[Backspace]] removes the shortcut, [[Esc]] cancels.'),
+          list(
+            ['Une touche simple marche aussi avec [[Maj]] tenue. Les chiffres sont lus sur la touche : sur un clavier AZERTY, [[1]] marche sans [[Maj]].', 'A single key also works with [[Shift]] held. Digits are read from the key itself: on an AZERTY keyboard, [[1]] works without [[Shift]].'],
+            ['Un même raccourci ne peut servir qu\'à une chose : l\'appli prévient en cas de doublon.', 'A shortcut can only do one thing: the app warns about duplicates.'],
+            ['Stream Deck et logiciels de macros : envoyez la touche ou la combinaison choisie à la fenêtre (elle doit avoir le focus).', 'Stream Deck and macro software: send the chosen key or combination to the window (it must have focus).'],
+          ),
+        ],
+      },
+      {
+        id: 'lx-editor', icon: 'pencil', title: T('Éditeur : combinaisons', 'Editor: combinations'),
+        body: [
+          keys(
+            ['Ctrl+Z', 'Annuler', 'Undo'], ['Ctrl+Y / Ctrl+Maj+Z', 'Rétablir', 'Redo'],
+            ['Ctrl+C / Ctrl+X / Ctrl+V', 'Copier / couper / coller', 'Copy / cut / paste'], ['Ctrl+A', 'Tout sélectionner', 'Select all'],
+            ['Ctrl+D / Échap', 'Désélectionner', 'Deselect'], ['Ctrl+Maj+I', 'Inverser la sélection', 'Invert selection'],
+            ['Suppr', 'Effacer la sélection', 'Clear selection'], ['Entrée', 'Valider le déplacement ou la transformation', 'Confirm move or transform'],
+            ['Flèches / Maj+Flèches', 'Déplacer la sélection de 1 / 8 px', 'Move the selection by 1 / 8 px'],
+            ['Maj+H / Maj+V / Maj+R', 'Miroir horizontal / vertical / rotation 90° de la sélection', 'Flip horizontal / vertical / rotate 90° the selection'],
+            ['Ctrl+T', 'Rotation libre / échelle', 'Free rotate / scale'],
+            ['Ctrl+Maj+N', 'Nouveau calque', 'New layer'], ['Ctrl+J', 'Dupliquer le calque', 'Duplicate layer'], ['Ctrl+E', 'Fusionner vers le bas', 'Merge down'],
+            ['Alt+↑ / Alt+↓', 'Calque actif précédent / suivant', 'Previous / next active layer'], ['F2', 'Renommer', 'Rename'], ['Tab', 'Variante suivante du groupe actif', 'Next variant of the active group'],
+            ['Ctrl+S', 'Enregistrer', 'Save'], ['Ctrl+Maj+S', 'Enregistrer dans un fichier', 'Save to a file'], ['Ctrl+O', 'Mes projets', 'My projects'], ['Ctrl+Maj+E', 'Exporter', 'Export'],
+            ['Ctrl+0 / Ctrl+1', 'Ajuster à l\'écran / taille réelle', 'Fit to screen / actual size'],
+            ['F1', 'Guide sur l\'outil actif', 'Guide for the active tool'], ['?', 'Fenêtre des raccourcis', 'Shortcuts window'], ['Échap', 'Fermer, annuler, désélectionner', 'Close, cancel, deselect'],
+          ),
+          keys(
+            ['Espace', 'Maintenu + glisser : déplacer la vue', 'Held + drag: pan the view'], ['Alt', 'Maintenu : pipette temporaire', 'Held: temporary color picker'],
+            ['Maj', 'Crayon : ligne droite depuis le dernier point ; formes : carré, cercle, 45°', 'Pencil: straight line from the last point; shapes: square, circle, 45°'],
+          ),
+        ],
+      },
+      {
+        id: 'lx-single', icon: 'keyboard', title: T('Éditeur : touches simples (personnalisables)', 'Editor: single keys (customizable)'),
+        body: [
+          { dyn: 'editor' },
+          p('Menu ☰ > **Personnaliser les raccourcis** pour les changer.', '☰ menu > **Customize shortcuts** to change them.'),
+          go('shortcuts', 'Fenêtre des raccourcis', 'Shortcuts window'),
+        ],
+      },
+      {
+        id: 'lx-pt', icon: 'tv', title: T('Mode PNGtuber, capture OBS et avatar .html', 'PNGtuber mode, OBS capture and .html avatar'),
+        body: [
+          keys(
+            ['Espace', 'Parler (maintenir)', 'Talk (hold)'], ['Échap', 'Quitter le mode PNGtuber', 'Leave PNGtuber mode'],
+            ['F13 … F24', 'Profils (tenues, personnages) ou la combinaison choisie', 'Profiles (outfits, characters) or the chosen combination'],
+            ['1 … 7', 'Expressions par défaut d\'un nouveau personnage', 'Default expressions of a new character'],
+            ['H', 'Avatar .html : masquer / afficher ses boutons', '.html avatar: hide / show its buttons'],
+          ),
+          list(
+            ['Touches des **expressions** : onglet Expressions > ⋯ > Associer une touche (option « temporaire »).', '**Expression** keys: Expressions tab > ⋯ > Assign a key ("temporary" option).'],
+            ['Touches des **effets** : mode PNGtuber > Effets > « Touche… ».', '**Effect** keys: PNGtuber mode > Effects > "Key…".'],
+            ['Touches des **fonds** : mode PNGtuber > Fond > « Touches des fonds… ».', '**Background** keys: PNGtuber mode > Background > "Background keys…".'],
+            ['Les mêmes touches marchent dans la fenêtre de capture et dans l\'avatar .html. Ce que vous changez dans le mode PNGtuber (expression, profil, fond, effet) est aussi relayé à la fenêtre de capture.', 'The same keys work in the capture window and in the .html avatar. What you change in PNGtuber mode (expression, profile, background, effect) is also relayed to the capture window.'],
+            ['Avatar .html : paramètres d\'adresse ?bg= (fond ou décor : night, synthwave…), ?mic=1, ?ui=0, ?scale=4, ?profile=F14.', '.html avatar: URL parameters ?bg= (background or scene: night, synthwave…), ?mic=1, ?ui=0, ?scale=4, ?profile=F14.'],
+          ),
+        ],
+      },
+      {
+        id: 'lx-touch', icon: 'hand', title: T('Gestes tactiles et souris', 'Touch and mouse gestures'),
+        body: [
+          keys(
+            ['1 doigt', 'Dessiner', 'Draw'], ['2 doigts', 'Pincer : zoomer ; glisser : déplacer la vue', 'Pinch: zoom; drag: pan'],
+            ['Tape à 2 doigts', 'Annuler', 'Undo'], ['Tape à 3 doigts', 'Rétablir', 'Redo'],
+            ['Appui long', 'Couleur : couleur B ; outil : autres outils de la famille', 'Color: color B; tool: other tools of the family'],
+            ['Clic droit', 'Dessiner avec la couleur B ; outil : autres outils', 'Draw with color B; tool: other tools'],
+            ['Molette', 'Zoom (ou déplacement, au choix)', 'Zoom (or pan, your choice)'], ['Clic milieu', 'Déplacer la vue', 'Pan the view'],
+          ),
+        ],
+      },
+      {
+        id: 'lx-project', icon: 'star', title: T('Raccourcis de ce projet', 'This project\'s shortcuts'),
+        body: [{ dyn: 'project' }],
       },
     ],
   },

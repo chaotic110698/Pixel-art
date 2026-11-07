@@ -49,6 +49,7 @@ const PATTERNS = [
   [/^(.+) \((.+), 3\/4\)$/, (m, a, b) => `${tr(a)} (${tr(b.charAt(0).toUpperCase() + b.slice(1)).toLowerCase()}, 3/4)`],
   [/^Profil « (.+) »$/, (m, a) => `Profile "${a}"`],
   [/^Effets de « (.+) »$/, (m, a) => `Effects for "${a}"`],
+  [/^Raccourci : (.+) \(changer\)$/, (m, a) => `Shortcut: ${a.replace(/Maj\+/g, 'Shift+')} (change)`],
   [/^Touche pour (.+)$/, (m, a) => `Key for ${tr(a)}`],
   [/^Touche (.+) déjà utilisée par « (.+) »$/, (m, k, a) => `Key ${k} is already used by "${a}"`],
   [/^Supprimer le profil « (.+) » \?$/, (m, a) => `Delete profile "${a}"?`],
