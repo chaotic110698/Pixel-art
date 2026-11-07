@@ -11,22 +11,57 @@ import mouths from './parts/mouths.js';
 import accessories from './parts/accessories.js';
 import tops from './parts/tops.js';
 import hands from './parts/hands.js';
+import bodies3q from './parts/3q/bodies.js';
+import heads3q from './parts/3q/heads.js';
+import hair3q from './parts/3q/hair.js';
+import { eyes as eyes3q, brows as brows3q, noses as noses3q, mouths as mouths3q, beards as beards3q } from './parts/3q/face.js';
+import tops3q from './parts/3q/tops.js';
+import acc3q from './parts/3q/accessories.js';
 import { TEMPLATE, roleColors, rasterize, DEFAULT_COLORS } from './builder.js';
 import { uid } from '../core/doc.js';
 import { tr } from '../ui/i18n.js';
 
 export const CATEGORIES = [
-  { id: 'body', name: 'Corps', pieces: bodies, exclusive: true },
-  { id: 'head', name: 'Têtes', pieces: heads, exclusive: true },
-  { id: 'hair', name: 'Coiffures', pieces: hair, exclusive: true },
-  { id: 'eyes', name: 'Yeux', pieces: eyes, exclusive: true },
-  { id: 'brows', name: 'Sourcils', pieces: brows, exclusive: true },
-  { id: 'nose', name: 'Nez', pieces: noses, exclusive: true },
-  { id: 'mouth', name: 'Bouches', pieces: mouths, exclusive: true },
-  { id: 'top', name: 'Vêtements', pieces: tops, exclusive: true },
-  { id: 'accessory', name: 'Accessoires', pieces: accessories, exclusive: false },
+  { id: 'body', name: 'Corps', pieces: [...bodies, ...bodies3q], exclusive: true },
+  { id: 'head', name: 'Têtes', pieces: [...heads, ...heads3q], exclusive: true },
+  { id: 'hair', name: 'Coiffures', pieces: [...hair, ...hair3q], exclusive: true },
+  { id: 'eyes', name: 'Yeux', pieces: [...eyes, ...eyes3q], exclusive: true },
+  { id: 'brows', name: 'Sourcils', pieces: [...brows, ...brows3q], exclusive: true },
+  { id: 'nose', name: 'Nez', pieces: [...noses, ...noses3q], exclusive: true },
+  { id: 'mouth', name: 'Bouches', pieces: [...mouths, ...mouths3q], exclusive: true },
+  { id: 'top', name: 'Vêtements', pieces: [...tops, ...tops3q], exclusive: true },
+  { id: 'accessory', name: 'Accessoires', pieces: [...accessories, ...beards3q, ...acc3q], exclusive: false },
   { id: 'hands', name: 'Mains', pieces: hands, exclusive: true },
 ];
+
+/** Vues disponibles : de face, ou de 3/4 tournée vers la droite. */
+export const VIEWS = [
+  { id: 'front', name: 'De face' },
+  { id: '3q', name: '3/4 droite' },
+];
+export const viewOf = (piece) => piece?.view || 'front';
+
+/** Pièces de base (mannequin) d'une vue. */
+export const VIEW_BASE = {
+  front: { body: 'body-moyen', head: 'head-round', face: ['eyes-dots', 'mouth-simple'] },
+  '3q': { body: 'body-3q-moyen', head: 'head-3q-oval', face: ['eyes-3q-small', 'nose-3q-straight', 'mouth-3q-simple'] },
+};
+
+/** Vue dominante du document (d'après les pièces de bibliothèque présentes). */
+export function docView(doc) {
+  for (const n of doc.nodes.values()) {
+    const p = n.part && ['body', 'head'].includes(n.part.category) && pieceById(n.part.pieceId);
+    if (p) return viewOf(p);
+  }
+  return null;
+}
+
+/** Type de corps cohérent avec la vue (les hauts 3/4 attendent un physique 3/4). */
+export function bodyTypeForView(bodyType, view) {
+  const is3q = String(bodyType || '').startsWith('3q-');
+  if (view === '3q') return is3q ? bodyType : '3q-moyen';
+  return is3q ? 'moyen' : bodyType || 'moyen';
+}
 
 export function allPieces() {
   return CATEGORIES.flatMap((c) => c.pieces);
@@ -117,10 +152,10 @@ export function nodesOfKind(doc, piece) {
 const LAYER_HEADS = { 'Corps entier': 'Full body', 'Cheveux arrière': 'Hair back', 'Cheveux avant': 'Hair front', Cheveux: 'Hair', Corps: 'Body', 'Tête': 'Head', Haut: 'Top', Nez: 'Nose', Main: 'Hand' };
 function trName(name) {
   if (tr('Calque') === 'Calque') return name; // interface en français
-  const m = name.match(/^(.+?) \((.+)\)$/);
+  const m = name.match(/^(.+?) \((.+?)(, 3\/4)?\)$/);
   if (!m) return tr(name);
   const cap = m[2].charAt(0).toUpperCase() + m[2].slice(1);
-  return `${LAYER_HEADS[m[1]] || tr(m[1])} (${tr(cap).toLowerCase()})`;
+  return `${LAYER_HEADS[m[1]] || tr(m[1])} (${tr(cap).toLowerCase()}${m[3] || ''})`;
 }
 
 /** Index d'insertion dans la racine selon l'ordre z des pièces. */

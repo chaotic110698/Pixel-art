@@ -17,6 +17,19 @@ export const DEFAULT_CHARACTER = {
   accessories: ['acc-blush'],
 };
 
+/** Personnage de 3/4 (tourné vers la droite), style portrait. */
+export const DEFAULT_CHARACTER_3Q = {
+  body: 'body-3q-moyen',
+  head: 'head-3q-oval',
+  hair: 'hair-3q-messy',
+  eyes: 'eyes-3q-small',
+  brows: 'brows-3q-thick',
+  nose: 'nose-3q-strong',
+  mouth: 'mouth-3q-simple',
+  top: 'top-3q-tshirt',
+  accessories: ['beard-3q-short'],
+};
+
 export const EXPRESSION_PRESETS = [
   { name: 'Neutre', key: '1', eyes: 'open', mouth: 'closed', brows: 'normal' },
   { name: 'Parle', key: '2', eyes: 'open', mouth: 'open', brows: 'normal' },

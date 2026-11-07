@@ -53,6 +53,7 @@ js/library/
   character.js        « Nouveau personnage », expressions par défaut, réglage PNGtuber automatique
   library-ui.js       fenêtres Bibliothèque, Nouveau personnage, Recolorer, Ma bibliothèque
   parts/*.js          UN FICHIER PAR CATÉGORIE (bodies, heads, hair, eyes, brows, noses, mouths, accessories, tops, hands)
+  parts/3q/*.js       vue de 3/4 tournée à droite (common : géométrie Q, texture ; bodies BODY3Q + torso3q ; heads ; face : yeux/sourcils/nez/bouches/barbes ; hair ; tops ; accessories)
 js/pngtuber/
   engine.js           moteur d'avatar AUTONOME (copié par toString dans l'avatar .html : aucune dépendance)
   assets.js           overrides (expression, bouche closed/half/open, clignement), images, réglages
@@ -90,6 +91,7 @@ Une pièce est `{ id, name, category, build(ctx) => [{ name, z, grid } | { name,
 - Rôles de couleur, convertis par `roleColors()` : `s S k r` (peau), `h H j q` (cheveux), `w e E p l` (yeux et encre), `m t T` (bouche), `c C x` (vêtements), `a A y` (accessoires), `g` (verre).
 - Les états de variantes reconnus par le PNGtuber et les expressions par défaut sont : yeux `open/closed/happy/surprised`, bouche `closed/open/smile/sad/surprised`, sourcils `normal/high/angry/sad`.
 - L'ordre d'empilement suit `Z` dans `builder.js`. Les coiffures produisent un calque arrière (sous la tête) et un calque avant.
+- **Vues** : une pièce peut porter `view: '3q'` (sinon vue de face). `VIEWS`, `VIEW_BASE` (mannequin et base auto par vue), `docView(doc)` et `bodyTypeForView()` sont dans library.js ; la bibliothèque et « Nouveau personnage » filtrent par vue (`DEFAULT_CHARACTER_3Q`). Gabarit 3/4 : crâne décalé à gauche, oreille en (25,5 ; 28,5), profil du visage en x ≈ 46,5 (le nez dépasse jusqu'à x 51), œil proche x 32–37, œil lointain x 41–44, yeux y 22–27, bouche x 37–45, y 33–36, cou centré en x 35. Physiques 3/4 : `3q-fin`, `3q-moyen`, `3q-costaud`, `3q-rond` (les hauts 3/4 s'y ajustent via `fitsBody`).
 - Origine du gabarit mémorisée par projet : `doc.charTemplate = { ox, oy, scale }` (fixée à la première pièce, décalée par les redimensionnements/recadrages). Les **corps entiers** (`tall: true`) utilisent une grille 64×96 dont les 64 premières lignes coïncident avec le buste ; la bibliothèque ajoute des lignes en bas du canevas si besoin. `scale: 2` = gabarit détaillé (grilles agrandies par Scale2x, `scaleGrid`). Changer de corps recrée le vêtement (`fitsBody`).
 
 ## Tests manuels et automatiques

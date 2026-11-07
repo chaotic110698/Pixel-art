@@ -3,11 +3,11 @@
 import { h, clear, debounce, pickFile, downloadBlob, bytesToBase64, base64ToBytes, slugify } from '../util/dom.js';
 import { openDialog, confirmDialog, promptDialog } from '../ui/dialogs.js';
 import { icon } from '../ui/icons.js';
-import { CATEGORIES, pieceById, insertPiece, previewPixels, docBodyType, templateOffset, templateOrigin } from './library.js';
+import { CATEGORIES, pieceById, insertPiece, previewPixels, docBodyType, templateOffset, templateOrigin, VIEWS, VIEW_BASE, viewOf, docView, bodyTypeForView } from './library.js';
 import { DEFAULT_COLORS, recolorMap, TEMPLATE } from './builder.js';
 import { ACCESSORY_SUBS } from './parts/accessories.js';
 import { BODY_TYPES } from './parts/bodies.js';
-import { buildCharacter, DEFAULT_CHARACTER, autoPngtuber } from './character.js';
+import { buildCharacter, DEFAULT_CHARACTER, DEFAULT_CHARACTER_3Q, autoPngtuber } from './character.js';
 import { db } from '../storage/db.js';
 import { pixelsToCanvas } from '../render/compose.js';
 import { uid } from '../core/doc.js';
@@ -26,12 +26,8 @@ const COLOR_FIELDS = [
 export const SKIN_TONES = ['#ffe0cc', '#f5c6a5', '#e8a87c', '#d08b5b', '#a8653a', '#7a4428', '#4e2b1b', '#c9e3a0', '#a7c7ff', '#d9b8ff'];
 export const HAIR_TONES = ['#1e1410', '#3d2314', '#6b3e26', '#a0602e', '#e0a040', '#f2d57a', '#e8e8f0', '#9a9aa8', '#e04a5a', '#ff8fc8', '#7a5cff', '#3fb5ff', '#3fcf8e'];
 
-// mannequin pour les aperçus
-const MANNEQUIN = ['body-moyen', 'head-round'];
-const FACE = ['eyes-dots', 'mouth-simple'];
-
-function cropFor(cat) {
-  if (['eyes', 'brows', 'nose', 'mouth'].includes(cat)) return [16, 12, 48, 44];
+function cropFor(cat, view = 'front') {
+  if (['eyes', 'brows', 'nose', 'mouth'].includes(cat)) return view === '3q' ? [20, 10, 52, 42] : [16, 12, 48, 44];
   if (cat === 'hair' || cat === 'accessory') return [6, 0, 58, 52];
   if (cat === 'head') return [10, 4, 54, 48];
   return [0, 0, 64, 64];
@@ -58,6 +54,12 @@ function layered(ids, piece, colors, bodyType, state, height = TEMPLATE) {
 
 function previewCanvas(piece, colors, { bodyType = 'moyen', size = 96, state = null } = {}) {
   let px;
+  // mannequin de la même vue que la pièce (de face ou de 3/4)
+  const view = viewOf(piece);
+  const base = VIEW_BASE[view];
+  const MANNEQUIN = [base.body, base.head];
+  const FACE = base.face;
+  bodyType = bodyTypeForView(bodyType, view);
   if (piece.category === 'hair') {
     // arrière / tête / avant dans le bon ordre
     px = new Uint32Array(TEMPLATE * TEMPLATE);
@@ -73,14 +75,14 @@ function previewCanvas(piece, colors, { bodyType = 'moyen', size = 96, state = n
     // corps entiers : aperçu en pied (64×96)
     const tall = piece.tall || (piece.category === 'top' && BODY_TYPES[bodyType]?.tall);
     const H = tall ? 96 : TEMPLATE;
-    px = layered(piece.category === 'top' ? ['body-' + bodyType] : piece.category === 'head' ? ['body-moyen'] : [], piece, colors, bodyType, state, H);
+    px = layered(piece.category === 'top' ? ['body-' + bodyType] : piece.category === 'head' ? [base.body] : [], piece, colors, bodyType, state, H);
     if (tall) return drawPreview(px, 0, 0, 64, 96, size);
   } else if (piece.category === 'hands') {
     px = layered(['body-moyen', 'head-round', 'top-tshirt', ...FACE], piece, colors, 'moyen', state);
   } else {
     px = layered([...MANNEQUIN, ...FACE], piece, colors, bodyType, state);
   }
-  const [x0, y0, x1, y1] = cropFor(piece.category);
+  const [x0, y0, x1, y1] = cropFor(piece.category, view);
   return drawPreview(px, x0, y0, x1, y1, size);
 }
 
@@ -124,7 +126,9 @@ export function openLibrary(app, initialCat = null) {
   const doc = app.doc;
   let colors = { ...DEFAULT_COLORS, ...(doc.charColors || app.state.charColors || {}) };
   let cat = initialCat || app.state.libraryCat || 'hair';
+  let view = docView(doc) || app.state.libraryView || 'front';
   let replace = true;
+  const viewRow = h('div', { class: 'row', role: 'radiogroup', 'aria-label': 'Vue' });
   const grid = h('div', { class: 'cards' });
   const tabs = h('div', { class: 'tabs-row' });
   const colorsBox = h('div');
@@ -143,6 +147,12 @@ export function openLibrary(app, initialCat = null) {
       }
       renderGrid();
     }));
+  }
+
+  function renderView() {
+    clear(viewRow);
+    viewRow.append(h('span', { class: 'small muted' }, 'Vue :'),
+      ...VIEWS.map((v) => h('button', { class: 'chip' + (v.id === view ? ' on' : ''), role: 'radio', 'aria-checked': String(v.id === view), onclick: () => { view = v.id; app.setState({ libraryView: view }); renderView(); renderGrid(); } }, v.name)));
   }
 
   function renderTabs() {
@@ -176,9 +186,10 @@ export function openLibrary(app, initialCat = null) {
     const node = app.history.transact(`Ajouter « ${piece.name} »`, () => {
       // sans tête ni corps, une coiffure ou des yeux « flottent » : on ajoute une base
       const has = (cat) => [...app.doc.nodes.values()].some((n) => n.part?.category === cat);
+      const base = VIEW_BASE[viewOf(piece)];
       if (!['body', 'head'].includes(piece.category)) {
-        if (!has('body')) { insertPiece(app.doc, pieceById('body-moyen'), { colors }); addedBase = true; }
-        if (!has('head') && piece.category !== 'top') { insertPiece(app.doc, pieceById('head-round'), { colors }); addedBase = true; }
+        if (!has('body')) { insertPiece(app.doc, pieceById(base.body), { colors }); addedBase = true; }
+        if (!has('head') && piece.category !== 'top') { insertPiece(app.doc, pieceById(base.head), { colors }); addedBase = true; }
       }
       const n = insertPiece(app.doc, piece, { colors, replace: replace && (CATEGORIES.find((c) => c.id === piece.category)?.exclusive || piece.exclusiveKey) });
       if (n) app.doc.activeId = n.type === 'group' ? n.children[n.children.length - 1] : n.id;
@@ -206,7 +217,8 @@ export function openLibrary(app, initialCat = null) {
       h('button', { class: 'lib-pick', title: `Ajouter « ${p.name} »`, onclick: () => insert(p) },
         previewCanvas(p, colors, { bodyType }),
         h('span', { class: 't' }, p.name),
-        showCat ? h('span', { class: 's' }, catName) : null),
+        showCat ? h('span', { class: 's' }, catName) : null,
+        viewOf(p) === '3q' && !p.name.includes('3/4') ? h('span', { class: 's' }, '3/4') : null),
       h('button', { class: 'fav' + (fav ? ' on' : ''), title: fav ? 'Retirer des favoris' : 'Ajouter aux favoris', 'aria-label': fav ? 'Retirer des favoris' : 'Ajouter aux favoris', onclick: () => toggleFav(p.id) }, fav ? '★' : '☆'));
   }
 
@@ -229,8 +241,13 @@ export function openLibrary(app, initialCat = null) {
       return;
     }
     const c = CATEGORIES.find((x) => x.id === cat) || CATEGORIES[0];
+    let pieces = c.pieces.filter((p) => viewOf(p) === view);
+    if (!pieces.length) {
+      grid.append(h('p', { class: 'hint', style: { gridColumn: '1 / -1' } }, 'Pas encore de pièce de ce type pour cette vue : voici celles de face.'));
+      pieces = c.pieces;
+    }
     let lastSub = null;
-    for (const p of c.pieces) {
+    for (const p of pieces) {
       if (p.sub && p.sub !== lastSub) {
         grid.append(h('h3', { style: { gridColumn: '1 / -1', margin: '6px 0 0' } }, ACCESSORY_SUBS[p.sub] || p.sub));
         lastSub = p.sub;
@@ -287,11 +304,13 @@ export function openLibrary(app, initialCat = null) {
         h('button', { class: 'btn small', onclick: () => { d.close(); openNewCharacter(app); } }, icon('user'), 'Nouveau personnage…')),
       warn,
       search,
+      viewRow,
       tabs,
       grid,
     ],
   });
   renderColors();
+  renderView();
   renderTabs();
   renderGrid();
 }
@@ -299,7 +318,18 @@ export function openLibrary(app, initialCat = null) {
 // ---------- Nouveau personnage ----------
 export function openNewCharacter(app) {
   let colors = { ...DEFAULT_COLORS, ...(app.state.charColors || {}) };
-  const sel = { ...DEFAULT_CHARACTER, accessories: [...DEFAULT_CHARACTER.accessories] };
+  let view = app.state.newCharView === '3q' ? '3q' : 'front';
+  const defaults = () => (view === '3q' ? DEFAULT_CHARACTER_3Q : DEFAULT_CHARACTER);
+  let sel = { ...defaults(), accessories: [...defaults().accessories] };
+  const inView = (p) => viewOf(p) === view;
+  const viewSel = h('select', { class: 'input wide' }, VIEWS.map((v) => h('option', { value: v.id, selected: v.id === view }, v.name)));
+  viewSel.addEventListener('change', () => {
+    view = viewSel.value;
+    app.setState({ newCharView: view });
+    sel = { ...defaults(), accessories: [...defaults().accessories] };
+    renderPickers();
+    redraw();
+  });
   const nameIn = h('input', { class: 'input wide', value: tr('Mon personnage') });
   const sizeSel = h('select', { class: 'input wide' },
     h('option', { value: '64x64' }, '64 × 64 (recommandé)'),
@@ -329,18 +359,18 @@ export function openNewCharacter(app) {
     const c = CATEGORIES.find((x) => x.id === catId);
     const s = h('select', { class: 'input wide' },
       optional ? h('option', { value: '' }, '— Aucun —') : null,
-      c.pieces.map((p) => h('option', { value: p.id, selected: sel[catId] === p.id }, p.name)));
+      c.pieces.filter(inView).map((p) => h('option', { value: p.id, selected: sel[catId] === p.id }, p.name)));
     s.addEventListener('change', () => { sel[catId] = s.value || null; redraw(); });
     return h('label', { class: 'field' }, h('span', {}, label), s);
   }
 
   function renderPickers() {
     clear(pickers);
-    const acc = CATEGORIES.find((x) => x.id === 'accessory').pieces;
+    const acc = CATEGORIES.find((x) => x.id === 'accessory').pieces.filter(inView);
     pickers.append(h('div', { class: 'fields' },
       picker('body', 'Corps'), picker('head', 'Tête'), picker('hair', 'Coiffure'), picker('eyes', 'Yeux'),
       picker('brows', 'Sourcils', { optional: true }), picker('nose', 'Nez', { optional: true }), picker('mouth', 'Bouche'), picker('top', 'Vêtement', { optional: true }),
-      picker('hands', 'Mains', { optional: true })),
+      view === 'front' ? picker('hands', 'Mains', { optional: true }) : null),
     h('h3', {}, 'Accessoires'),
     h('div', { class: 'chips' }, acc.map((p) => h('button', {
       class: 'chip' + (sel.accessories.includes(p.id) ? ' on' : ''),
@@ -367,7 +397,7 @@ export function openNewCharacter(app) {
 
   const randomize = () => {
     const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    for (const k of ['body', 'head', 'hair', 'eyes', 'brows', 'nose', 'mouth', 'top']) sel[k] = rnd(CATEGORIES.find((c) => c.id === k).pieces).id;
+    for (const k of ['body', 'head', 'hair', 'eyes', 'brows', 'nose', 'mouth', 'top']) sel[k] = rnd(CATEGORIES.find((c) => c.id === k).pieces.filter(inView)).id;
     colors = { ...colors, skin: rnd(SKIN_TONES.slice(0, 7)), hair: rnd(HAIR_TONES), eyes: rnd(['#3b7dd8', '#4ab06a', '#8a5a2b', '#9a5cff', '#e04a5a', '#2a2a3a']), clothes: rnd(['#4a7bd0', '#e04a5a', '#3fcf8e', '#f2a03d', '#7a5cff', '#2a2a3a', '#f0f0f4']) };
     renderPickers();
     renderColors();
@@ -382,7 +412,8 @@ export function openNewCharacter(app) {
         h('button', { class: 'btn small', onclick: randomize }, '🎲 Au hasard'),
         h('p', { class: 'hint', style: { maxWidth: '200px' } }, 'Les yeux, la bouche et les sourcils sont créés en groupes de variantes, avec des expressions prêtes (Neutre, Parle, Content…).')),
       h('div', {},
-        h('div', { class: 'fields' }, h('label', { class: 'field' }, h('span', {}, 'Nom'), nameIn), h('label', { class: 'field' }, h('span', {}, 'Taille du canevas'), sizeSel)),
+        h('div', { class: 'fields' }, h('label', { class: 'field' }, h('span', {}, 'Nom'), nameIn), h('label', { class: 'field' }, h('span', {}, 'Taille du canevas'), sizeSel),
+          h('label', { class: 'field' }, h('span', {}, 'Vue'), viewSel)),
         h('label', { class: 'chk', title: 'Pièces agrandies ×2 avec lissage des diagonales (Scale2x), pour un personnage plus grand à retoucher' }, scaleChk, 'Gabarit détaillé ×2 (128 × 128)'),
         h('p', { class: 'hint' }, 'Les corps entiers agrandissent automatiquement la hauteur du canevas (gabarit 64 × 96).'),
         h('h3', {}, 'Couleurs'), colorsBox,
