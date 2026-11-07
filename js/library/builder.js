@@ -5,6 +5,8 @@
 //
 // Rôles :
 //   s S k r   peau, ombre de peau, contour de peau, joues roses
+//   M K L     ombre douce, ombre profonde, reflet de la peau (style « portrait »)
+//   o         contour brun très foncé commun (style « portrait » de 3/4)
 //   h H j q   cheveux, ombre, reflet, contour
 //   w e E p l blanc de l'œil, iris, iris sombre, encre (traits/pupille), reflet
 //   m t T     intérieur de bouche, langue, dents
@@ -203,6 +205,7 @@ export function roleColors(cc = DEFAULT_COLORS) {
   const c = { ...DEFAULT_COLORS, ...cc };
   return {
     s: c.skin, S: shadeHex(c.skin, -0.1, -6, 0.05), k: shadeHex(c.skin, -0.45, -8, -0.3), r: mix(c.skin, '#ff4f7a', 0.45),
+    M: shadeHex(c.skin, -0.05, -6, -0.12), K: shadeHex(c.skin, -0.12, -9, -0.3), L: shadeHex(c.skin, 0.04, 2, 0.05), o: mix(shadeHex(c.hair, -0.12, 0, -0.05), '#2e1b21', 0.75),
     h: c.hair, H: shadeHex(c.hair, -0.1, -8), j: shadeHex(c.hair, 0.12, 6), q: shadeHex(c.hair, -0.3, -8, -0.1),
     w: '#f6f6fa', e: c.eyes, E: shadeHex(c.eyes, -0.18, 8), p: '#1e1a2a', l: '#ffffff',
     m: '#5a1f33', t: '#e2607d', T: '#fbfbff',

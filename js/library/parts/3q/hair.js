@@ -1,157 +1,153 @@
-// Coiffures en vue de 3/4 (droite) : texture en mèches, volume vers l'arrière.
-// Calque « arrière » (sous la tête) pour le volume et les longueurs,
-// calque « avant » pour le dessus du crâne, la frange et les pattes.
+// Coiffures de 3/4 (droite), style portrait : cheveux courts et denses, ligne
+// du front nette (sans contour sur la peau), reflets en haut à droite, mèches
+// sombres à l'arrière. Grille 32×32 doublée.
+// Calque « avant » (au-dessus du visage) ; calque « arrière » pour les longueurs.
 
-import { G, Z } from '../../builder.js';
-import { hash } from './common.js';
-import { headSilhouette } from './heads.js';
+import { Z } from '../../builder.js';
+import { g32, art, x2, hash } from './common.js';
+import { headMask } from './heads.js';
 
-// ligne d'implantation (y limite selon x) : nuque, derrière l'oreille, patte, front
-const HAIRLINE = [[10, 38], [20, 35], [21.5, 24], [27, 22.5], [31, 22], [33, 17], [40, 15], [48, 14]];
-function hairline(x, pts = HAIRLINE) {
-  if (x <= pts[0][0]) return pts[0][1];
-  for (let i = 1; i < pts.length; i++) {
-    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-    if (x <= x1) return y0 + ((x - x0) / (x1 - x0)) * (y1 - y0);
-  }
-  return pts[pts.length - 1][1];
-}
+// Coiffure de l'image de référence : courte, en bataille.
+const MESSY = [
+  '........ooo..oooooooo...........',
+  '.......ohjhoohhhhhhjjoo.........',
+  '.......ohhohhhhhhhhhjjho........',
+  '.......ooohhhhhhhhhhhjjho.......',
+  '........oohhhhhhhhhhhhjho.......',
+  '........ohhhhh..................',
+  '.......oohhhhh..................',
+  '.......oohhhhh..................',
+  '.......oohhhh...................',
+  '.......oohhhh...................',
+  '.......oo.......................',
+  '........o.......................',
+  '........o.......................',
+  '........o.......................',
+];
 
-/** Calotte : tête gonflée de `grow` px, coupée à la ligne d'implantation. */
-function scalp(grow = 1, pts = HAIRLINE) {
-  const g = headSilhouette(G(), 'oval', 'h');
+/**
+ * Calotte : tête gonflée de `grow`, gardée au-dessus de la ligne d'implantation
+ * (front y ≤ front, tempe y ≤ temple, nuque y ≤ nape).
+ */
+function cap({ grow = 1, front = 7, temple = 12, nape = 16, slope = 0 } = {}) {
+  const g = headMask('long', 'h');
   for (let i = 0; i < grow; i++) g.outline('h');
-  g.clear((x, y) => y + 0.5 > hairline(x + 0.5, pts));
+  const line = (x) => (x >= 13 ? front + (x - 13) * slope : x >= 9 ? temple : nape);
+  g.clear((x, y) => y > line(x));
   return g;
 }
 
-/** Patte devant l'oreille. */
-const sideburn = (g, y1 = 27) => g.rect(29, 22, 30, y1, 'h');
-
-/** Mèches pointues (triangles) : [x, y, dx, dy, largeur]. */
-function locks(g, list) {
-  for (const [x, y, dx, dy, w = 2] of list) g.poly([[x - w, y], [x + w, y], [x + dx, y + dy]], 'h');
-  return g;
-}
-
-/** Ombre, texture en mèches (traits courts), reflets, contour. */
-function finish(g, { light = true, seed = 5 } = {}) {
-  g.shade('h', 'H', -1, 1, 2);
-  // stries : petits traits d'ombre dans le sens des mèches
+/** Texture : reflets le long du bord haut/droit, quelques mèches sombres en diagonale. */
+function texture(g, { seed = 1, light = 0.7, dark = 0.05 } = {}) {
+  const src = g.clone();
+  const empty = (x, y) => !src.get(x, y);
   g.each((x, y) => {
-    if (g.get(x, y) !== 104) return; // 'h'
+    if (src.get(x, y) !== 104) return; // 'h'
     const r = hash(x, y, seed);
-    if (r < 0.08) { g.set(x, y, 'H'); if (g.get(x + 1, y + 1) === 104) g.set(x + 1, y + 1, 'H'); if (g.get(x + 2, y + 1) === 104) g.set(x + 2, y + 1, 'H'); }
-    else if (light && r > 0.95 && y < 18 && x > 26) { g.set(x, y, 'j'); if (g.get(x + 1, y) === 104) g.set(x + 1, y, 'j'); }
+    if ((empty(x, y - 1) || empty(x + 1, y)) && x >= 14 && r < light) {
+      g.set(x, y, 'j');
+      if (src.get(x - 1, y + 1) === 104 && r < light / 2) g.set(x - 1, y + 1, 'j');
+    } else if (r < dark && x <= 20) {
+      g.set(x, y, 'H');
+      if (src.get(x + 1, y + 1) === 104) g.set(x + 1, y + 1, 'H');
+    }
   });
-  g.outline('q');
   return g;
 }
 
-function layers(back, front, name) {
-  const out = [];
-  if (back && !back.isEmpty()) out.push({ name: `Cheveux arrière (${name}, 3/4)`, z: Z.hairBack, grid: finish(back, { light: false, seed: 9 }) });
-  if (front && !front.isEmpty()) out.push({ name: `Cheveux avant (${name}, 3/4)`, z: Z.hairFront, grid: finish(front) });
-  return out;
+/** Contour sauf sous la ligne du front et des tempes (la peau n'est pas cernée). */
+function edge(g, { front = 7, temple = 12, slope = 0 } = {}) {
+  g.outline('o');
+  const line = (x) => (x >= 13 ? front + (x - 13) * slope : temple);
+  g.clear((x, y) => g.get(x, y) === 111 && x >= 9 && x <= 23 && y > line(x) && y <= line(x) + 1.99);
+  return g;
+}
+
+function front(opts = {}) {
+  return edge(texture(cap(opts), opts), opts);
 }
 
 const STYLES = [
+  { id: 'messy', name: 'Courte en bataille (3/4)', front: () => art(MESSY, 0, 3) },
+  { id: 'short', name: 'Courte (3/4)', front: () => front({ seed: 2 }) },
   {
-    id: 'short', name: 'Courte (3/4)',
-    back: () => null,
-    front: () => sideburn(scalp(1)),
-  },
-  {
-    id: 'messy', name: 'Ébouriffée (3/4)',
-    back: () => G().ell(29, 19, 15, 12, 'h'),
+    id: 'side', name: 'Mèche sur le côté (3/4)',
     front: () => {
-      const g = sideburn(scalp(2));
-      // épis sur le dessus et mèches qui retombent vers l'avant
-      locks(g, [[20, 13, -4, -4], [25, 9, -2, -5], [31, 8, 1, -5], [37, 9, 4, -4], [42, 11, 5, -2]]);
-      locks(g, [[37, 14, 3, 5, 2.5], [41, 14, 4, 4, 2], [45, 14, 2, 4, 1.5]]);
-      return g;
+      const g = cap({ slope: 0.25 });
+      g.poly([[13, 6], [20, 5], [24.6, 7], [24.6, 9.5], [21, 8.2]], 'h');
+      return edge(texture(g, { seed: 4 }), { slope: 0.25 });
     },
   },
   {
     id: 'slick', name: 'Plaquée en arrière (3/4)',
-    back: () => G().ell(28, 19, 14, 11, 'h'),
     front: () => {
-      const g = sideburn(scalp(1, [[10, 38], [20, 35], [21.5, 24], [27, 22.5], [31, 22], [33, 15], [40, 13], [48, 12]]));
-      g.ell(33, 11.5, 12, 4.5, 'h');
-      return g;
-    },
-  },
-  {
-    id: 'side', name: 'Raie sur le côté (3/4)',
-    back: () => G().ell(29, 20, 14.5, 12, 'h'),
-    front: () => {
-      const g = sideburn(scalp(2));
-      // frange balayée vers l'avant
-      g.poly([[30, 10], [44, 11], [48, 15], [46, 19], [40, 16], [34, 15]], 'h');
-      return g;
+      const g = cap({ front: 6 });
+      texture(g, { seed: 6, light: 0.35, dark: 0.1 });
+      // stries vers l'arrière
+      for (const [y, x0, x1] of [[4, 11, 15], [6, 9, 13], [5, 16, 19]]) g.line(x0, y, x1, y, 'H');
+      return edge(g, { front: 6 });
     },
   },
   {
     id: 'curly', name: 'Bouclée (3/4)',
-    back: () => {
-      const g = G();
-      g.ell(29, 19, 15, 13, 'h');
-      // boucles le long du contour (de la nuque au front)
-      for (let a = 0; a <= 10; a++) {
-        const t = Math.PI * (0.55 + a * 0.115);
-        g.ell(29 + Math.cos(t) * -14, 19 - Math.sin(t) * 12.5, 3.6, 3.6, 'h');
-      }
-      return g;
-    },
     front: () => {
-      const g = sideburn(scalp(2), 26);
-      for (const [x, y] of [[36, 13], [40, 13.5], [44, 15], [32, 12]]) g.ell(x, y, 2.6, 2.6, 'h');
+      const g = cap({ grow: 2, front: 7 });
+      for (const [x, y] of [[9, 4], [13, 2.5], [18, 2.5], [22, 4], [7, 8], [6.5, 12]]) g.ell(x, y, 2.3, 2.3, 'h');
+      texture(g, { seed: 8, light: 0.5, dark: 0.04 });
+      // boucles : petits creux sombres sous chaque bosse
+      for (const [x, y] of [[9, 6], [13, 5], [18, 5], [7, 10], [11, 9], [16, 7]]) if (g.get(x, y) === 104) g.set(x, y, 'H');
+      return edge(g);
+    },
+  },
+  {
+    id: 'receding', name: 'Dégarnie (3/4)',
+    front: () => {
+      const g = cap({ front: 7 });
+      g.clear((x, y) => x >= 13 && y <= 7 && y + 0.6 * (x - 12) > 7);
+      return edge(texture(g, { seed: 3 }), { front: 7 });
+    },
+  },
+  {
+    id: 'buzz', name: 'Rasée (3/4)', raw: true,
+    front: () => {
+      const g = cap({ grow: 0 });
+      g.recolor('h', 'H');
+      // ligne du front adoucie
+      g.clear((x, y) => x >= 13 && y === 7 && x % 2 === 0);
       return g;
     },
   },
   {
     id: 'long', name: 'Longue (3/4)',
     back: () => {
-      const g = G();
-      g.ell(29, 21, 15.5, 14, 'h');
-      g.poly([[14, 22], [32, 22], [34, 40], [30, 56], [12, 58]], 'h');
-      return g;
+      const g = g32();
+      g.poly([[6, 6], [14, 6], [14, 26], [10, 30], [3, 29], [4, 16]], 'h');
+      return edge(texture(g, { seed: 7, light: 0.3, dark: 0.03 }));
     },
     front: () => {
-      const g = scalp(2);
-      g.poly([[31, 10], [45, 12], [47.5, 17], [44, 21], [38, 16], [33, 15]], 'h');
-      return g;
+      const g = cap({ temple: 18, nape: 18 });
+      g.poly([[13, 5], [24.6, 6], [24.6, 8.5], [16, 8], [13, 10]], 'h');
+      return edge(texture(g, { seed: 9 }), { temple: 18 });
     },
   },
   {
     id: 'ponytail', name: 'Queue de cheval (3/4)',
     back: () => {
-      const g = G();
-      g.ell(28, 20, 14, 12, 'h');
-      g.poly([[13, 16], [19, 15], [17, 30], [15, 44], [10, 40], [11, 26]], 'h');
-      return g;
+      const g = g32();
+      g.poly([[4, 8], [9, 7], [8, 14], [6, 23], [3, 22], [3, 14]], 'h');
+      return edge(texture(g, { seed: 11, light: 0.3, dark: 0.03 }));
     },
     front: () => {
-      const g = sideburn(scalp(1, [[10, 38], [20, 35], [21.5, 24], [27, 22.5], [31, 22], [33, 16], [40, 14], [48, 13]]));
-      g.rect(16, 15, 19, 18, 'a'); // élastique
-      return g;
+      const g = cap({ front: 6 });
+      texture(g, { seed: 12, light: 0.35 });
+      g.rect(6, 8, 7, 9, 'a');
+      return edge(g, { front: 6 });
     },
   },
   {
     id: 'bun', name: 'Chignon (3/4)',
-    back: () => G().ell(21, 10, 6, 5.5, 'h').ell(29, 20, 14, 12, 'h'),
-    front: () => sideburn(scalp(1, [[10, 38], [20, 35], [21.5, 24], [27, 22.5], [31, 22], [33, 16], [40, 14], [48, 13]])),
-  },
-  {
-    id: 'buzz', name: 'Rasée (3/4)',
-    back: () => null,
-    front: () => {
-      const g = sideburn(scalp(0));
-      g.recolor('h', 'H');
-      g.recolor('H', 'h', (x, y) => hash(x, y, 4) < 0.25);
-      return g;
-    },
-    raw: true,
+    back: () => edge(texture(g32().ell(9, 4.5, 3.6, 3.2, 'h'), { seed: 13, light: 0.4 })),
+    front: () => front({ front: 6, seed: 14 }),
   },
 ];
 
@@ -162,7 +158,10 @@ export default STYLES.map((s) => ({
   view: '3q',
   build: () => {
     const name = s.name.replace(' (3/4)', '').toLowerCase();
-    if (s.raw) return [{ name: `Cheveux (${name}, 3/4)`, z: Z.hairFront, grid: s.front() }];
-    return layers(s.back(), s.front(), name);
+    if (s.raw) return [{ name: `Cheveux (${name}, 3/4)`, z: Z.hairFront, grid: x2(s.front()) }];
+    const out = [];
+    if (s.back) out.push({ name: `Cheveux arrière (${name}, 3/4)`, z: Z.hairBack, grid: x2(s.back()) });
+    out.push({ name: `Cheveux avant (${name}, 3/4)`, z: Z.hairFront, grid: x2(s.front()) });
+    return out;
   },
 }));

@@ -1,51 +1,51 @@
-// Têtes en vue de 3/4 (droite) : crâne arrondi à gauche, profil du visage à droite
-// (front, arcade, lèvres, menton), oreille dessinée à l'intérieur de la silhouette.
+// Têtes de 3/4 (droite), style portrait : visage long, profil droit vertical,
+// mâchoire marquée, oreille à gauche. Dessinées en 32×32 puis doublées.
 
-import { G, Z } from '../../builder.js';
-import { Q, shade3q } from './common.js';
+import { Z } from '../../builder.js';
+import { g32, art, x2 } from './common.js';
 
-/** Profils (sommets) : front -> arcade -> lèvres -> menton -> mâchoire -> nuque. */
-export const PROFILES = {
-  oval: [[37, 10.5], [42.5, 12.5], [45.5, 16.5], [46.5, 21], [46.5, 24], [45.8, 27], [46, 31], [46.5, 33], [45.8, 35.5], [46, 38], [44.5, 40.5], [41, 41.5], [35, 40], [29, 36.5], [23, 31]],
-  square: [[37, 10.5], [42.5, 12.5], [45.5, 16.5], [46.5, 21], [46.5, 24], [45.8, 27], [46, 31], [46.5, 33], [46, 35.5], [46.5, 39], [45.5, 41.8], [39, 42.5], [32, 40.5], [26, 35.5], [22, 30]],
-  long: [[37, 10.5], [42.5, 12.5], [45.5, 16.5], [46.5, 21], [46.5, 24], [45.8, 27], [46, 31], [46.5, 34], [45.8, 37], [46, 40], [44.5, 42.5], [41, 43.5], [35, 42], [29, 37.5], [23, 31]],
-  round: [[37, 10.5], [42.5, 12.5], [45.5, 16.5], [46.5, 21], [46.5, 24], [46.5, 27], [47, 31], [47, 34], [46, 37.5], [43.5, 40.5], [39, 41.5], [33, 40.5], [27, 37], [22, 31]],
+// Contour du visage (sommets, grille 32×32) : front -> profil -> menton -> mâchoire.
+const FACES = {
+  long: [[13, 8], [21, 5.5], [23.6, 6.6], [24, 8], [24, 20], [23, 21.6], [22, 22.6], [16.5, 22.6], [11.5, 17.5]],
+  square: [[13, 8], [21, 5.5], [23.6, 6.6], [24, 8], [24, 21], [23.6, 22.6], [15.5, 22.6], [11.5, 17.5]],
+  oval: [[13, 8], [21, 5.5], [23.6, 6.6], [24, 8], [24, 18.5], [22.6, 20.8], [20.6, 21.8], [16.6, 21.5], [11.5, 17]],
+  full: [[13, 8], [21, 5.5], [23.6, 6.6], [24, 8], [24.6, 16.5], [24.4, 20.5], [22.5, 22.6], [16, 22.4], [11, 17]],
 };
 
-/** Silhouette d'une tête (rôle `role`). */
-export function headSilhouette(g, kind = 'oval', role = 's') {
-  g.ell(Q.cx - 1, 22.5, 12.3, 12.5, role);
-  g.poly([[31, 10], ...PROFILES[kind], [21, 26]], role);
-  if (kind === 'round') g.ell(38, 33, 7, 6.5, role);
+/** Silhouette (sans contour) d'une tête : sert de masque aux cheveux et barbes. */
+export function headMask(kind = 'long', role = 's') {
+  const g = g32();
+  g.ell(15.5, 12, 7.6, 8, role);
+  g.poly(FACES[kind], role);
   return g;
 }
 
-/** Oreille vue de 3/4 : contour avant, creux ombré. */
-function ear(g) {
-  const { earX: ex, earY: ey } = Q;
-  const inOuter = (x, y) => ((x + 0.5 - ex) / 3) ** 2 + ((y + 0.5 - ey) / 4.4) ** 2 <= 1;
-  const inInner = (x, y) => ((x + 0.5 - ex + 0.4) / 2) ** 2 + ((y + 0.5 - ey) / 3.4) ** 2 <= 1;
-  g.fill((x, y) => inOuter(x, y) && !inInner(x, y) && (x + 0.5 >= ex || y + 0.5 > ey + 1.5), 'k');
-  g.fill((x, y) => inInner(x, y), 's');
-  g.px(Math.floor(ex) - 1, Math.floor(ey) - 1, 'S').px(Math.floor(ex) - 1, Math.floor(ey), 'S').px(Math.floor(ex), Math.floor(ey) + 1, 'S');
-  return g;
-}
+// oreille (posée en x 8, y 12)
+const EAR = [
+  '.ooo.',
+  'osMKo',
+  'osKM.',
+  'oMKM.',
+  'oMMM.',
+  '.ooo.',
+];
 
 function draw(kind) {
-  const g = headSilhouette(G(), kind);
-  shade3q(g, 's', 'S', 2);
-  // le visage (côté éclairé) n'est pas ombré, sauf sous le menton
-  g.recolor('S', 's', (x, y) => x > 36 && y < 38);
-  g.outline('k');
-  ear(g);
+  const g = headMask(kind);
+  // ombres : arrière du crâne, joue côté oreille, dessous de la mâchoire
+  g.recolor('s', 'M', (x, y) => (x <= 9 && y >= 9) || (x <= 14 && y >= 8 && x >= 12) || (y >= 18 && x <= 16));
+  g.shade('s', 'M', 0, 1, 1);
+  g.shade('M', 'K', 0, 1, 1);
+  g.stamp(art(EAR, 8, 12), 0, 0);
+  g.outline('o');
   return g;
 }
 
 const HEADS = [
-  { id: 'oval', name: 'Ovale (3/4)' },
+  { id: 'long', name: 'Visage long (3/4)' },
   { id: 'square', name: 'Mâchoire carrée (3/4)' },
-  { id: 'long', name: 'Allongée (3/4)' },
-  { id: 'round', name: 'Ronde (3/4)' },
+  { id: 'oval', name: 'Ovale (3/4)' },
+  { id: 'full', name: 'Visage plein (3/4)' },
 ];
 
 export default HEADS.map((hd) => ({
@@ -53,5 +53,5 @@ export default HEADS.map((hd) => ({
   name: hd.name,
   category: 'head',
   view: '3q',
-  build: () => [{ name: `Tête (${hd.name.replace(' (3/4)', '').toLowerCase()}, 3/4)`, z: Z.head, grid: draw(hd.id) }],
+  build: () => [{ name: `Tête (${hd.name.replace(' (3/4)', '').toLowerCase()}, 3/4)`, z: Z.head, grid: x2(draw(hd.id)) }],
 }));

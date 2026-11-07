@@ -1,49 +1,59 @@
-// Bustes en vue de 3/4 (droite), plusieurs physiques. Le torse est tourné :
-// l'épaule proche (gauche) est plus large, la poitrine regarde vers la droite.
+// Bustes de 3/4 (droite), style portrait : cou épais éclairé par la gauche,
+// épaules larges et tombantes. Plusieurs physiques. Grille 32×32 doublée.
 
-import { G, Z } from '../../builder.js';
+import { Z } from '../../builder.js';
+import { g32, x2 } from './common.js';
 
-// cx : centre du torse ; rx : demi-largeur côté épaule proche ; fx : côté poitrine (droite)
-// top : haut des épaules ; neck : demi-largeur du cou ; belly : ventre arrondi ; traps : trapèzes marqués
+// k : largeur des épaules (1 = moyen) ; dy : hauteur des épaules ;
+// neck : élargissement du cou ; belly : ventre arrondi ; traps : trapèzes marqués
 export const BODY3Q = {
-  '3q-fin': { name: 'Fin (3/4)', cx: 32, rx: 14, fx: 12, top: 45, neck: 3.5 },
-  '3q-moyen': { name: 'Moyen (3/4)', cx: 32, rx: 18, fx: 15, top: 44, neck: 4 },
-  '3q-costaud': { name: 'Costaud (3/4)', cx: 31, rx: 23, fx: 19, top: 43, neck: 5.5, traps: true },
-  '3q-rond': { name: 'Rond (3/4)', cx: 32, rx: 20, fx: 18, top: 46, neck: 4.5, belly: true },
+  '3q-fin': { name: 'Fin (3/4)', k: 0.82, dy: 1, neck: -0.6 },
+  '3q-moyen': { name: 'Moyen (3/4)', k: 1, dy: 0, neck: 0 },
+  '3q-costaud': { name: 'Costaud (3/4)', k: 1.14, dy: -1, neck: 0.9, traps: true },
+  '3q-rond': { name: 'Rond (3/4)', k: 1.08, dy: 0.5, neck: 0.4, belly: true },
 };
 
-/** Centre du cou (décalé vers l'avant du visage). */
-export const NECK_X = 35;
+const CX = 15.5;
 
-/** Torse tourné de 3/4 (rôle `role`, agrandi de `grow` pour les vêtements). */
-export function torso3q(g, t, role, grow = 0) {
-  const top = t.top - grow;
-  const L = t.cx - t.rx - grow, R = t.cx + t.fx + grow;
-  // épaule proche (arrondie) et épaule lointaine (plus basse, en partie cachée)
-  g.ell(t.cx - t.rx * 0.45, top + 8, t.rx * 0.6 + grow, 8 + grow, role);
-  g.ell(t.cx + t.fx * 0.45, top + 9, t.fx * 0.6 + grow, 8 + grow, role);
-  g.poly([[t.cx - t.rx * 0.4, top], [t.cx + t.fx * 0.4, top + 0.5], [R, top + 9], [R + 0.5, 64], [L - 0.5, 64], [L, top + 8]], role);
-  if (t.traps) g.poly([[NECK_X - t.neck - 1, top - 4], [NECK_X + t.neck, top - 3], [R - 4, top + 3], [L + 4, top + 3]], role);
-  if (t.belly) g.ell(t.cx + 2, 66, t.fx + 2 + grow, 14 + grow, role);
+/** Cou (rôle `role`). Bord gauche en diagonale, caché en haut par la mâchoire. */
+export function neck(g, t, role = 's') {
+  const n = t.neck;
+  g.poly([[11.4 - n, 16.5], [19.6 + n, 16.5], [19.6 + n, 27], [13 - n, 27], [11 - n, 24.6], [11 - n, 20]], role);
+  return g;
+}
+
+/** Torse (épaules + poitrine) jusqu'en bas du gabarit. */
+export function torso(g, t, role = 's', grow = 0) {
+  const sx = (x) => CX + (x - CX) * t.k;
+  const d = t.dy;
+  const pts = [
+    [11 - t.neck, 24.4 + d], [8, 24.6 + d], [5, 25.6 + d], [3.4, 27 + d], [2.5, 28.6 + d], [2.3, 32.5],
+    [29, 32.5], [28.9, 28.6 + d], [28, 27.5 + d], [26.2, 26.3 + d], [24, 25.3 + d], [20 + t.neck, 25 + d],
+  ].map(([x, y], i) => [i === 0 || i === 11 ? x : sx(x) + (x < CX ? -grow : grow), y - grow]);
+  g.poly(pts, role);
+  if (t.traps) g.poly([[10, 23.4], [21, 23.6], [25, 25.5], [6, 25.5]], role);
+  if (t.belly) g.ell(CX + 1, 34, 14.5 * t.k + grow, 6.5, role);
+  return g;
+}
+
+/** Ombrage du cou : éclairé à gauche, ombre portée du menton à droite. */
+export function shadeNeck(g, t) {
+  g.recolor('s', 'M', (x, y) => y >= 17 && y <= 26 && x >= 11 && x <= 20 && x - y > -12 + t.neck);
+  g.recolor('M', 'K', (x, y) => y >= 17 && y <= 25 && x >= 11 && x <= 20 && x - y > -10 + t.neck);
   return g;
 }
 
 function bust(t) {
-  const g = G();
-  // cou (sous la mâchoire)
-  g.rect(Math.ceil(NECK_X - t.neck - 1), 34, Math.floor(NECK_X + t.neck), t.top + 2, 's');
-  torso3q(g, t, 's');
-  // ombre sous la mâchoire et côté arrière du cou
-  g.rect(Math.ceil(NECK_X - t.neck - 1), 36, Math.floor(NECK_X + t.neck), 39, 'S');
-  g.rect(Math.ceil(NECK_X - t.neck - 1), 36, Math.ceil(NECK_X - t.neck), t.top + 1, 'S');
-  // côté arrière (gauche) dans l'ombre, dessous
-  g.shade('s', 'S', -1, 0, 3);
-  // creux du bras proche, clavicule, pli de la poitrine
-  const ax = Math.round(t.cx - t.rx + 6);
-  g.line(ax, t.top + 9, ax - 1, 63, 'S');
-  g.line(Math.round(NECK_X - 3), t.top + 4, Math.round(NECK_X + 3), t.top + 4, 'S');
-  g.line(Math.round(t.cx + t.fx - 4), t.top + 10, Math.round(t.cx + t.fx - 4), 63, 'S');
-  g.outline('k');
+  const g = g32();
+  torso(g, t, 's');
+  neck(g, t, 's');
+  shadeNeck(g, t);
+  // clavicule, plis des bras, poitrine, côté gauche dans l'ombre
+  g.line(13, 27 + Math.round(t.dy), 19, 27 + Math.round(t.dy), 'M');
+  g.line(8, 29, 8, 31, 'M');
+  g.line(Math.round(CX + 10.5 * t.k), 29, Math.round(CX + 10.5 * t.k), 31, 'M');
+  g.shade('s', 'M', -1, 0, 1);
+  g.outline('o');
   return g;
 }
 
@@ -53,5 +63,5 @@ export default Object.entries(BODY3Q).map(([key, t]) => ({
   category: 'body',
   view: '3q',
   bodyType: key,
-  build: () => [{ name: `Corps (${t.name.replace(' (3/4)', '').toLowerCase()}, 3/4)`, z: Z.body, grid: bust(t) }],
+  build: () => [{ name: `Corps (${t.name.replace(' (3/4)', '').toLowerCase()}, 3/4)`, z: Z.body, grid: x2(bust(t)) }],
 }));

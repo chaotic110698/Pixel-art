@@ -7,7 +7,7 @@ import { CATEGORIES, pieceById, insertPiece, previewPixels, docBodyType, templat
 import { DEFAULT_COLORS, recolorMap, TEMPLATE } from './builder.js';
 import { ACCESSORY_SUBS } from './parts/accessories.js';
 import { BODY_TYPES } from './parts/bodies.js';
-import { buildCharacter, DEFAULT_CHARACTER, DEFAULT_CHARACTER_3Q, autoPngtuber } from './character.js';
+import { buildCharacter, DEFAULT_CHARACTER, DEFAULT_CHARACTER_3Q, PORTRAIT_COLORS, autoPngtuber } from './character.js';
 import { db } from '../storage/db.js';
 import { pixelsToCanvas } from '../render/compose.js';
 import { uid } from '../core/doc.js';
@@ -319,6 +319,7 @@ export function openLibrary(app, initialCat = null) {
 export function openNewCharacter(app) {
   let colors = { ...DEFAULT_COLORS, ...(app.state.charColors || {}) };
   let view = app.state.newCharView === '3q' ? '3q' : 'front';
+  if (view === '3q') colors = { ...colors, ...PORTRAIT_COLORS };
   const defaults = () => (view === '3q' ? DEFAULT_CHARACTER_3Q : DEFAULT_CHARACTER);
   let sel = { ...defaults(), accessories: [...defaults().accessories] };
   const inView = (p) => viewOf(p) === view;
@@ -327,6 +328,9 @@ export function openNewCharacter(app) {
     view = viewSel.value;
     app.setState({ newCharView: view });
     sel = { ...defaults(), accessories: [...defaults().accessories] };
+    // palette adaptée à la vue (modifiable ensuite)
+    colors = view === '3q' ? { ...colors, ...PORTRAIT_COLORS } : { ...DEFAULT_COLORS, ...(app.state.charColors || {}) };
+    renderColors();
     renderPickers();
     redraw();
   });

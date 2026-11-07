@@ -20,15 +20,18 @@ export const DEFAULT_CHARACTER = {
 /** Personnage de 3/4 (tourné vers la droite), style portrait. */
 export const DEFAULT_CHARACTER_3Q = {
   body: 'body-3q-moyen',
-  head: 'head-3q-oval',
+  head: 'head-3q-long',
   hair: 'hair-3q-messy',
-  eyes: 'eyes-3q-small',
-  brows: 'brows-3q-thick',
-  nose: 'nose-3q-strong',
-  mouth: 'mouth-3q-simple',
+  eyes: 'eyes-3q-natural',
+  brows: 'brows-3q-straight',
+  nose: 'nose-3q-soft',
+  mouth: 'mouth-3q-natural',
   top: 'top-3q-tshirt',
-  accessories: ['beard-3q-short'],
+  accessories: ['beard-3q-full'],
 };
+
+/** Palette chaude du style portrait (peau, cheveux bruns, yeux bleu-gris, haut brique). */
+export const PORTRAIT_COLORS = { skin: '#f5a26e', hair: '#542a2c', eyes: '#466f81', clothes: '#743931', accent: '#c9a050' };
 
 export const EXPRESSION_PRESETS = [
   { name: 'Neutre', key: '1', eyes: 'open', mouth: 'closed', brows: 'normal' },

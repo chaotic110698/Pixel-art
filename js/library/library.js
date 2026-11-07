@@ -44,7 +44,7 @@ export const viewOf = (piece) => piece?.view || 'front';
 /** Pièces de base (mannequin) d'une vue. */
 export const VIEW_BASE = {
   front: { body: 'body-moyen', head: 'head-round', face: ['eyes-dots', 'mouth-simple'] },
-  '3q': { body: 'body-3q-moyen', head: 'head-3q-oval', face: ['eyes-3q-small', 'nose-3q-straight', 'mouth-3q-simple'] },
+  '3q': { body: 'body-3q-moyen', head: 'head-3q-long', face: ['eyes-3q-natural', 'brows-3q-straight', 'nose-3q-soft', 'mouth-3q-natural'] },
 };
 
 /** Vue dominante du document (d'après les pièces de bibliothèque présentes). */

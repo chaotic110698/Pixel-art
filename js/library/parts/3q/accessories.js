@@ -1,84 +1,82 @@
-// Accessoires en vue de 3/4 (droite) : lunettes, chapeaux, boucles d'oreilles, joues.
+// Accessoires de 3/4 (droite), style portrait : lunettes, chapeaux, boucles
+// d'oreilles, détails du visage. Grille 32×32 doublée.
 
-import { G, Z, place } from '../../builder.js';
-import { Q } from './common.js';
-import { headSilhouette } from './heads.js';
+import { Z } from '../../builder.js';
+import { g32, art, x2 } from './common.js';
+import { headMask } from './heads.js';
 
-/** Monture : verre proche (large) et lointain (étroit), branche vers l'oreille. */
+/** Monture : verre proche (large), verre lointain coupé par le profil, branche vers l'oreille. */
 function frames(lens) {
-  const g = G();
-  g.rect(31, 22, 37, 27, 'y');
-  g.rect(40, 22, 44, 27, 'y');
-  g.rect(32, 23, 36, 26, lens);
-  g.rect(41, 23, 43, 26, lens);
-  g.line(38, 23, 39, 23, 'y');
-  g.line(Math.round(Q.earX) + 2, 24, 30, 23, 'y');
+  const g = g32();
+  g.rect(15, 11, 19, 14, 'o').rect(16, 12, 18, 13, lens);
+  g.rect(21, 11, 24, 14, 'o').rect(22, 12, 23, 13, lens);
+  g.px(20, 12, 'o');
+  g.line(11, 12, 14, 12, 'o');
   return g;
 }
 
-/** Calotte d'un chapeau : tête gonflée, coupée sous `y1`. */
-function crown(y1, grow = 2) {
-  const g = headSilhouette(G(), 'oval', 'a');
+/** Calotte de chapeau : tête gonflée, coupée sous `y1`. */
+function crown(y1, grow = 1) {
+  const g = headMask('long', 'a');
   for (let i = 0; i < grow; i++) g.outline('a');
   g.clear((x, y) => y > y1);
   return g;
 }
 
 const ITEMS = [
-  {
-    id: 'glasses', name: 'Lunettes (3/4)', sub: 'glasses', z: Z.glasses,
-    draw: () => frames('g'),
-  },
+  { id: 'glasses', name: 'Lunettes (3/4)', sub: 'glasses', z: Z.glasses, draw: () => frames('g') },
   {
     id: 'sunglasses', name: 'Lunettes de soleil (3/4)', sub: 'glasses', z: Z.glasses,
-    draw: () => { const g = frames('p'); g.px(33, 23, 'l').px(41, 23, 'l'); return g; },
+    draw: () => frames('p').px(16, 12, 'l'),
   },
   {
     id: 'beanie', name: 'Bonnet (3/4)', sub: 'hat', z: Z.hat,
     draw: () => {
-      const g = crown(17);
-      g.ell(31, 12, 13.5, 8.5, 'a');
-      g.clear((x, y) => y > 17);
-      // revers et côtes
-      g.recolor('a', 'A', (x, y) => y >= 14 || x % 3 === 2);
-      g.recolor('A', 'a', (x, y) => y >= 14 && y <= 15);
-      g.shade('a', 'A', -1, 0, 1);
-      g.outline('y');
+      const g = crown(8, 1);
+      g.ell(15.5, 4, 8.6, 4, 'a');
+      g.clear((x, y) => y > 8);
+      // côtes et revers
+      g.recolor('a', 'A', (x, y) => (y <= 5 && x % 2 === 0) || y >= 7);
+      g.recolor('A', 'a', (x, y) => y === 7 && x % 3 === 0);
+      g.outline('o');
       return g;
     },
   },
   {
     id: 'cap', name: 'Casquette (3/4)', sub: 'hat', z: Z.hat,
     draw: () => {
-      const g = crown(15, 1);
+      const g = crown(6, 1);
       // visière vers l'avant (à droite)
-      g.poly([[36, 13], [51, 14], [53, 16.5], [38, 17]], 'A');
-      g.line(39, 13, 50, 14, 'a');
-      g.px(29, 9, 'A');
-      g.shade('a', 'A', -1, 0, 2);
-      g.outline('y');
+      g.poly([[18, 6], [28, 6.4], [28.5, 8], [19, 8]], 'A');
+      g.px(14, 2, 'A');
+      g.shade('a', 'A', -1, 0, 1);
+      g.outline('o');
       return g;
     },
   },
   {
     id: 'earring', name: 'Anneau d\'oreille (3/4)', sub: 'earrings', z: Z.earrings,
-    draw: () => place(['.y.', 'yay', '.y.'], Math.round(Q.earX) - 1, 32),
+    draw: () => art(['a.', '.a', 'a.'], 9, 17),
   },
   {
     id: 'stud', name: 'Clou d\'oreille (3/4)', sub: 'earrings', z: Z.earrings,
-    draw: () => place(['a'], Math.round(Q.earX), 32),
+    draw: () => art(['a'], 10, 16),
   },
   {
-    id: 'blush', name: 'Joues roses (3/4)', sub: 'blush', z: Z.blush,
-    draw: () => G().ell(35, 29.5, 2.5, 1.2, 'r').ell(44, 29.5, 1, 1, 'r'),
+    id: 'flushed', name: 'Joues rougies (3/4)', sub: 'blush', z: Z.blush,
+    draw: () => art(['rr...r'], 16, 15),
   },
   {
     id: 'freckles', name: 'Taches de rousseur (3/4)', sub: 'blush', z: Z.blush,
-    draw: () => place(['S.S.S', '.S.S.'], 33, 28).px(43, 28, 'S').px(44, 29, 'S'),
+    draw: () => art(['M.M..M', '.M..M.'], 16, 14),
   },
   {
     id: 'scar', name: 'Cicatrice (3/4)', sub: 'blush', z: Z.blush,
-    draw: () => place(['k..', '.k.', 'k.k', '..k'], 37, 27),
+    draw: () => art(['K..', '.L.', '..K'], 20, 8),
+  },
+  {
+    id: 'wrinkles', name: 'Rides (3/4)', sub: 'blush', z: Z.blush,
+    draw: () => art(['...MMMM', '.......', '.......', '.......', '.......', '.......', '.M.....', '..M....', '.......', '.......'], 15, 8),
   },
 ];
 
@@ -89,5 +87,5 @@ export default ITEMS.map((it) => ({
   sub: it.sub,
   view: '3q',
   exclusiveKey: it.sub === 'blush' || it.sub === 'makeup' ? null : it.sub,
-  build: () => [{ name: it.name.replace(' (3/4)', ''), z: it.z, grid: it.draw() }],
+  build: () => [{ name: it.name.replace(' (3/4)', ''), z: it.z, grid: x2(it.draw()) }],
 }));

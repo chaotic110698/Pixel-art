@@ -1,72 +1,62 @@
-// Visage en vue de 3/4 (droite) : yeux, sourcils, nez, bouches et barbes.
-// L'œil proche (gauche) est plus large que l'œil lointain, près du profil.
-// Les états reprennent ceux de la vue de face (reconnus par le PNGtuber).
+// Visage de 3/4 (droite), style portrait : yeux à paupière sans blanc, nez
+// suggéré par la lumière et l'ombre, bouche sous la moustache, barbes le long
+// de la mâchoire. Grille 32×32 doublée. Les états reprennent ceux de la vue de
+// face (reconnus par le PNGtuber et les expressions par défaut).
 
-import { Grid, G, Z, place } from '../../builder.js';
+import { Z } from '../../builder.js';
 import { EYE_STATES } from '../eyes.js';
 import { BROW_STATES } from '../brows.js';
 import { MOUTH_STATES } from '../mouths.js';
-import { texture, hash } from './common.js';
-import { headSilhouette } from './heads.js';
+import { g32, art, x2, hash } from './common.js';
 
-/** Deux motifs (œil/sourcil proche et lointain) dans une grille 64×64. */
-function duo(near, far, nx, ny, fx, fy) {
-  const g = G();
-  g.stamp(Grid.from(near), nx, ny);
-  g.stamp(Grid.from(far), fx, fy);
+/** Deux motifs (proche, lointain) dans une grille 32×32. */
+function duo(near, far, [nx, ny], [fx, fy]) {
+  const g = art(near, nx, ny);
+  g.stamp(art(far, fx, fy), 0, 0);
   return g;
 }
 
-// ---------- Yeux ----------
+// ---------- Yeux (œil proche x 16–18, lointain x 22–23, y 12–14) ----------
 const EYES = [
   {
-    id: 'small', name: 'Petits (3/4)', near: [33, 23], far: [41, 23],
+    id: 'natural', name: 'Naturels (3/4)', near: [16, 12], far: [22, 12],
     states: {
-      open: [['pppp', 'wwEp'], ['ppp', 'wEp']],
-      closed: [['....', 'pppp'], ['...', 'ppp']],
-      happy: [['.pp.', 'p..p'], ['.p.', 'p.p']],
-      surprised: [['.pp.', 'pwEp', '.pp.'], ['pp', 'Ep', 'pp']],
+      open: [['KKK', 'epe', '.e.'], ['KK', 'pe', 'e.']],
+      closed: [['MMM', 'KKK', '...'], ['MM', 'KK', '..']],
+      happy: [['MKK', 'Kpe', 'MMM'], ['KK', 'pe', 'MM']],
+      surprised: [['.K.', 'epe', 'eee'], ['K.', 'pe', 'ee']],
     },
   },
   {
-    id: 'heavy', name: 'Paupières lourdes (3/4)', near: [32, 23], far: [41, 23],
+    id: 'tired', name: 'Fatigués (3/4)', near: [16, 12], far: [22, 12],
     states: {
-      open: [['.pppp', 'pwwEp', '..SS.'], ['ppp', 'wEp', '.S.']],
-      closed: [['.....', 'ppppp', '..SS.'], ['...', 'ppp', '.S.']],
-      happy: [['..pp.', '.p..p', '.....'], ['.p.', 'p.p', '...']],
-      surprised: [['.ppp.', 'pwwEp', '.ppp.'], ['.pp', 'wEp', '.pp']],
+      open: [['KKK', 'epe', 'MKM'], ['KK', 'pe', 'KM']],
+      closed: [['MMM', 'KKK', 'MKM'], ['MM', 'KK', 'KM']],
+      happy: [['MMM', 'KKK', 'MKM'], ['MM', 'KK', 'KM']],
+      surprised: [['.K.', 'epe', 'eKe'], ['K.', 'pe', 'eK']],
     },
   },
   {
-    id: 'big', name: 'Grands (3/4)', near: [32, 22], far: [41, 22],
+    id: 'bright', name: 'Vifs (3/4)', near: [16, 12], far: [22, 12],
     states: {
-      open: [['.ppp.', 'pwEEp', 'pwElp', 'pwEEp', '.ppp.'], ['.pp', 'pEp', 'pEl', 'pEp', '.pp']],
-      closed: [['.....', '.....', '.....', 'p...p', '.ppp.'], ['...', '...', '...', 'p.p', '.p.']],
-      happy: [['.....', '.ppp.', 'p...p', '.....', '.....'], ['...', '.p.', 'p.p', '...', '...']],
-      surprised: [['.ppp.', 'pwwwp', 'pwEwp', 'pwwwp', '.ppp.'], ['.pp', 'pwp', 'pEp', 'pwp', '.pp']],
+      open: [['ooo', 'epL', '.e.'], ['oo', 'pe', 'e.']],
+      closed: [['MMM', 'ooo', '...'], ['MM', 'oo', '..']],
+      happy: [['MMM', 'ooo', 'M.M'], ['MM', 'oo', '.M']],
+      surprised: [['.o.', 'epL', 'eee'], ['o.', 'pe', 'ee']],
     },
   },
   {
-    id: 'almond', name: 'Amande (3/4)', near: [32, 23], far: [41, 23],
+    id: 'narrow', name: 'Plissés (3/4)', near: [16, 12], far: [22, 12],
     states: {
-      open: [['.pppp', 'pwEEp', '.ppp.'], ['ppp', 'wEp', '.p.']],
-      closed: [['.....', 'ppppp', '.....'], ['...', 'ppp', '...']],
-      happy: [['.ppp.', 'p...p', '.....'], ['.p.', 'p.p', '...']],
-      surprised: [['.ppp.', 'pwEwp', '.ppp.'], ['.p.', 'pEp', '.p.']],
-    },
-  },
-  {
-    id: 'dots', name: 'Points (3/4)', near: [34, 23], far: [42, 23],
-    states: {
-      open: [['pp', 'pp', '..'], ['p', 'p', '.']],
-      closed: [['..', 'pp', '..'], ['.', 'p', '.']],
-      happy: [['pp', '..', '..'], ['p', '.', '.']],
-      surprised: [['pp', 'pp', 'pp'], ['p', 'p', 'p']],
+      open: [['MMM', 'KKK', 'epe'], ['MM', 'KK', 'pe']],
+      closed: [['MMM', 'MMM', 'KKK'], ['MM', 'MM', 'KK']],
+      happy: [['MMM', 'KKK', 'M.M'], ['MM', 'KK', '.M']],
+      surprised: [['KKK', 'epe', '.e.'], ['KK', 'pe', 'e.']],
     },
   },
 ];
 
-const eyes = EYES.map((s) => ({
+export const eyes = EYES.map((s) => ({
   id: `eyes-3q-${s.id}`,
   name: s.name,
   category: 'eyes',
@@ -75,42 +65,42 @@ const eyes = EYES.map((s) => ({
     name: 'Yeux',
     z: Z.eyes,
     role: 'eyes',
-    variants: EYE_STATES.map(([state, label]) => ({ name: label, state, grid: duo(...s.states[state], ...s.near, ...s.far) })),
+    variants: EYE_STATES.map(([state, label]) => ({ name: label, state, grid: x2(duo(...s.states[state], s.near, s.far)) })),
   }],
 }));
 
-// ---------- Sourcils ----------
+// ---------- Sourcils (y 10–11) ----------
 const BROWS = [
   {
-    id: 'thick', name: 'Épais (3/4)', near: [31, 19], far: [41, 19],
+    id: 'straight', name: 'Droits (3/4)',
     states: {
-      normal: [['...', '.qqqq', 'qqqqq'], ['...', 'qqq.', 'qqqq']],
-      high: [['.qqqq', 'qqqqq', '.....'], ['qqq.', 'qqqq', '....']],
-      angry: [['qq...', 'qqqq.', '..qqq'], ['..qq', '.qqq', 'qq..']],
-      sad: [['...qq', '.qqqq', 'qqq..'], ['qq..', 'qqq.', '..qq']],
+      normal: [['...', 'hhh'], ['..', 'hh']],
+      high: [['hhh', '...'], ['hh', '..']],
+      angry: [['hh.', '..h'], ['.h', 'h.']],
+      sad: [['..h', 'hh.'], ['h.', '.h']],
     },
   },
   {
-    id: 'thin', name: 'Fins (3/4)', near: [32, 19], far: [41, 19],
+    id: 'thick', name: 'Épais (3/4)',
     states: {
-      normal: [['....', '....', 'qqqq'], ['...', '...', 'qqq']],
-      high: [['qqqq', '....', '....'], ['qqq', '...', '...']],
-      angry: [['....', 'qq..', '..qq'], ['...', '.qq', 'q..']],
-      sad: [['....', '..qq', 'qq..'], ['...', 'qq.', '..q']],
+      normal: [['.hhh', 'hhhh'], ['hh', 'hh']],
+      high: [['hhhh', '.hh.'], ['hh', 'h.']],
+      angry: [['hhh.', '.hhh'], ['.h', 'hh']],
+      sad: [['..hh', 'hhh.'], ['hh', '.h']],
     },
   },
   {
-    id: 'bushy', name: 'Broussailleux (3/4)', near: [31, 18], far: [41, 18],
+    id: 'short', name: 'Courts (3/4)',
     states: {
-      normal: [['......', '.q.q.q', 'qqqqqq', 'qqqqq.'], ['....', 'q.q.', 'qqqq', 'qqq.']],
-      high: [['.q.q.q', 'qqqqqq', 'qqqqq.', '......'], ['q.q.', 'qqqq', 'qqq.', '....']],
-      angry: [['q.....', 'qqq.q.', 'qqqqqq', '...qqq'], ['...q', '.qqq', 'qqqq', 'qq..']],
-      sad: [['.....q', '..qqqq', 'qqqqq.', 'qqq...'], ['q...', 'qqq.', 'qqqq', '..qq']],
+      normal: [['...', '.hh'], ['..', 'h.']],
+      high: [['.hh', '...'], ['h.', '..']],
+      angry: [['.h.', '..h'], ['.h', 'h.']],
+      sad: [['..h', '.h.'], ['h.', '.h']],
     },
   },
 ];
 
-const brows = BROWS.map((s) => ({
+export const brows = BROWS.map((s) => ({
   id: `brows-3q-${s.id}`,
   name: s.name,
   category: 'brows',
@@ -119,75 +109,68 @@ const brows = BROWS.map((s) => ({
     name: 'Sourcils',
     z: Z.brows,
     role: 'brows',
-    variants: BROW_STATES.map(([state, label]) => ({ name: label, state, grid: duo(...s.states[state], ...s.near, ...s.far) })),
+    variants: BROW_STATES.map(([state, label]) => {
+      const [near, far] = s.states[state];
+      const nx = 19 - near[0].length;
+      return { name: label, state, grid: x2(duo(near, far, [nx, 10], [22, 10])) };
+    }),
   }],
 }));
 
-// ---------- Nez (dépasse du profil, côté droit) ----------
+// ---------- Nez : lumière sur l'arête, ombre dessous (x 19–25, y 12–17) ----------
 const NOSES = [
-  { id: 'straight', name: 'Droit (3/4)', x: 43, y: 24, rows: ['....s.', '....sk', '....sk', '....ssk', '...Sssk', '..SSkk.', '...kk..'] },
-  { id: 'strong', name: 'Fort (3/4)', x: 43, y: 23, rows: ['....s..', '....sk.', '....ssk', '....ssk', '....sssk', '..Sssssk', '..SSSSkk', '...kkkk.'] },
-  { id: 'small', name: 'Retroussé (3/4)', x: 43, y: 25, rows: ['....s.', '....sk', '....ssk', '..SSssk', '...kkk.'] },
-  { id: 'pointy', name: 'Pointu (3/4)', x: 43, y: 24, rows: ['....s..', '....sk.', '....ssk', '....sssk', '...Sssssk', '..SSkkkk.', '...k.....'] },
+  { id: 'soft', name: 'Discret (3/4)', rows: ['.......', '.L.....', '..M....', '..MM...', '....L..', '.KKK...'] },
+  { id: 'strong', name: 'Fort (3/4)', rows: ['.......', '.L.....', '..M..so', '..MM.so', '....Lso', '.KKKKo.'] },
+  { id: 'hooked', name: 'Aquilin (3/4)', rows: ['.......', '.L...so', '..M..so', '..MMKo.', '.KKK...', '.......'] },
+  { id: 'small', name: 'Retroussé (3/4)', rows: ['.......', '.......', '.L.....', '..M....', '....L..', '..KK...'] },
 ];
 
-const noses = NOSES.map((n) => ({
+export const noses = NOSES.map((n) => ({
   id: `nose-3q-${n.id}`,
   name: n.name,
   category: 'nose',
   view: '3q',
-  build: () => [{ name: `Nez (${n.name.replace(' (3/4)', '').toLowerCase()}, 3/4)`, z: Z.nose, grid: place(n.rows, n.x, n.y) }],
+  build: () => [{ name: `Nez (${n.name.replace(' (3/4)', '').toLowerCase()}, 3/4)`, z: Z.nose, grid: x2(art(n.rows, 19, 12)) }],
 }));
 
-// ---------- Bouches (décalées vers le profil) ----------
+// ---------- Bouches (x 18–23, y 19–21 ; la moustache recouvre y 18–19) ----------
 const MOUTHS = [
   {
-    id: 'simple', name: 'Simple (3/4)', x: 37, y: 33,
+    id: 'natural', name: 'Naturelle (3/4)',
     states: {
-      closed: ['........', '...ppppp', '........', '........'],
-      half: ['...pppp.', '..pmmmmp', '...pppp.', '........'],
-      open: ['...ppppp', '..pmmmmp', '..pmttp.', '...ppp..'],
-      smile: ['..p....p', '...pppp.', '........', '........'],
-      sad: ['...pppp.', '..p....p', '........', '........'],
-      surprised: ['....pp..', '...pmmp.', '...pmmp.', '....pp..'],
+      closed: ['......', '..MMM.', '..KK..'],
+      half: ['......', '..ooo.', '..KK..'],
+      open: ['..MMM.', '..omo.', '..KK..'],
+      smile: ['.K...K', '..KKK.', '......'],
+      sad: ['......', '..KKK.', '.K...K'],
+      surprised: ['...o..', '..omo.', '...o..'],
     },
   },
   {
-    id: 'line', name: 'Trait (3/4)', x: 37, y: 33,
+    id: 'line', name: 'Trait (3/4)',
     states: {
-      closed: ['........', '....pppp', '........', '........'],
-      half: ['........', '....pppp', '....mmmp', '........'],
-      open: ['....pppp', '...pmmmp', '...pTTp.', '....pp..'],
-      smile: ['...p....', '....pppp', '........', '........'],
-      sad: ['........', '....pppp', '...p....', '........'],
-      surprised: ['.....pp.', '....pmmp', '....pmmp', '.....pp.'],
+      closed: ['......', '.KKKK.', '......'],
+      half: ['......', '.KooK.', '......'],
+      open: ['.KKKK.', '.ommo.', '..KK..'],
+      smile: ['.K...K', '..KKK.', '......'],
+      sad: ['......', '..KKK.', '.K...K'],
+      surprised: ['..KK..', '.ommo.', '..KK..'],
     },
   },
   {
-    id: 'wide', name: 'Large (3/4)', x: 36, y: 33,
+    id: 'full', name: 'Lèvres pleines (3/4)',
     states: {
-      closed: ['.........', '..ppppppp', '.........', '.........'],
-      half: ['..ppppppp', '.pmmmmmmp', '..ppppppp', '.........'],
-      open: ['..ppppppp', '.pTTTTTTp', '.pmmmttmp', '..pppppp.'],
-      smile: ['.pppppppp', '..pTTTTTp', '...ppppp.', '.........'],
-      sad: ['...ppppp.', '..p.....p', '.p.......', '.........'],
-      surprised: ['....ppp..', '...pmmmp.', '...pmmmp.', '....ppp..'],
-    },
-  },
-  {
-    id: 'lips', name: 'Lèvres (3/4)', x: 37, y: 33,
-    states: {
-      closed: ['...rrrr.', '..rppppr', '...rrrr.', '........'],
-      half: ['...rrrr.', '..rpmmpr', '...rrrr.', '........'],
-      open: ['..rrrrr.', '.rpmmmpr', '.rpmttpr', '..rrrrr.'],
-      smile: ['.r....r.', '..rppppr', '...rrrr.', '........'],
-      sad: ['...rrrr.', '..rppppr', '.r.....r', '........'],
-      surprised: ['...rrr..', '..rpmpr.', '..rpmpr.', '...rrr..'],
+      closed: ['..MMM.', '..ooo.', '..KKK.'],
+      half: ['..MMM.', '..omo.', '..KKK.'],
+      open: ['..MMM.', '.ommmo', '..KKK.'],
+      smile: ['.o.MMo', '..ooo.', '..KK..'],
+      sad: ['..MMM.', '..ooo.', '.o.KKo'],
+      surprised: ['..MM..', '..om..', '..KK..'],
     },
   },
 ];
 
-const mouths = MOUTHS.map((s) => ({
+export const mouths = MOUTHS.map((s) => ({
   id: `mouth-3q-${s.id}`,
   name: s.name,
   category: 'mouth',
@@ -196,67 +179,81 @@ const mouths = MOUTHS.map((s) => ({
     name: 'Bouche',
     z: Z.mouth,
     role: 'mouth',
-    variants: MOUTH_STATES.map(([state, label]) => ({ name: label, state, grid: place(s.states[state], s.x, s.y) })),
+    variants: MOUTH_STATES.map(([state, label]) => ({ name: label, state, grid: x2(art(s.states[state], 18, 19)) })),
   }],
 }));
 
-// ---------- Barbes (le long de la mâchoire, comme sur un portrait de 3/4) ----------
-function jaw(full = false) {
-  const head = headSilhouette(new Grid(), 'oval');
-  const g = G();
-  // favori devant l'oreille, joue basse, menton
-  g.fill((x, y) => head.get(x, y) && x >= 29 && y >= 30 + (x - 29) * 0.18, 'h');
-  g.rect(29, 23, 31, 31, 'h');
-  if (full) {
-    g.ell(40, 40.5, 7.5, 5, 'h');
-    g.ell(33, 38.5, 5, 4, 'h');
-    g.clear((x, y) => x > 47);
-  } else {
-    g.fill((x, y) => head.get(x, y - 1) && !head.get(x, y) && x >= 30 && x <= 46 && y > 30, 'h');
-  }
-  return g;
-}
+// ---------- Barbes (posées en x 11, y 12) ----------
+const FULL = [
+  '.h............',
+  '.h............',
+  '.h............',
+  '.h............',
+  '.hh...........',
+  '.hh...........',
+  'ohh....hhhhhj.',
+  'oohh..hhhhhhh.',
+  '..ohh.h.......',
+  '...ohhh.......',
+  '....ohhhhhhh..',
+  '.....oohhhho..',
+  '.......oooo...',
+];
 
-function beardFinish(g, { dense = 0.22 } = {}) {
-  // bouche dégagée (la bouche est au-dessus mais on évite un bord trop épais)
-  g.clear((x, y) => ((x + 0.5 - 41) / 4) ** 2 + ((y + 0.5 - 34.5) / 1.4) ** 2 <= 1);
-  g.shade('h', 'H', -1, 1, 1);
-  texture(g, 'h', 'H', 'j', { density: dense, seed: 7 });
-  g.outline('q');
+/** Reflets dans la barbe (texture). */
+function tex(g, seed = 3, d = 0.14) {
+  g.each((x, y) => { if (g.get(x, y) === 104 && hash(x, y, seed) < d) g.set(x, y, 'j'); });
   return g;
 }
 
 const BEARDS = [
-  { id: 'stubble', name: 'Barbe de trois jours (3/4)', draw: () => { const g = jaw(); g.recolor('h', 'H'); g.clear((x, y) => hash(x, y, 11) < 0.45); return g; } },
-  { id: 'short', name: 'Barbe courte (3/4)', draw: () => beardFinish(jaw()) },
-  { id: 'full', name: 'Barbe fournie (3/4)', draw: () => beardFinish(jaw(true), { dense: 0.26 }) },
+  { id: 'full', name: 'Barbe (3/4)', draw: () => tex(art(FULL, 11, 12)) },
+  {
+    id: 'thick', name: 'Barbe fournie (3/4)',
+    draw: () => tex(art([
+      '.h............',
+      '.h............',
+      '.hh...........',
+      '.hh...........',
+      '.hhh..........',
+      'ohhh..........',
+      'ohhhh..hhhhhj.',
+      'ohhhhhhhhhhhh.',
+      '.ohhhhh.....h.',
+      '..ohhhh.....h.',
+      '...ohhhhhhhhh.',
+      '....ohhhhhhho.',
+      '.....ohhhhho..',
+      '......ooooo...',
+    ], 11, 12), 5, 0.18),
+  },
+  {
+    id: 'stubble', name: 'Barbe de trois jours (3/4)',
+    draw: () => {
+      const g = art(FULL, 11, 12);
+      g.recolor('o', 'h');
+      g.recolor('j', 'h');
+      g.recolor('h', 'H', (x, y) => hash(x, y, 4) < 0.3);
+      g.clear((x, y) => hash(x, y, 9) < 0.45 || y > 23);
+      return g;
+    },
+  },
   {
     id: 'mustache', name: 'Moustache (3/4)',
-    draw: () => {
-      const g = G();
-      g.poly([[37.5, 33.5], [40, 31.5], [46.5, 31.5], [46.5, 33.5], [44, 33]], 'h');
-      return beardFinish(g);
-    },
+    draw: () => tex(art(['hhhhhj', 'ohhhhho'], 17, 18)),
   },
   {
     id: 'goatee', name: 'Bouc (3/4)',
-    draw: () => {
-      const g = G();
-      g.poly([[38, 33.5], [40, 31.5], [46.5, 31.5], [46.5, 33.5]], 'h');
-      g.poly([[39, 36], [46, 36], [45.5, 41.5], [41, 42.5], [38.5, 39]], 'h');
-      return beardFinish(g);
-    },
+    draw: () => tex(art(['.hhhhhj', '.hhhhhh', '.h....h', '.h....h', '.hhhhhh', '..hhhho', '...ooo.'], 17, 18)),
   },
 ];
 
-const beards = BEARDS.map((b) => ({
+export const beards = BEARDS.map((b) => ({
   id: `beard-3q-${b.id}`,
   name: b.name,
   category: 'accessory',
   sub: 'beard',
   exclusiveKey: 'beard',
   view: '3q',
-  build: () => [{ name: b.name.replace(' (3/4)', ''), z: Z.beard, grid: b.draw() }],
+  build: () => [{ name: b.name.replace(' (3/4)', ''), z: Z.beard, grid: x2(b.draw()) }],
 }));
-
-export { eyes, brows, noses, mouths, beards };
