@@ -9,7 +9,7 @@ import { openDialog } from '../ui/dialogs.js';
 import { icon } from '../ui/icons.js';
 import { autoPngtuber } from '../library/character.js';
 import { createAvatar } from './engine.js';
-import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression } from './assets.js';
+import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression, avatarProfiles, pngtuberConfig } from './assets.js';
 import { channel } from '../storage/storage.js';
 
 const BACKGROUNDS = [
@@ -43,9 +43,22 @@ export function openPngtuber(app) {
       redo: () => { doc.pngtuber = { ...after }; },
     });
   }, 700);
+  const PT_KEYS = ['mouthGroup', 'mouthOpen', 'mouthClosed', 'mouthHalf', 'eyesGroup', 'eyesOpen', 'eyesClosed'];
+  const activeProfile = () => (engine ? doc.profiles.find((p) => p.id === engine.state.profile) : null);
   const cfg = new Proxy({}, {
-    get: (_, k) => doc.pngtuber[k],
+    get: (_, k) => (PT_KEYS.includes(k) ? pngtuberConfig(doc, engine?.state.profile)[k] : doc.pngtuber[k]),
     set: (_, k, v) => {
+      // bouche / yeux : si un profil est actif, c'est le profil qui est modifié
+      const prof = PT_KEYS.includes(k) ? activeProfile() : null;
+      if (prof) {
+        app.history.transact('Réglages du profil', () => {
+          const p = doc.profiles.find((x) => x.id === prof.id);
+          p.pngtuber = { ...(p.pngtuber || {}), [k]: v };
+        });
+        provider.clear();
+        engine.refresh();
+        return true;
+      }
       if (doc.pngtuber[k] === v) return true;
       if (!pendingBefore) pendingBefore = { ...doc.pngtuber };
       doc.pngtuber[k] = v;
@@ -77,12 +90,18 @@ export function openPngtuber(app) {
     width: doc.width,
     height: doc.height,
     getImage: provider,
-    cfg: () => avatarSettings(doc),
+    cfg: (pf) => avatarSettings(doc, pf),
     expressions: () => avatarExpressions(doc),
+    profiles: () => avatarProfiles(doc),
     initialExpression: initialExpression(doc),
+    initialProfile: null,
     onChange: (s) => {
       channel?.postMessage({ type: 'expression', projectId: doc.id, id: s.expression });
-      renderExprChips();
+      channel?.postMessage({ type: 'profile', projectId: doc.id, id: s.profile });
+      if (lastProfile !== s.profile) {
+        lastProfile = s.profile;
+        renderSide(); // les sélecteurs bouche/yeux suivent le profil
+      } else renderExprChips();
     },
     onFrame: (s) => {
       meterLvl.style.width = s.level * 100 + '%';
@@ -107,6 +126,20 @@ export function openPngtuber(app) {
     h('input', { type: 'checkbox', checked: !!cfg[key], onchange: (e) => { cfg[key] = e.target.checked; } }), label);
 
   const exprBox = h('div');
+  const profBox = h('div');
+  let lastProfile = null;
+  function renderProfiles() {
+    clear(profBox);
+    if (!doc.profiles.length) {
+      profBox.append(h('p', { class: 'hint' }, 'Aucun profil : créez-en dans l\'onglet Expressions (section Profils) pour changer de tenue ou de personnage avec F13 à F24.'));
+      return;
+    }
+    const cur = engine?.state.profile || null;
+    profBox.append(h('div', { class: 'chips' },
+      h('button', { class: 'chip' + (!cur ? ' on' : ''), onclick: () => engine.setProfile(null) }, 'Actuel'),
+      doc.profiles.map((p) => h('button', { class: 'chip' + (cur === p.id ? ' on' : ''), translate: 'no', onclick: () => engine.setProfile(p.id) },
+        p.name, p.key ? h('kbd', { style: { marginLeft: '6px' } }, p.key) : null))));
+  }
   function renderExprChips() {
     clear(exprBox);
     const cur = engine?.state.expression || null;
@@ -142,7 +175,7 @@ export function openPngtuber(app) {
     const placeMarkers = () => {
       meterThr.style.left = cfg.threshold * 100 + '%';
       meterThr2.style.left = Math.max(cfg.threshold, cfg.threshold2) * 100 + '%';
-      meterThr2.hidden = !avatarSettings(doc).hasHalf;
+      meterThr2.hidden = !avatarSettings(doc, engine?.state.profile).hasHalf;
     };
     const thr = h('input', { type: 'range', min: 1, max: 100, value: Math.round(cfg.threshold * 100), class: 'grow', oninput: (e) => { cfg.threshold = e.target.value / 100; placeMarkers(); } });
     const thr2 = h('input', { type: 'range', min: 1, max: 100, value: Math.round(cfg.threshold2 * 100), class: 'grow', oninput: (e) => { cfg.threshold2 = e.target.value / 100; placeMarkers(); } });
@@ -172,9 +205,11 @@ export function openPngtuber(app) {
       toggle('breathe', 'Respiration au repos'),
       toggle('shake', 'Secousse quand on crie', 'Au-dessus du seuil de grande ouverture, avec une marge'),
       toggle('tilt', 'Inclinaison en parlant'),
+      h('h3', {}, 'Profils (tenues, personnages)'),
+      profBox,
       h('h3', {}, 'Expressions'),
       exprBox,
-      h('p', { class: 'hint' }, 'Touches : celles associées aux expressions (onglet Expressions > ⋯ > Associer une touche ; « temporaire » = seulement tant que la touche est maintenue). Espace = parler, Échap = quitter.'),
+      h('p', { class: 'hint' }, 'Touches : F13 à F24 pour les profils, celles associées aux expressions (onglet Expressions > ⋯ > Associer une touche ; « temporaire » = seulement tant que la touche est maintenue). Espace = parler, Échap = quitter.'),
       h('h3', {}, 'Diffusion (OBS)'),
       h('div', { class: 'row' },
         h('button', { class: 'btn', onclick: openCapture, title: 'Fenêtre avec seulement l\'avatar, à capturer dans OBS (capture de fenêtre + incrustation chroma)' }, icon('tv'), 'Fenêtre de capture'),
@@ -184,6 +219,7 @@ export function openPngtuber(app) {
       h('div', { class: 'row', style: { marginTop: '8px' } },
         h('button', { class: 'btn', onclick: () => app.actions.exportDialog('pngtuber') }, icon('download'), 'Images pour logiciels PNGtuber')));
     placeMarkers();
+    renderProfiles();
     renderExprChips();
     micBtn.replaceChildren(icon('mic'), engine.state.stream ? 'Couper le micro' : 'Activer le micro');
     micBtn.classList.toggle('primary', !engine.state.stream);

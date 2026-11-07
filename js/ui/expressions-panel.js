@@ -60,6 +60,46 @@ export function initExpressionsPanel(app) {
         e.key ? h('kbd', { title: e.hold ? 'Touche associée (temporaire : tant qu\'elle est maintenue)' : 'Touche associée (mode PNGtuber)' }, e.key + (e.hold ? ' ⏳' : '')) : null,
         more));
     }
+    renderProfiles();
+  }
+
+  // ----- profils : tenues / personnages (touches F13–F24) -----
+  function renderProfiles() {
+    const doc = app.doc;
+    panel.append(h('h3', { style: { marginTop: '16px' } }, icon('user'), 'Profils (tenues, personnages)'));
+    panel.append(h('p', { class: 'hint' }, 'Un profil mémorise les calques visibles, les variantes et la bouche/les yeux du PNGtuber. Changez de tenue ou de personnage d\'une seule touche (F13 à F24, pratique avec un Stream Deck).'));
+    panel.append(h('button', {
+      class: 'btn', style: { width: '100%', marginBottom: '8px' },
+      onclick: async () => {
+        const name = await promptDialog('Nom du profil (ex. Tenue d\'hiver, Personnage 2)', '', { title: 'Enregistrer le profil actuel', ok: 'Enregistrer' });
+        if (name !== null) ops.saveProfile(app, name.trim() || undefined);
+      },
+    }, icon('plus'), 'Enregistrer l\'état actuel comme profil'));
+    for (const p of doc.profiles) {
+      const thumb = h('canvas', { width: 80, height: 80 });
+      const src = composeToCanvas(doc, { overrides: p.states, visibility: p.visibility, includeReference: false });
+      const g = thumb.getContext('2d');
+      g.imageSmoothingEnabled = false;
+      const k = Math.min(80 / doc.width, 80 / doc.height);
+      g.drawImage(src, (80 - doc.width * k) / 2, (80 - doc.height * k) / 2, doc.width * k, doc.height * k);
+      const keySel = h('select', { class: 'input', 'aria-label': 'Touche du profil', title: 'Touche du profil', style: { width: '78px' } },
+        h('option', { value: '' }, '—'),
+        ops.PROFILE_KEYS.map((k) => h('option', { value: k, selected: p.key === k }, k)));
+      keySel.addEventListener('change', () => ops.setProfileKey(app, p.id, keySel.value || null));
+      const more = h('button', { class: 'icon-btn small', title: 'Options', 'aria-label': 'Options du profil' }, icon('more'));
+      more.addEventListener('click', () => popupMenu(more, [
+        { label: 'Mettre à jour avec l\'état actuel', icon: 'save', action: () => ops.updateProfile(app, p.id) },
+        { label: 'Renommer', icon: 'pencil', action: async () => { const n = await promptDialog('Nom', p.name, { title: 'Renommer le profil' }); if (n) ops.renameProfile(app, p.id, n); } },
+        { sep: true },
+        { label: 'Supprimer', icon: 'trash', danger: true, action: async () => { if (await confirmDialog(`Supprimer le profil « ${p.name} » ?`, { danger: true, ok: 'Supprimer' })) ops.deleteProfile(app, p.id); } },
+      ], { align: 'right' }));
+      panel.append(h('div', { class: 'expr-row' },
+        thumb,
+        h('button', { class: 'btn small grow', style: { justifyContent: 'flex-start' }, title: 'Appliquer ce profil', onclick: () => ops.applyProfile(app, p.id) },
+          h('span', { class: 'name', translate: 'no' }, p.name)),
+        keySel,
+        more));
+    }
   }
 
   function drawExprThumb(e, c) {

@@ -846,6 +846,24 @@ export const EN = {
   'Couleurs récentes effacées': 'Recent colors cleared', 'Réglages réinitialisés': 'Settings reset', 'Réglages importés': 'Settings imported',
   'Remettre tous les réglages par défaut (thème, navigation, raccourcis…) ? Vos projets ne sont pas touchés.': 'Reset all settings to default (theme, navigation, shortcuts…)? Your projects are not affected.',
 
+  // ----- profils -----
+  'Profils': 'Profiles',
+  'Profils (tenues, personnages)': 'Profiles (outfits, characters)',
+  'Un profil mémorise les calques visibles, les variantes et la bouche/les yeux du PNGtuber. Changez de tenue ou de personnage d\'une seule touche (F13 à F24, pratique avec un Stream Deck).': 'A profile remembers visible layers, variants and the PNGtuber mouth/eyes. Switch outfit or character with a single key (F13 to F24, handy with a Stream Deck).',
+  'Enregistrer l\'état actuel comme profil': 'Save current state as a profile',
+  'Nom du profil (ex. Tenue d\'hiver, Personnage 2)': 'Profile name (e.g. Winter outfit, Character 2)',
+  'Enregistrer le profil actuel': 'Save current profile',
+  'Touche du profil': 'Profile key',
+  'Options du profil': 'Profile options',
+  'Appliquer ce profil': 'Apply this profile',
+  'Renommer le profil': 'Rename profile',
+  'Enregistrer le profil': 'Save profile', 'Mettre à jour le profil': 'Update profile', 'Supprimer le profil': 'Delete profile', 'Réglages du profil': 'Profile settings',
+  'Aucun profil : créez-en dans l\'onglet Expressions (section Profils) pour changer de tenue ou de personnage avec F13 à F24.': 'No profile: create some in the Expressions tab (Profiles section) to switch outfit or character with F13 to F24.',
+  'Par profil (ZIP)': 'Per profile (ZIP)', 'Un PNG par profil (tenue ou personnage).': 'One PNG per profile (outfit or character).',
+  'Aucun profil enregistré (onglet Expressions > Profils).': 'No saved profile (Expressions tab > Profiles).',
+  'Changer de profil (tenue / personnage), voir onglet Expressions': 'Switch profile (outfit / character), see Expressions tab',
+  'Touches : F13 à F24 pour les profils, celles associées aux expressions (onglet Expressions > ⋯ > Associer une touche ; « temporaire » = seulement tant que la touche est maintenue). Espace = parler, Échap = quitter.': 'Keys: F13 to F24 for profiles, the ones assigned to expressions (Expressions tab > ⋯ > Assign a key; "temporary" = only while held). Space = talk, Escape = quit.',
+
   // ----- tutoriel -----
   'Découverte': 'Welcome tour',
   'Bienvenue dans Pixel Atelier !': 'Welcome to Pixel Atelier!',

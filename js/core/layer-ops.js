@@ -480,3 +480,80 @@ export function mergeNodes(app, ids) {
     doc.activeId = merged.id;
   });
 }
+
+// ---------- Profils (tenues / personnages) ----------
+export const PROFILE_KEYS = ['F13', 'F14', 'F15', 'F16', 'F17', 'F18', 'F19', 'F20', 'F21', 'F22', 'F23', 'F24'];
+const PT_KEYS = ['mouthGroup', 'mouthOpen', 'mouthClosed', 'mouthHalf', 'eyesGroup', 'eyesOpen', 'eyesClosed'];
+
+function captureProfile(doc) {
+  const visibility = {};
+  for (const n of doc.nodes.values()) if (n.id !== 'root') visibility[n.id] = !!n.visible;
+  const pngtuber = {};
+  for (const k of PT_KEYS) pngtuber[k] = doc.pngtuber[k] ?? null;
+  return { visibility, states: currentStates(doc), pngtuber };
+}
+
+export function saveProfile(app, name) {
+  const doc = app.doc;
+  app.selection.commitFloating();
+  return app.history.transact('Enregistrer le profil', () => {
+    const used = new Set(doc.profiles.map((p) => p.key));
+    const key = PROFILE_KEYS.find((k) => !used.has(k)) || null;
+    const p = { id: uid('pf'), name: name || `Profil ${doc.profiles.length + 1}`, key, ...captureProfile(doc) };
+    doc.profiles.push(p);
+    return p;
+  });
+}
+
+export function updateProfile(app, id) {
+  const doc = app.doc;
+  app.history.transact('Mettre à jour le profil', () => {
+    const p = doc.profiles.find((x) => x.id === id);
+    if (p) Object.assign(p, captureProfile(doc));
+  });
+}
+
+/** Applique un profil dans l'éditeur (visibilités, variantes, bouche/yeux du PNGtuber). */
+export function applyProfile(app, id) {
+  const doc = app.doc;
+  const p = doc.profiles.find((x) => x.id === id);
+  if (!p) return;
+  app.selection.commitFloating();
+  app.history.transact(`Profil « ${p.name} »`, () => {
+    for (const [nid, v] of Object.entries(p.visibility || {})) {
+      const n = doc.get(nid);
+      if (n) n.visible = v;
+    }
+    for (const [gid, cid] of Object.entries(p.states || {})) {
+      const g = doc.get(gid);
+      if (g && g.variant && g.children.includes(cid)) g.active = cid;
+    }
+    const pt = { ...doc.pngtuber };
+    for (const [k, v] of Object.entries(p.pngtuber || {})) if (v === null || doc.get(v)) pt[k] = v;
+    doc.pngtuber = pt;
+  });
+  app.toast(`Profil « ${p.name} »`);
+}
+
+export function renameProfile(app, id, name) {
+  name = String(name || '').trim();
+  if (!name) return;
+  app.history.transact('Renommer le profil', () => {
+    const p = app.doc.profiles.find((x) => x.id === id);
+    if (p) p.name = name;
+  });
+}
+
+export function deleteProfile(app, id) {
+  app.history.transact('Supprimer le profil', () => {
+    app.doc.profiles = app.doc.profiles.filter((x) => x.id !== id);
+  });
+}
+
+export function setProfileKey(app, id, key) {
+  app.history.transact('Touche du profil', () => {
+    for (const p of app.doc.profiles) if (key && p.key === key) p.key = null;
+    const p = app.doc.profiles.find((x) => x.id === id);
+    if (p) p.key = key || null;
+  });
+}

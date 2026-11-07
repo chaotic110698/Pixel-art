@@ -66,6 +66,8 @@ export class Doc {
     this.frame = 0;
     this.fps = 8;
     this.tags = []; // balises d'animation : { id, name, from, to, color }
+    // profils (tenues / personnages) : { id, name, key, visibility, states, pngtuber }
+    this.profiles = [];
     this.activeId = null;
     this.expressions = [];
     this.grid = defaultGrid();
@@ -224,11 +226,14 @@ export class Doc {
    * opts.ignoreVisibility : rendre même les nœuds masqués (export de variantes)
    */
   renderList(opts = {}) {
-    const { overrides = null, includeReference = true, root = this.root, ignoreVisibility = false } = opts;
+    const { overrides = null, includeReference = true, root = this.root, ignoreVisibility = false, visibility = null } = opts;
     const ov = overrides instanceof Map ? overrides : overrides ? new Map(Object.entries(overrides)) : null;
+    // visibility : { nodeId: bool } (profils) remplace la visibilité enregistrée
+    const vis = visibility || null;
     const out = [];
     const visit = (n, opacity) => {
-      if (!ignoreVisibility && !n.visible) return;
+      const shown = vis && Object.prototype.hasOwnProperty.call(vis, n.id) ? vis[n.id] : n.visible;
+      if (!ignoreVisibility && !shown) return;
       const op = opacity * (n.opacity ?? 1);
       if (n.type === 'layer') {
         if (n.reference && !includeReference) return;
@@ -297,6 +302,7 @@ export class Doc {
       frames: this.frames.map((f) => ({ ...f })),
       frame: this.frame,
       tags: this.tags.map((t) => ({ ...t })),
+      profiles: JSON.parse(JSON.stringify(this.profiles)),
       expressions: JSON.parse(JSON.stringify(this.expressions)),
       charColors: this.charColors ? { ...this.charColors } : null,
       charTemplate: this.charTemplate ? { ...this.charTemplate } : null,
@@ -325,6 +331,7 @@ export class Doc {
     this.frames = s.frames.map((f) => ({ ...f }));
     this.frame = Math.min(s.frame, this.frames.length - 1);
     if (s.tags) this.tags = s.tags.map((t) => ({ ...t }));
+    if (s.profiles) this.profiles = JSON.parse(JSON.stringify(s.profiles));
     this.expressions = JSON.parse(JSON.stringify(s.expressions));
     this.charColors = s.charColors ? { ...s.charColors } : null;
     if (s.charTemplate !== undefined) this.charTemplate = s.charTemplate ? { ...s.charTemplate } : null;

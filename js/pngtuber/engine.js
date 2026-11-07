@@ -10,10 +10,11 @@
 // o = {
 //   canvas, stage,                 // canvas de rendu et élément qui donne la taille
 //   width, height,                 // taille de l'image en pixels du dessin
-//   getImage(exprId, mouth, blink) // mouth : 'closed' | 'half' | 'open' -> image ou canvas
-//   cfg()                          // réglages (doc.pngtuber) lus en direct
+//   getImage(profileId, exprId, mouth, blink) // mouth : 'closed' | 'half' | 'open' -> image ou canvas
+//   cfg(profileId)                 // réglages (doc.pngtuber + profil) lus en direct
 //   expressions()                  // [{ id, key, hold }]
-//   initialExpression, onChange(state)
+//   profiles()                     // [{ id, key }] (touches F13–F24 conseillées)
+//   initialExpression, initialProfile, onChange(state)
 // }
 export function createAvatar(o) {
   const st = {
@@ -24,6 +25,7 @@ export function createAvatar(o) {
     blinkUntil: 0,
     nextBlink: 0,
     expression: o.initialExpression || null,
+    profile: o.initialProfile || null,
     held: null, // expression précédente pendant une expression temporaire
     manual: false,
     stream: null,
@@ -37,7 +39,7 @@ export function createAvatar(o) {
   const buf = new Float32Array(1024);
 
   function cfg() {
-    return o.cfg() || {};
+    return o.cfg(st.profile) || {};
   }
 
   function readLevel() {
@@ -102,7 +104,7 @@ export function createAvatar(o) {
     const c = cfg();
     const canvas = o.canvas;
     const blink = now < st.blinkUntil;
-    const img = o.getImage(st.expression, st.mouth, blink);
+    const img = o.getImage(st.profile, st.expression, st.mouth, blink);
     const r = o.stage.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     const maxW = Math.max(1, r.width * dpr), maxH = Math.max(1, r.height * dpr);
@@ -114,7 +116,7 @@ export function createAvatar(o) {
     const dx = st.shakeX * Math.max(1, Math.round(s / 2));
     const dy = st.shakeY * Math.max(1, Math.round(s / 2));
     const W = o.width * s + s * 4, H = o.height * s + s * 4;
-    const key = [st.expression, st.mouth, blink, s, bounce, breath, tilt.toFixed(3), dx, dy, maxW, maxH, img ? 1 : 0].join('|');
+    const key = [st.profile, st.expression, st.mouth, blink, s, bounce, breath, tilt.toFixed(3), dx, dy, maxW, maxH, img ? 1 : 0].join('|');
     if (key === st.lastKey) return;
     st.lastKey = key;
     if (canvas.width !== W || canvas.height !== H) {
@@ -147,6 +149,12 @@ export function createAvatar(o) {
     st.raf = requestAnimationFrame(loop);
   }
 
+  function setProfile(id) {
+    st.profile = id;
+    st.lastKey = '';
+    if (o.onChange) o.onChange(st);
+  }
+
   function setExpression(id) {
     st.held = null;
     st.expression = id;
@@ -164,6 +172,13 @@ export function createAvatar(o) {
       return;
     }
     const k = (e.key || '').toUpperCase();
+    // profils (tenues / personnages), en général sur F13–F24
+    const pf = o.profiles ? o.profiles().find((x) => x.key && x.key.toUpperCase() === k) : null;
+    if (pf) {
+      e.preventDefault();
+      if (e.type === 'keydown' && !e.repeat) setProfile(pf.id);
+      return;
+    }
     const ex = o.expressions().find((x) => x.key && x.key === k);
     if (!ex) return;
     e.preventDefault();
@@ -194,6 +209,7 @@ export function createAvatar(o) {
     startMic,
     stopMic,
     setExpression,
+    setProfile,
     setManualTalk(v) {
       st.manual = !!v;
     },

@@ -4,7 +4,7 @@
 
 import { readProject, channel } from '../storage/storage.js';
 import { createAvatar } from './engine.js';
-import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression } from './assets.js';
+import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression, avatarProfiles } from './assets.js';
 
 const BG = { green: '#00ff00', blue: '#0047bb', magenta: '#ff00ff', black: '#000000', white: '#ffffff', transparent: 'transparent' };
 const params = new URLSearchParams(location.search);
@@ -51,9 +51,10 @@ async function load(keepExpression = null) {
       stage: $('stage'),
       width: doc.width,
       height: doc.height,
-      getImage: (ex, m, b) => provider(ex, m, b),
-      cfg: () => (doc ? avatarSettings(doc) : {}),
+      getImage: (pf, ex, m, b) => provider(pf, ex, m, b),
+      cfg: (pf) => (doc ? avatarSettings(doc, pf) : {}),
       expressions: () => (doc ? avatarExpressions(doc) : []),
+      profiles: () => (doc ? avatarProfiles(doc) : []),
       initialExpression: keepExpression ?? initialExpression(doc),
       onChange: (s) => { $('expr').value = s.expression || ''; },
     });
@@ -83,6 +84,7 @@ async function boot() {
     const m = ev.data || {};
     if (m.projectId !== projectId) return;
     if (m.type === 'expression') av.setExpression(m.id || null);
+    if (m.type === 'profile') av.setProfile(m.id || null);
     if (m.type === 'talk') av.setManualTalk(m.on);
     if (m.type === 'saved') {
       const keep = av.state.expression;

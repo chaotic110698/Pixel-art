@@ -19,6 +19,7 @@ export function openExportDialog(app, preset = null) {
     layers: `${nLayers} fichier(s)`,
     variants: `${nVariants} fichier(s)`,
     expressions: `${doc.expressions.length} fichier(s)`,
+    profiles: `${doc.profiles.length} fichier(s)`,
     combos: doc.variantGroups().length ? `${nCombos} fichier(s)` : '—',
     gif: `${doc.frames.length} image(s)`,
     sheet: `${doc.frames.length} image(s)`,

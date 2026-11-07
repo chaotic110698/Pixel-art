@@ -44,6 +44,8 @@ const PATTERNS = [
   [/^★ Favoris \((\d+)\)$/, (m, n) => `★ Favorites (${n})`],
   [/^(.+) \((.+)\) — clic droit ou appui long : autres outils$/, (m, a, k) => `${tr(a)} (${k}) — right click or long press: other tools`],
   [/^(Dessin|Remplissage|Formes|Sélection|Déplacer) : (.+)$/, (m, a, b) => `${tr(a)}: ${tr(b)}`],
+  [/^Profil « (.+) »$/, (m, a) => `Profile "${a}"`],
+  [/^Supprimer le profil « (.+) » \?$/, (m, a) => `Delete profile "${a}"?`],
   [/^Opacité : (\d+) %$/, (m, a) => `Opacity: ${a}%`],
   [/^(\d+) %$/, (m, a) => `${a}%`],
   [/^(\d+) couleurs (importées|extraites)$/, (m, n, w) => `${n} colors ${w === 'importées' ? 'imported' : 'extracted'}`],

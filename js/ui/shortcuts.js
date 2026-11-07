@@ -5,6 +5,7 @@ import { isTyping } from './input.js';
 import { openDialog, anyDialogOpen, closeTopDialog, closePopups } from './dialogs.js';
 import { cycleSymmetry, closeFlyout } from './toolbar.js';
 import * as ops from '../core/layer-ops.js';
+import { channel } from '../storage/storage.js';
 
 export const SHORTCUTS = [
   ['Outils', [
@@ -31,6 +32,9 @@ export const SHORTCUTS = [
   ]],
   ['Fichier', [
     ['Ctrl+S', 'Enregistrer (navigateur + fichier lié)'], ['Ctrl+Maj+S', 'Enregistrer dans un fichier…'], ['Ctrl+O', 'Projets'], ['Ctrl+Maj+E', 'Exporter'], ['?', 'Cette aide'],
+  ]],
+  ['Profils', [
+    ['F13 … F24', 'Changer de profil (tenue / personnage), voir onglet Expressions'],
   ]],
   ['Tactile', [
     ['1 doigt', 'Dessiner'], ['2 doigts', 'Zoomer / déplacer'], ['Tape à 2 doigts', 'Annuler la dernière action'], ['Tape à 3 doigts', 'Rétablir'], ['Appui long sur une couleur', 'Choisir comme couleur B'],
@@ -183,6 +187,17 @@ export function initShortcuts(app) {
       return;
     }
     if (anyDialogOpen()) return;
+
+    // profils (tenues / personnages) sur F13–F24 : appliqués dans l'éditeur et transmis à la fenêtre de capture
+    if (/^F(1[3-9]|2[0-4])$/.test(e.key)) {
+      const pf = app.doc.profiles.find((p) => p.key === e.key);
+      if (pf) {
+        e.preventDefault();
+        ops.applyProfile(app, pf.id);
+        channel?.postMessage({ type: 'profile', projectId: app.doc.id, id: pf.id });
+      }
+      return;
+    }
 
     const run = (fn) => {
       e.preventDefault();

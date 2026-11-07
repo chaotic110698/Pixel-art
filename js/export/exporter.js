@@ -19,6 +19,7 @@ export const EXPORT_KINDS = [
   { id: 'layers', name: 'Calque par calque (ZIP)', desc: 'Un PNG par calque, tous à la taille du canevas pour un alignement parfait.', zip: true },
   { id: 'variants', name: 'Par variante (ZIP)', desc: 'Un PNG par variante de chaque groupe de variantes.', zip: true },
   { id: 'expressions', name: 'Par expression (ZIP)', desc: 'Un PNG composé par expression enregistrée.', zip: true },
+  { id: 'profiles', name: 'Par profil (ZIP)', desc: 'Un PNG par profil (tenue ou personnage).', zip: true },
   { id: 'combos', name: 'Toutes les combinaisons (ZIP)', desc: 'Un PNG pour chaque combinaison possible des groupes de variantes.', zip: true },
   { id: 'sheet', name: 'Spritesheet / planche de tuiles (PNG)', desc: 'Toutes les images d\'animation (ou tuiles) sur une planche.', zip: false },
   { id: 'gif', name: 'GIF animé', desc: 'Animation des images de la timeline.', zip: false },
@@ -98,6 +99,14 @@ function expressionItems(doc, used, folder = '') {
   }));
 }
 
+function profileItems(doc, used, folder = '') {
+  return doc.profiles.map((p) => ({
+    path: folder + uniqueFile(used, slug(p.name, 'profil')),
+    pixels: compositeImage(doc, { overrides: p.states, visibility: p.visibility }),
+    meta: { type: 'profile', id: p.id },
+  }));
+}
+
 function comboItems(doc, used, folder = '') {
   const { groups, combos } = combinations(doc);
   return combos.map((states) => {
@@ -166,6 +175,13 @@ export function buildManifest(doc, files, opts) {
       key: e.key || null,
       states: statesByName(e.states),
       ...fileInfo(fileOf((m) => m.type === 'expression' && m.id === e.id)),
+    })),
+    profiles: doc.profiles.map((p) => ({
+      name: p.name,
+      key: p.key || null,
+      states: statesByName(p.states || {}),
+      hidden: Object.entries(p.visibility || {}).filter(([, v]) => !v).map(([id]) => doc.get(id)?.name).filter(Boolean),
+      ...fileInfo(fileOf((m) => m.type === 'profile' && m.id === p.id)),
     })),
     combinations: files.filter((f) => f.meta?.type === 'combination').map((f) => ({ states: statesByName(f.meta.states), file: f.name, rect: f.rect })),
     pngtuber: {
@@ -268,16 +284,23 @@ export async function runExport(app, kind, opts) {
   }
 
   if (kind === 'pngtuber') {
-    const { avatarOverrides, hasHalf } = await import('../pngtuber/assets.js');
+    const { avatarRender, hasHalf } = await import('../pngtuber/assets.js');
     const exprs = doc.expressions.length ? doc.expressions : [{ id: null, name: 'defaut' }];
-    const states = [['idle', 'closed', 0], ['idle_blink', 'closed', 1], ['talk', 'open', 0], ['talk_blink', 'open', 1]];
-    if (hasHalf(doc)) states.push(['talk_half', 'half', 0], ['talk_half_blink', 'half', 1]);
+    // un dossier par profil (tenue / personnage) s'il y en a
+    const profiles = doc.profiles.length ? doc.profiles : [{ id: null, name: '' }];
     const its = [];
-    const folders = new Set();
-    for (const e of exprs) {
-      const folder = uniqueFile(folders, slug(e.name, 'expression'), '');
-      for (const [file, mouth, blink] of states) {
-        its.push({ path: `${folder}/${file}.png`, pixels: compositeImage(doc, { overrides: avatarOverrides(doc, e.id, mouth, !!blink) }), meta: { type: 'avatar' } });
+    const pfFolders = new Set();
+    for (const pf of profiles) {
+      const states = [['idle', 'closed', 0], ['idle_blink', 'closed', 1], ['talk', 'open', 0], ['talk_blink', 'open', 1]];
+      if (hasHalf(doc, pf.id)) states.push(['talk_half', 'half', 0], ['talk_half_blink', 'half', 1]);
+      const pfFolder = pf.id ? uniqueFile(pfFolders, slug(pf.name, 'profil'), '') + '/' : '';
+      const folders = new Set();
+      for (const e of exprs) {
+        const folder = pfFolder + uniqueFile(folders, slug(e.name, 'expression'), '');
+        for (const [file, mouth, blink] of states) {
+          const r = avatarRender(doc, pf.id, e.id, mouth, !!blink);
+          its.push({ path: `${folder}/${file}.png`, pixels: compositeImage(doc, { overrides: r.overrides, visibility: r.visibility }), meta: { type: 'avatar' } });
+        }
       }
     }
     finalize(doc, its, { ...o, crop: o.crop === 'each' ? 'common' : o.crop });
@@ -285,7 +308,7 @@ export async function runExport(app, kind, opts) {
     const readme = [
       'Images PNGtuber exportées par Pixel Atelier',
       '',
-      'Un dossier par expression. Dans chaque dossier :',
+      ...(doc.profiles.length ? ['Un dossier par profil (tenue ou personnage), puis un dossier par expression. Dans chaque dossier :'] : ['Un dossier par expression. Dans chaque dossier :']),
       '  idle.png            repos (bouche fermée, yeux ouverts)',
       '  idle_blink.png      repos, yeux fermés (clignement)',
       '  talk.png            parle (bouche ouverte)',
@@ -308,12 +331,14 @@ export async function runExport(app, kind, opts) {
   else if (kind === 'variants') items = variantItems(doc, used);
   else if (kind === 'expressions') items = expressionItems(doc, used);
   else if (kind === 'combos') items = comboItems(doc, used);
+  else if (kind === 'profiles') items = profileItems(doc, used);
   else if (kind === 'pack') {
     items = [
       { path: uniqueFile(used, 'image_composee'), pixels: compositeImage(doc), meta: { type: 'composite' } },
       ...layerItems(doc, used, 'calques/'),
       ...variantItems(doc, used, 'variantes/'),
       ...expressionItems(doc, used, 'expressions/'),
+      ...profileItems(doc, used, 'profils/'),
       ...(opts.includeCombos ? comboItems(doc, used, 'combinaisons/') : []),
     ];
   }
@@ -321,6 +346,7 @@ export async function runExport(app, kind, opts) {
     variants: 'Aucun groupe de variantes dans ce projet.',
     expressions: 'Aucune expression enregistrée.',
     combos: 'Aucun groupe de variantes dans ce projet.',
+    profiles: 'Aucun profil enregistré (onglet Expressions > Profils).',
   }[kind] || 'Rien à exporter.');
   finalize(doc, items, o);
   const files = await encodeItems(items);
@@ -328,6 +354,6 @@ export async function runExport(app, kind, opts) {
   const zipFiles = files.map((f) => ({ name: f.name, data: f.data }));
   zipFiles.push({ name: 'manifest.json', data: JSON.stringify(manifest, null, 2) });
   if (opts.includeProject) zipFiles.push({ name: `${base}.pxa.json`, data: await docToFileJSON(doc) });
-  const suffix = { layers: 'calques', variants: 'variantes', expressions: 'expressions', combos: 'combinaisons', pack: 'pngtuber' }[kind];
+  const suffix = { layers: 'calques', variants: 'variantes', expressions: 'expressions', combos: 'combinaisons', pack: 'pngtuber', profiles: 'profils' }[kind];
   return { blob: makeZip(zipFiles), filename: `${base}_${suffix}.zip`, count: files.length };
 }

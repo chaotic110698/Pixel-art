@@ -1,5 +1,5 @@
-// Images de l'avatar : une combinaison (expression, bouche, clignement) donne une
-// liste de variantes à forcer (overrides), utilisée par le mode PNGtuber, la
+// Images de l'avatar : une combinaison (profil, expression, bouche, clignement)
+// donne les variantes et visibilités à forcer. Utilisé par le mode PNGtuber, la
 // fenêtre de capture et les exports.
 
 import { composeToCanvas, composePixels } from '../render/compose.js';
@@ -8,15 +8,32 @@ import { bytesToBase64 } from '../util/dom.js';
 
 export const MOUTHS = ['closed', 'half', 'open'];
 
-export function hasHalf(doc) {
-  const c = doc.pngtuber;
+export function profileOf(doc, profileId) {
+  return profileId ? doc.profiles.find((p) => p.id === profileId) || null : null;
+}
+
+/** Réglages bouche/yeux effectifs (ceux du profil s'il en définit). */
+export function pngtuberConfig(doc, profileId = null) {
+  const p = profileOf(doc, profileId);
+  const c = { ...doc.pngtuber };
+  if (p?.pngtuber) for (const [k, v] of Object.entries(p.pngtuber)) if (v !== undefined && (v === null || doc.get(v))) c[k] = v;
+  return c;
+}
+
+export function hasHalf(doc, profileId = null) {
+  const c = pngtuberConfig(doc, profileId);
   return !!(c.mouthHalf && doc.get(c.mouthHalf) && doc.get(c.mouthGroup));
 }
 
-/** Variantes à afficher pour une expression (null = état actuel), une bouche et un clignement. */
-export function avatarOverrides(doc, exprId, mouth, blink) {
-  const c = doc.pngtuber;
+/**
+ * Rendu d'une combinaison : { overrides (variantes), visibility (profil) }.
+ * profileId / exprId : null = état actuel du document.
+ */
+export function avatarRender(doc, profileId, exprId, mouth, blink) {
+  const p = profileOf(doc, profileId);
+  const c = pngtuberConfig(doc, profileId);
   const ov = {};
+  if (p) Object.assign(ov, p.states);
   const e = exprId ? doc.expressions.find((x) => x.id === exprId) : null;
   if (e) Object.assign(ov, e.states);
   if (c.mouthGroup && doc.get(c.mouthGroup)) {
@@ -25,29 +42,38 @@ export function avatarOverrides(doc, exprId, mouth, blink) {
     else if (mouth === 'closed' && !e?.states[c.mouthGroup] && c.mouthClosed && doc.get(c.mouthClosed)) ov[c.mouthGroup] = c.mouthClosed;
   }
   if (blink && c.eyesGroup && c.eyesClosed && doc.get(c.eyesClosed)) ov[c.eyesGroup] = c.eyesClosed;
-  return ov;
+  return { overrides: ov, visibility: p ? p.visibility : null };
+}
+
+/** Compatibilité : variantes seules (sans profil). */
+export function avatarOverrides(doc, exprId, mouth, blink) {
+  return avatarRender(doc, null, exprId, mouth, blink).overrides;
 }
 
 export function avatarExpressions(doc) {
   return doc.expressions.map((e) => ({ id: e.id, name: e.name, key: e.key || null, hold: !!e.hold }));
 }
 
-/** Réglages utiles au moteur (copie). */
-export function avatarSettings(doc) {
-  return { ...doc.pngtuber, hasHalf: hasHalf(doc) };
+export function avatarProfiles(doc) {
+  return doc.profiles.map((p) => ({ id: p.id, name: p.name, key: p.key || null }));
+}
+
+/** Réglages utiles au moteur (copie), pour un profil donné. */
+export function avatarSettings(doc, profileId = null) {
+  return { ...pngtuberConfig(doc, profileId), hasHalf: hasHalf(doc, profileId) };
 }
 
 /** Fournisseur d'images pour le moteur, avec cache (canvas composés). */
 export function makeImageProvider(doc) {
   const cache = new Map();
-  const get = (exprId, mouth, blink) => {
-    const ov = avatarOverrides(doc, exprId, mouth, blink);
-    const key = JSON.stringify(ov);
+  const get = (profileId, exprId, mouth, blink) => {
+    const r = avatarRender(doc, profileId, exprId, mouth, blink);
+    const key = JSON.stringify(r);
     let c = cache.get(key);
     if (!c) {
-      c = composeToCanvas(doc, { overrides: ov, includeReference: false });
+      c = composeToCanvas(doc, { overrides: r.overrides, visibility: r.visibility, includeReference: false });
       cache.set(key, c);
-      if (cache.size > 64) cache.delete(cache.keys().next().value);
+      if (cache.size > 96) cache.delete(cache.keys().next().value);
     }
     return c;
   };
@@ -64,26 +90,34 @@ export function initialExpression(doc) {
 }
 
 /**
- * Toutes les images de l'avatar en PNG exact (data URL), clé « expr|bouche|0/1 ».
+ * Toutes les images de l'avatar en PNG exact (data URL), clé « profil|expr|bouche|0/1 ».
  * Les images identiques sont partagées (dictionnaire `files`).
  */
 export async function buildAvatarImages(doc) {
+  const profiles = [null, ...doc.profiles.map((p) => p.id)];
   const exprs = [null, ...doc.expressions.map((e) => e.id)];
-  const mouths = hasHalf(doc) ? MOUTHS : ['closed', 'open'];
   const files = {}; // signature -> data URL
   const map = {}; // clé -> signature
-  for (const ex of exprs) {
-    for (const m of mouths) {
-      for (const b of [0, 1]) {
-        const ov = avatarOverrides(doc, ex, m, !!b);
-        const sig = JSON.stringify(ov);
-        if (!files[sig]) {
-          const px = composePixels(doc, { overrides: ov, includeReference: false });
-          files[sig] = 'data:image/png;base64,' + bytesToBase64(await encodePNG(px, doc.width, doc.height));
+  for (const pf of profiles) {
+    const mouths = hasHalf(doc, pf) ? MOUTHS : ['closed', 'open'];
+    for (const ex of exprs) {
+      for (const m of mouths) {
+        for (const b of [0, 1]) {
+          const r = avatarRender(doc, pf, ex, m, !!b);
+          const sig = JSON.stringify(r);
+          if (!files[sig]) {
+            const px = composePixels(doc, { overrides: r.overrides, visibility: r.visibility, includeReference: false });
+            files[sig] = 'data:image/png;base64,' + bytesToBase64(await encodePNG(px, doc.width, doc.height));
+          }
+          map[`${pf || ''}|${ex || ''}|${m}|${b}`] = sig;
         }
-        map[`${ex || ''}|${m}|${b}`] = sig;
       }
     }
   }
-  return { files, map };
+  // signatures longues -> identifiants courts
+  const short = {};
+  const out = {};
+  Object.keys(files).forEach((sig, i) => { short[sig] = 'i' + i; out['i' + i] = files[sig]; });
+  for (const k of Object.keys(map)) map[k] = short[map[k]];
+  return { files: out, map };
 }

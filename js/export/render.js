@@ -30,8 +30,8 @@ export function nodeImage(doc, node, frame = doc.frame) {
   return composePixels(doc, { root: node, ignoreVisibility: true, includeReference: false, frame });
 }
 
-export function compositeImage(doc, { overrides = null, frame = doc.frame } = {}) {
-  return composePixels(doc, { overrides, includeReference: false, frame });
+export function compositeImage(doc, { overrides = null, frame = doc.frame, visibility = null } = {}) {
+  return composePixels(doc, { overrides, visibility, includeReference: false, frame });
 }
 
 /** Produit cartésien des groupes de variantes. */

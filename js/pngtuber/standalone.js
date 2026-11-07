@@ -1,16 +1,21 @@
 // Avatar autonome : un seul fichier .html (images intégrées + moteur), à ajouter
 // dans OBS comme « Source navigateur » (fichier local) ou à ouvrir dans un navigateur.
-// Paramètres d'URL : ?bg=transparent|green|blue|magenta|black|white|<hex>  &mic=1  &ui=0  &scale=N
+// Paramètres d'URL : ?bg=transparent|green|blue|magenta|black|white|<hex>  &mic=1  &ui=0  &scale=N  &profile=<nom ou F13…>
 
 import { createAvatar } from './engine.js';
-import { buildAvatarImages, avatarExpressions, avatarSettings, initialExpression } from './assets.js';
+import { buildAvatarImages, avatarExpressions, avatarSettings, initialExpression, avatarProfiles } from './assets.js';
 
 const esc = (s) => String(s).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
 
 export async function buildStandaloneAvatar(doc) {
   const { files, map } = await buildAvatarImages(doc);
   const settings = avatarSettings(doc);
+  // demi-ouverture disponible selon le profil
+  const halfByProfile = {};
+  for (const p of [null, ...doc.profiles.map((x) => x.id)]) halfByProfile[p || ''] = avatarSettings(doc, p).hasHalf;
   const data = {
+    profiles: avatarProfiles(doc),
+    halfByProfile,
     name: doc.name,
     width: doc.width,
     height: doc.height,
@@ -48,8 +53,9 @@ export async function buildStandaloneAvatar(doc) {
 <div id="stage"><canvas></canvas></div>
 <div id="ui">
   <button id="mic">🎤 Activer le micro</button>
+  <select id="prof" aria-label="Profil"></select>
   <select id="expr" aria-label="Expression"></select>
-  <span>Espace = parler · H = masquer</span>
+  <span>Espace = parler · F13–F24 = profils · H = masquer</span>
 </div>
 <script>
 const DATA = ${json};
@@ -64,8 +70,9 @@ const createAvatar = (${createAvatar.toString()});
   if (scale > 0) DATA.settings.scale = scale;
   const imgs = {};
   for (const [sig, src] of Object.entries(DATA.files)) { const im = new Image(); im.src = src; imgs[sig] = im; }
-  const getImage = (ex, mouth, blink) => {
-    const sig = DATA.map[(ex || '') + '|' + mouth + '|' + (blink ? 1 : 0)] || DATA.map[(ex || '') + '|open|' + (blink ? 1 : 0)];
+  const getImage = (pf, ex, mouth, blink) => {
+    const k = (pf || '') + '|' + (ex || '') + '|';
+    const sig = DATA.map[k + mouth + '|' + (blink ? 1 : 0)] || DATA.map[k + 'open|' + (blink ? 1 : 0)];
     const im = imgs[sig];
     return im && im.complete && im.naturalWidth ? im : null;
   };
@@ -78,17 +85,31 @@ const createAvatar = (${createAvatar.toString()});
     o.value = e.id; o.textContent = e.name + (e.key ? ' [' + e.key + ']' : '');
     sel.append(o);
   }
+  const psel = document.getElementById('prof');
+  const pNone = document.createElement('option');
+  pNone.value = ''; pNone.textContent = '(profil par défaut)';
+  psel.append(pNone);
+  for (const p of DATA.profiles) {
+    const o = document.createElement('option');
+    o.value = p.id; o.textContent = p.name + (p.key ? ' [' + p.key + ']' : '');
+    psel.append(o);
+  }
+  if (!DATA.profiles.length) psel.hidden = true;
   const av = createAvatar({
     canvas: document.querySelector('canvas'),
     stage: document.getElementById('stage'),
     width: DATA.width,
     height: DATA.height,
     getImage,
-    cfg: () => DATA.settings,
+    cfg: (pf) => Object.assign({}, DATA.settings, { hasHalf: !!DATA.halfByProfile[pf || ''] }),
     expressions: () => DATA.expressions,
+    profiles: () => DATA.profiles,
     initialExpression: DATA.initial,
-    onChange: (s) => { sel.value = s.expression || ''; },
+    onChange: (s) => { sel.value = s.expression || ''; psel.value = s.profile || ''; },
   });
+  psel.addEventListener('change', () => av.setProfile(psel.value || null));
+  const startProfile = params.get('profile');
+  if (startProfile) { const p = DATA.profiles.find((x) => x.id === startProfile || x.name === startProfile || x.key === startProfile); if (p) av.setProfile(p.id); }
   sel.value = DATA.initial || '';
   sel.addEventListener('change', () => av.setExpression(sel.value || null));
   av.attachKeys(window);
