@@ -62,6 +62,23 @@ const H = require('./h.js');
       } catch (e) { out.err.push('perso ' + e.message); }
     }
     out.built = built;
+    // portrait détaillé : le personnage par défaut reproduit exactement l'image de référence
+    {
+      const { REF_QD, X0, Y0, X1, Y1, QD_OFFSET } = await import('./js/library/parts/3qd.js');
+      const sel = ch.DEFAULT_CHARACTER_QD, st = { eyes: 'open', mouth: 'closed', brows: 'normal' };
+      const layers = [];
+      for (const id of [sel.body, sel.top, sel.head, sel.mouth, sel.eyes, sel.brows, sel.hair, ...sel.accessories]) {
+        for (const L of lib.pieceById(id).build({ bodyType: 'qd-moyen' })) layers.push({ z: L.z, g: L.variants ? L.variants.find((v) => v.state === st[L.role]).grid : L.grid });
+      }
+      layers.sort((a, b) => a.z - b.z);
+      const diffs = [];
+      for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) {
+        let v = '.';
+        for (const L of layers) { const c = L.g.get(x + QD_OFFSET[0], y + QD_OFFSET[1]); if (c) v = String.fromCharCode(c); }
+        if (v !== REF_QD[y - Y0][x - X0]) diffs.push(`${x},${y}`);
+      }
+      out.qdDiff = diffs;
+    }
     // orientation : un personnage tourné vers la droite = miroir exact du même tourné vers la gauche
     {
       const { composePixels } = await import('./js/render/compose.js');
@@ -103,6 +120,7 @@ const H = require('./h.js');
   check('Rôles de couleur connus', r.badRole.length === 0, [...new Set(r.badRole)].slice(0, 10).join(' | '));
   check('Tous les états (yeux, bouche, sourcils)', r.missingStates.length === 0, r.missingStates.join(' | '));
   check('30 personnages au hasard (face / 3/4 / portrait détaillé, ×1 / ×2, gauche / droite)', r.built === 30, r.built);
+  check('Portrait détaillé identique à l\'image de référence', r.qdDiff.length === 0, r.qdDiff.length + ' cases : ' + r.qdDiff.slice(0, 12).join(' '));
   check('Orientation : gauche = miroir de droite, pièces ajoutées et retournement annulable', r.facing.same && r.facing.mirrored && r.facing.after === 'right' && r.facing.undone === 'left' && r.facing.tpl === 'right', JSON.stringify(r.facing));
   check('Recoloration + annuler', r.recolor.changed && r.recolor.restored, JSON.stringify(r.recolor));
 

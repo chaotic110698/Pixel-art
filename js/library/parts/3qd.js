@@ -11,7 +11,7 @@
 
 import { G, Z } from '../builder.js';
 
-const REF = [
+export const REF_QD = [
   '.............ooooooo................',
   '..........ooohhhhhhhooo...ooo.......',
   '........oohjhhhhhHHHHHHo.ohjho......',
@@ -52,7 +52,9 @@ const REF = [
   '..occCCcccccccccccccccCCCCcccccCCo..',
   '..occCCcccccccccccccccCCCCcccccCCo..',
 ];
-const X0 = 8, Y0 = 11, X1 = 43, Y1 = 49;
+const REF = REF_QD;
+export const X0 = 8, Y0 = 11, X1 = 43, Y1 = 49;
+export const QD_OFFSET = [7, 14];
 const OX = 7, OY = 14;
 const at = (x, y) => (y < Y0 || y > Y1 || x < X0 || x > X1 ? '.' : REF[y - Y0][x - X0]);
 const SKIN = 'sMKl', HAIR = 'hHj';
@@ -74,22 +76,30 @@ function stamp(g, rows, x, y) {
 }
 
 // ---------- zones ----------
-const EAR = (x, y) => x >= 30 && x <= 32 && y >= 23 && y <= 29;
+// oreille : forme exacte de la référence (contour en haut, 3 pixels de large, lobe de 2)
+const EAR_ROWS = { 23: [30, 32], 24: [30, 33], 25: [30, 32], 26: [30, 32], 27: [30, 32], 28: [30, 31], 29: [30, 31] };
+const EAR = (x, y) => !!EAR_ROWS[y] && x >= EAR_ROWS[y][0] && x <= EAR_ROWS[y][1];
 const BUN = (x, y) => (y <= 18 && x >= 35) || (y <= 13 && x >= 32);
 const inHair = (x, y) => y <= 18 || (y <= 30 && x >= 26) || (x <= 13 && y <= 24);
-const inBeard = (x, y) => y >= 29 && y <= 36 && x <= 27;
+// barbe : le long de la mâchoire jusqu'à l'oreille (favoris en x 28–29 sur la ligne 31)
+const inBeard = (x, y) => y >= 29 && y <= 36 && (x <= 27 || (y <= 31 && x <= 29));
 const isNeck = (x, y) => (y >= 30 && x >= 28) || (y >= 34 && x >= 24) || (y >= 35 && x >= 21);
+// zone des yeux et sourcils : peau unie (les variantes y dessinent), sauf les ombres douces
+const EYE_ZONE = (x, y) => y >= 21 && y <= 24 && x >= 14 && x <= 25;
 
 // ---------- tête ----------
+/** Crâne + visage + mâchoire, limités à la silhouette de la référence (sans cou ni oreille). */
 function headMask() {
   const g = G();
-  // crâne (sous les cheveux) + visage + mâchoire (sous la barbe)
   for (let y = 11; y <= 36; y++) for (let x = 13; x <= 35; x++) {
-    const inSkull = ((x + 0.5 - 24.5) / 10.2) ** 2 + ((y + 0.5 - 21) / 9.6) ** 2 <= 1;
     const ch = at(x, y);
-    const face = x >= 15 && y >= 18 && y <= 29 && x <= 33;
-    const jaw = y >= 29 && y <= 35 && x >= 16 && x <= 27 && x - 16 >= (y - 33) * 1.2 && !(ch === 'o' && y >= 34);
-    if ((inSkull || face || jaw) && !isNeck(x, y)) put(g, x, y, 's');
+    const inSkull = ((x + 0.5 - 24.5) / 10.2) ** 2 + ((y + 0.5 - 21) / 9.6) ** 2 <= 1;
+    // les contours intérieurs des cheveux ('o' dans la masse du crâne) restent du crâne
+    const innerO = ch === 'o' && inSkull && (y <= 18 || x >= 26);
+    if (ch === '.' || (ch === 'o' && !innerO) || x <= 12 || BUN(x, y) || EAR(x, y) || isNeck(x, y)) continue;
+    const face = x >= 15 && y >= 18 && y <= 29 && x <= (y >= 29 ? 29 : 33);
+    const jaw = y >= 29 && y <= 35 && x >= 16 && x <= 27 && x - 16 >= (y - 33) * 1.2;
+    if (inSkull || face || jaw) put(g, x, y, 's');
   }
   return g;
 }
@@ -100,11 +110,17 @@ function head() {
     const x = X - OX, y = Y - OY;
     if (g.get(X, Y) !== 115) return; // 's'
     const ch = at(x, y);
-    if (SKIN.includes(ch) && ch !== 'l' && !(y >= 21 && y <= 24 && x >= 14 && x <= 25)) g.set(X, Y, ch);
+    if (EYE_ZONE(x, y)) { if (ch === 'M') g.set(X, Y, 'M'); return; }
+    if (SKIN.includes(ch) && ch !== 'l') g.set(X, Y, ch);
     else if (x >= 27 && y >= 19) g.set(X, Y, 'M');
   });
   g.outline('o');
-  // oreille (côté arrière, à droite) : petite, 3 pixels de large comme sur la référence
+  // le contour ne déborde ni hors de la silhouette ni sur le cou (ombré, dessiné par le corps)
+  g.each((X, Y) => {
+    const x = X - OX, y = Y - OY;
+    if (g.get(X, Y) === 111 && (at(x, y) === '.' || (isNeck(x, y) && SKIN.includes(at(x, y))))) g.set(X, Y, null);
+  });
+  // oreille (côté arrière, à droite)
   draw((x, y, ch) => (EAR(x, y) && (SKIN.includes(ch) || ch === 'o') ? ch : null), g);
   return g;
 }
@@ -221,8 +237,8 @@ const isShirt = (x, y) => {
   const ch = at(x, y);
   if (y < SHIRT_TOP) return null;
   if ('cC'.includes(ch)) return ch;
-  // contour du t-shirt : un 'o' qui touche du tissu
-  if (ch === 'o' && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => 'cC'.includes(at(x + dx, y + dy)))) return 'o';
+  // contour du t-shirt et des épaules
+  if (ch === 'o') return 'o';
   return null;
 };
 /** Ligne y du t-shirt (x0..x1 de la référence) ajustée au physique. */
