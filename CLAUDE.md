@@ -55,6 +55,7 @@ js/library/
   character.js        « Nouveau personnage », expressions par défaut, réglage PNGtuber automatique
   library-ui.js       fenêtres Bibliothèque, Nouveau personnage, Recolorer, Ma bibliothèque
   parts/*.js          UN FICHIER PAR CATÉGORIE (bodies, heads, hair, eyes, brows, noses, mouths, accessories, tops, hands)
+  parts/3qd-more.js   pièces complémentaires du portrait détaillé (accessoires, coiffures, yeux/sourcils/bouche, hauts) via les outils exportés QD de 3qd.js
   parts/3qd.js        « Portrait détaillé » (view '3qd', facing 'left') : carte REF découpée de la 2e image de référence (grille 50 placée en OX 7, OY 14), pièces 64×64 au pixel près
   parts/3q/*.js       vue de 3/4 « portrait » tournée à droite, grilles 32×32 doublées (common : g32, art, x2, hash ; bodies BODY3Q + torso/neck ; heads + headMask ; face : yeux/sourcils/nez/bouches/barbes ; hair ; tops ; accessories)
 js/pngtuber/

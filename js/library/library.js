@@ -18,6 +18,7 @@ import { eyes as eyes3q, brows as brows3q, noses as noses3q, mouths as mouths3q,
 import tops3q from './parts/3q/tops.js';
 import acc3q from './parts/3q/accessories.js';
 import { headsQD, hairQD, beardsQD, eyesQD, browsQD, mouthsQD, bodiesQD, topsQD } from './parts/3qd.js';
+import { accQD, hairQDMore, eyesQDMore, browsQDMore, mouthsQDMore, topsQDMore } from './parts/3qd-more.js';
 import { TEMPLATE, roleColors, rasterize, DEFAULT_COLORS } from './builder.js';
 import { uid } from '../core/doc.js';
 import { tr } from '../ui/i18n.js';
@@ -25,13 +26,13 @@ import { tr } from '../ui/i18n.js';
 export const CATEGORIES = [
   { id: 'body', name: 'Corps', pieces: [...bodies, ...bodies3q, ...bodiesQD], exclusive: true },
   { id: 'head', name: 'Têtes', pieces: [...heads, ...heads3q, ...headsQD], exclusive: true },
-  { id: 'hair', name: 'Coiffures', pieces: [...hair, ...hair3q, ...hairQD], exclusive: true },
-  { id: 'eyes', name: 'Yeux', pieces: [...eyes, ...eyes3q, ...eyesQD], exclusive: true },
-  { id: 'brows', name: 'Sourcils', pieces: [...brows, ...brows3q, ...browsQD], exclusive: true },
+  { id: 'hair', name: 'Coiffures', pieces: [...hair, ...hair3q, ...hairQD, ...hairQDMore], exclusive: true },
+  { id: 'eyes', name: 'Yeux', pieces: [...eyes, ...eyes3q, ...eyesQD, ...eyesQDMore], exclusive: true },
+  { id: 'brows', name: 'Sourcils', pieces: [...brows, ...brows3q, ...browsQD, ...browsQDMore], exclusive: true },
   { id: 'nose', name: 'Nez', pieces: [...noses, ...noses3q], exclusive: true },
-  { id: 'mouth', name: 'Bouches', pieces: [...mouths, ...mouths3q, ...mouthsQD], exclusive: true },
-  { id: 'top', name: 'Vêtements', pieces: [...tops, ...tops3q, ...topsQD], exclusive: true },
-  { id: 'accessory', name: 'Accessoires', pieces: [...accessories, ...beards3q, ...acc3q, ...beardsQD], exclusive: false },
+  { id: 'mouth', name: 'Bouches', pieces: [...mouths, ...mouths3q, ...mouthsQD, ...mouthsQDMore], exclusive: true },
+  { id: 'top', name: 'Vêtements', pieces: [...tops, ...tops3q, ...topsQD, ...topsQDMore], exclusive: true },
+  { id: 'accessory', name: 'Accessoires', pieces: [...accessories, ...beards3q, ...acc3q, ...beardsQD, ...accQD], exclusive: false },
   { id: 'hands', name: 'Mains', pieces: hands, exclusive: true },
 ];
 

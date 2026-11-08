@@ -389,3 +389,9 @@ export const topsQD = TOPS.map((tp) => piece({
     return [{ name: `Haut (${tp.name.replace(' (portrait)', '').toLowerCase()}, portrait)`, z: Z.top, grid: tp.draw(t) }];
   },
 }));
+
+/** Outils et repères partagés avec les pièces complémentaires (3qd-more.js). */
+export const QD = {
+  OX, OY, at, draw, put, get, stamp, piece, headMask, hairBase, shirt, shirtShape,
+  EAR, BUN, inHair, isNeck, SKIN, HAIR, EYE_STATES, EYE_LABELS, BROW_LABELS, MOUTH_LABELS, BODYQD,
+};

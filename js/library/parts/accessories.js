@@ -339,7 +339,9 @@ export const ACCESSORY_SUBS = {
   glasses: 'Lunettes',
   hat: 'Chapeaux',
   animalEars: 'Oreilles',
+  headset: 'Casques audio',
   earrings: 'Boucles d\'oreilles',
+  neck: 'Colliers',
   blush: 'Détails du visage',
 };
 
