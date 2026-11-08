@@ -561,6 +561,25 @@ export const GUIDE = [
           ),
         ],
       },
+      {
+        id: 'deck', icon: 'keyboard', title: T('Plugin Stream Deck', 'Stream Deck plugin'),
+        body: [
+          p('Avec de simples raccourcis clavier, les touches du Stream Deck partent vers la fenêtre au premier plan : pendant un jeu, l\'avatar ne les reçoit pas. Le **plugin Pixel Atelier** règle ça : le Stream Deck parle directement à l\'avatar, même en plein jeu.',
+            'With plain keyboard shortcuts, Stream Deck keys go to the window in the foreground: during a game, the avatar does not receive them. The **Pixel Atelier plugin** solves this: the Stream Deck talks directly to the avatar, even mid-game.'),
+          steps(
+            ['Mode PNGtuber > Diffusion : **Télécharger le plugin Stream Deck**, puis double-cliquez sur le fichier (logiciel Stream Deck 6.4 ou plus, Windows ou Mac).', 'PNGtuber mode > Streaming: **Download the Stream Deck plugin**, then double-click the file (Stream Deck software 6.4 or later, Windows or Mac).'],
+            ['Cochez **Plugin Stream Deck** (même endroit) : la fenêtre de capture et l\'avatar OBS (.html) exporté ensuite se connectent au plugin.', 'Tick **Stream Deck plugin** (same place): the capture window and the OBS avatar (.html) exported afterwards connect to the plugin.'],
+            ['Dans le logiciel Stream Deck, catégorie **Pixel Atelier**, glissez les actions sur vos touches : **Expression**, **Effet**, **Fond**, **Profil**, **Parler**.', 'In the Stream Deck software, **Pixel Atelier** category, drag the actions onto your keys: **Expression**, **Effect**, **Background**, **Profile**, **Talk**.'],
+            ['Cliquez une touche : choisissez l\'expression, l\'effet, le fond ou le profil dans la liste (remplie avec votre projet quand l\'avatar est ouvert).', 'Click a key: pick the expression, effect, background or profile from the list (filled with your project while the avatar is open).'],
+          ),
+          list(
+            ['**Expression** : bascule, ou **temporaire** (tant que la touche est appuyée). **Effet** : les ambiances (neige, pluie…) s\'allument puis s\'éteignent. **Parler** : maintenir ou bascule.', '**Expression**: switch, or **temporary** (while the key is held). **Effect**: ambiences (snow, rain…) turn on then off. **Talk**: hold or toggle.'],
+            ['La touche de l\'expression, du profil, du fond ou de l\'ambiance en cours **s\'éclaire** ; les effets et fonds affichent leur icône.', 'The key of the current expression, profile, background or ambience **lights up**; effects and backgrounds show their icon.'],
+            ['Un point d\'exclamation sur la touche : aucun avatar n\'est ouvert ou la case « Plugin Stream Deck » n\'est pas cochée.', 'An exclamation mark on the key: no avatar is open, or the "Stream Deck plugin" box is not ticked.'],
+            ['Tout reste sur l\'ordinateur (connexion locale 127.0.0.1:39217) ; les pages d\'autres sites sont refusées.', 'Everything stays on the computer (local connection 127.0.0.1:39217); pages from other sites are refused.'],
+          ),
+        ],
+      },
     ],
   },
   // ------------------------------------------------------------------

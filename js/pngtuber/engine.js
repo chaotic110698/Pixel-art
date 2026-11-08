@@ -17,6 +17,7 @@
 //   initialExpression, initialProfile, onChange(state)
 //   fx                             // effets (createEffects), facultatif
 //   onBackground(id)               // touche de fond pressée (cfg().bgKeys)
+//   background()                   // fond affiché (retour d'état pour le Stream Deck)
 // }
 export function createAvatar(o) {
   const st = {
@@ -283,6 +284,54 @@ export function createAvatar(o) {
     setProfile,
     setManualTalk(v) {
       st.manual = !!v;
+    },
+    /**
+     * Commande venue de l'extérieur (plugin Stream Deck) :
+     * { action: 'expression' | 'profile' | 'effect' | 'background' | 'talk', id, down, hold, toggle }
+     * down : touche enfoncée (true) ou relâchée (false). Les expressions « hold » durent tant
+     * que la touche est enfoncée ; les ambiances s'allument / s'éteignent à chaque appui.
+     */
+    command(c) {
+      const a = c && c.action;
+      const down = c.down !== false;
+      const id = c.id === undefined || c.id === '' ? null : c.id;
+      if (a === 'expression') {
+        if (c.hold) {
+          if (down) {
+            if (st.held === null) st.held = st.expression || '';
+            st.expression = id;
+          } else if (st.held !== null && st.expression === id) {
+            st.expression = st.held || null;
+            st.held = null;
+          }
+          st.lastKey = '';
+          if (o.onChange) o.onChange(st);
+        } else if (down) setExpression(id);
+      } else if (a === 'profile') {
+        if (down) setProfile(id);
+      } else if (a === 'effect') {
+        if (!down || !o.fx) return;
+        if (o.fx.trigger(id, false)) return; // effet ponctuel
+        if (o.fx.toggleAmbient) { // ambiance : allumer / éteindre
+          o.fx.toggleAmbient(id);
+          if (o.onChange) o.onChange(st);
+        }
+      } else if (a === 'background') {
+        if (down && o.onBackground) o.onBackground(id || 'transparent');
+      } else if (a === 'talk') {
+        st.manual = c.toggle ? (down ? !st.manual : st.manual) : down;
+        if (o.onChange) o.onChange(st);
+      }
+    },
+    /** État pour le retour visuel des touches (Stream Deck). */
+    snapshot() {
+      return {
+        expression: st.expression || null,
+        profile: st.profile || null,
+        background: o.background ? o.background() : null,
+        talking: !!st.manual,
+        ambient: o.fx && o.fx.ambientOn ? o.fx.ambientOn() : [],
+      };
     },
     refresh() {
       st.lastKey = '';

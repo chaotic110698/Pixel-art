@@ -14,6 +14,7 @@ import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression
 import { channel } from '../storage/storage.js';
 import { captureCombo, formatCombo, keyOwner } from '../ui/keycapture.js';
 import { FORMATS, ANCHORS, formatById, applyAnchor, layoutScene } from './formats.js';
+import { createDeckLink, deckCatalog } from './decklink.js';
 
 const BACKGROUNDS = [
   ['green', 'Vert', '#00ff00'],
@@ -110,7 +111,8 @@ export function openPngtuber(app) {
     canvas,
     stage: scene,
     fx,
-    onBackground: (id) => setBackground(id),
+    onBackground: (id) => setBackground(id === 'transparent' ? 'checker' : id),
+    background: () => (cfg.background === 'checker' ? 'transparent' : cfg.background || 'green'),
     width: doc.width,
     height: doc.height,
     getImage: provider,
@@ -335,6 +337,7 @@ export function openPngtuber(app) {
         h('button', { class: 'btn', onclick: openCapture, title: 'Fenêtre avec seulement l\'avatar, à capturer dans OBS (capture de fenêtre + incrustation chroma)' }, icon('tv'), 'Fenêtre de capture'),
         h('button', { class: 'btn', onclick: exportObs, title: 'Fichier .html autonome à ajouter dans OBS comme source navigateur (fond transparent)' }, icon('download'), 'Avatar OBS (.html)'),
         h('button', { class: 'btn', onclick: () => stage.requestFullscreen?.() }, icon('fit'), 'Plein écran')),
+      deckUI(),
       h('p', { class: 'hint' }, 'Fenêtre de capture : elle suit vos changements d\'expression et vos enregistrements. Avatar OBS : ajoutez le fichier comme « Source navigateur » (fichier local) ; le fond est transparent. Pour le micro dans OBS, lancez OBS avec l\'option --use-fake-ui-for-media-stream et ajoutez ?mic=1 à l\'adresse, ou cliquez sur « Interagir ».'),
       h('div', { class: 'row', style: { marginTop: '8px' } },
         h('button', { class: 'btn', onclick: () => app.actions.exportDialog('pngtuber') }, icon('download'), 'Images pour logiciels PNGtuber')));
@@ -378,6 +381,37 @@ export function openPngtuber(app) {
   }
 
   /** Change de fond (bouton, touche) et prévient la fenêtre de capture. */
+  // ---------- plugin Stream Deck (pilotage même quand un jeu est au premier plan) ----------
+  let deck = null;
+  let deckStatus = null;
+  const deckText = () => (!cfg.deck ? '' : deck?.connected ? 'Plugin connecté' : 'En attente du plugin (logiciel Stream Deck lancé ?)');
+  function syncDeck() {
+    if (cfg.deck && !deck) {
+      deck = createDeckLink({
+        name: () => doc.name,
+        catalog: () => deckCatalog({ expressions: avatarExpressions(doc), profiles: avatarProfiles(doc), effects: EFFECTS.filter((e) => e.kind !== 'voice'), scenes: SCENE_NAMES }),
+        state: () => engine.snapshot(),
+        onCommand: (c) => engine.command(c),
+        onStatus: () => { if (deckStatus) deckStatus.textContent = deckText(); },
+      });
+    } else if (!cfg.deck && deck) {
+      deck.close();
+      deck = null;
+    }
+    if (deckStatus) deckStatus.textContent = deckText();
+  }
+  function deckUI() {
+    deckStatus = h('span', { class: 'small muted' }, deckText());
+    return h('div', { class: 'deck-box' },
+      h('div', { class: 'row' },
+        h('label', { class: 'chk', title: 'Le plugin Stream Deck « Pixel Atelier » pilote l\'avatar (expressions, effets, fonds, profils, parler) même quand un jeu est au premier plan' },
+          h('input', { type: 'checkbox', checked: !!cfg.deck, onchange: (e) => { cfg.deck = e.target.checked; syncDeck(); } }), 'Plugin Stream Deck'),
+        deckStatus),
+      h('div', { class: 'row' },
+        h('a', { class: 'btn', href: 'stream-deck/com.pixelatelier.avatar.streamDeckPlugin', download: 'com.pixelatelier.avatar.streamDeckPlugin', title: 'Plugin pour le logiciel Stream Deck (Windows, Mac) : double-cliquez sur le fichier pour l\'installer' }, icon('download'), 'Télécharger le plugin Stream Deck')),
+      h('p', { class: 'hint' }, 'Installez le plugin (double-clic sur le fichier), cochez « Plugin Stream Deck », puis glissez les actions Pixel Atelier (Expression, Effet, Fond, Profil, Parler) sur vos touches. La fenêtre de capture et l\'avatar OBS (.html) se connectent aussi au plugin : les touches marchent même quand le jeu est au premier plan.'));
+  }
+
   function setBackground(id) {
     if (id === 'image' && !customBgUrl) return;
     cfg.background = id;
@@ -486,6 +520,7 @@ export function openPngtuber(app) {
     full: true,
     body: wrap,
     onClose: () => {
+      deck?.close();
       ro?.disconnect();
       capStop?.abort();
       flushCfg.flush();
@@ -501,4 +536,5 @@ export function openPngtuber(app) {
   applyBg();
   renderSide();
   engine.start();
+  syncDeck();
 }

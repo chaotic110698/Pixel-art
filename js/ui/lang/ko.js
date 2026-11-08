@@ -1238,6 +1238,13 @@ export const DICT = {
   "Langue…": "언어…",
   "Le guide complet existe en français et en anglais : dans les autres langues, il s'affiche en anglais.": "완전 가이드는 프랑스어와 영어로만 있습니다: 다른 언어에서는 영어로 표시됩니다.",
   "Les traductions peuvent contenir des erreurs : n'hésitez pas à les signaler.": "번역에 오류가 있을 수 있습니다: 발견하면 알려 주세요.",
+  "Plugin Stream Deck": "Stream Deck 플러그인",
+  "Plugin connecté": "플러그인 연결됨",
+  "En attente du plugin (logiciel Stream Deck lancé ?)": "플러그인을 기다리는 중 (Stream Deck 프로그램이 실행 중인가요?)",
+  "Télécharger le plugin Stream Deck": "Stream Deck 플러그인 다운로드",
+  "Le plugin Stream Deck « Pixel Atelier » pilote l'avatar (expressions, effets, fonds, profils, parler) même quand un jeu est au premier plan": "Stream Deck 플러그인 “Pixel Atelier”는 게임이 앞에 있어도 아바타(표정, 효과, 배경, 프로필, 말하기)를 조작합니다",
+  "Plugin pour le logiciel Stream Deck (Windows, Mac) : double-cliquez sur le fichier pour l'installer": "Stream Deck 프로그램용 플러그인 (Windows, Mac): 파일을 더블 클릭하면 설치됩니다",
+  "Installez le plugin (double-clic sur le fichier), cochez « Plugin Stream Deck », puis glissez les actions Pixel Atelier (Expression, Effet, Fond, Profil, Parler) sur vos touches. La fenêtre de capture et l'avatar OBS (.html) se connectent aussi au plugin : les touches marchent même quand le jeu est au premier plan.": "플러그인을 설치하고(파일 더블 클릭) “Stream Deck 플러그인”을 체크한 뒤, Pixel Atelier 동작(표정, 효과, 배경, 프로필, 말하기)을 키로 끌어다 놓으세요. 캡처 창과 OBS 아바타(.html)도 플러그인에 연결되므로 게임이 앞에 있어도 키가 작동합니다.",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

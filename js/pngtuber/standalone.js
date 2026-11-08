@@ -3,7 +3,8 @@
 // Paramètres d'URL : ?bg=transparent|green|blue|magenta|black|white|<hex>|<décor : sky, night, sunset, aurora, synthwave, city, space, forest, mountains, beach, underwater, pastel, tiles, room>  &mic=1  &ui=0  &scale=N  &profile=<nom ou F13…>
 
 import { createAvatar } from './engine.js';
-import { createEffects, SCENE_NAMES } from './effects.js';
+import { createEffects, SCENE_NAMES, EFFECTS } from './effects.js';
+import { createDeckLink } from './decklink.js';
 import { buildAvatarImages, avatarExpressions, avatarSettings, initialExpression, avatarProfiles, effectsConfig } from './assets.js';
 
 const esc = (s) => String(s).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
@@ -29,6 +30,8 @@ export async function buildStandaloneAvatar(doc) {
     map,
     expressions: avatarExpressions(doc),
     initial: initialExpression(doc),
+    deck: !!doc.pngtuber.deck,
+    effectList: EFFECTS.filter((e) => e.kind !== 'voice').map((e) => ({ id: e.id, name: e.name, kind: e.kind })),
     settings: {
       threshold: settings.threshold, threshold2: settings.threshold2, hasHalf: settings.hasHalf,
       blinkEvery: settings.blinkEvery, blinkDuration: settings.blinkDuration,
@@ -75,6 +78,7 @@ export async function buildStandaloneAvatar(doc) {
 const DATA = ${json};
 const createAvatar = (${createAvatar.toString()});
 const createEffects = (${createEffects.toString()});
+const createDeckLink = (${createDeckLink.toString()});
 const SCENES = ${JSON.stringify(SCENE_NAMES).replace(/</g, '\\u003c')};
 (function () {
   const params = new URLSearchParams(location.search);
@@ -135,6 +139,7 @@ const SCENES = ${JSON.stringify(SCENE_NAMES).replace(/</g, '\\u003c')};
     stage: $('scene'),
     fx,
     onBackground: (id) => { const v = id === 'checker' ? 'transparent' : id; if (v === 'image') return; bg = v; applyBg(); bgSel.value = bg; },
+    background: () => bg,
     width: DATA.width,
     height: DATA.height,
     getImage,
@@ -156,6 +161,21 @@ const SCENES = ${JSON.stringify(SCENE_NAMES).replace(/</g, '\\u003c')};
   micBtn.addEventListener('click', mic);
   if (params.get('mic') === '1') mic();
   av.start();
+  // plugin Stream Deck « Pixel Atelier » (coché dans le mode PNGtuber, ou ?deck=1 ; ?deck=0 pour l'ignorer)
+  if (params.get('deck') === '1' || (params.get('deck') !== '0' && DATA.deck)) {
+    createDeckLink({
+      url: params.get('deckurl') || undefined,
+      name: () => DATA.name,
+      catalog: () => ({
+        expressions: DATA.expressions.map((e) => ({ id: e.id, name: e.name, hold: !!e.hold })),
+        profiles: DATA.profiles.map((p) => ({ id: p.id, name: p.name })),
+        effects: DATA.effectList,
+        backgrounds: [['transparent', 'Transparent'], ['green', 'Vert'], ['blue', 'Bleu'], ['magenta', 'Magenta'], ['black', 'Noir'], ['white', 'Blanc'], ...Object.entries(SCENES)].map(([id, name]) => ({ id, name })),
+      }),
+      state: () => av.snapshot(),
+      onCommand: (c) => av.command(c),
+    });
+  }
 })();
 </script>
 </body>

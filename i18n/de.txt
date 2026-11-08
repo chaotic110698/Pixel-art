@@ -1235,6 +1235,13 @@ Pixel-Art- & PNGtuber-Editor
 Sprache…
 Die vollständige Anleitung gibt es auf Französisch und Englisch: in den anderen Sprachen wird sie auf Englisch angezeigt.
 Übersetzungen können Fehler enthalten: melde sie gern.
+Stream-Deck-Plugin
+Plugin verbunden
+Warte auf das Plugin (läuft die Stream-Deck-Software?)
+Stream-Deck-Plugin herunterladen
+Das Stream-Deck-Plugin „Pixel Atelier“ steuert den Avatar (Ausdrücke, Effekte, Hintergründe, Profile, Sprechen), auch wenn ein Spiel im Vordergrund ist
+Plugin für die Stream-Deck-Software (Windows, Mac): zum Installieren doppelt auf die Datei klicken
+Installiere das Plugin (Doppelklick auf die Datei), aktiviere „Stream-Deck-Plugin“ und ziehe die Pixel-Atelier-Aktionen (Ausdruck, Effekt, Hintergrund, Profil, Sprechen) auf deine Tasten. Das Aufnahmefenster und der OBS-Avatar (.html) verbinden sich ebenfalls mit dem Plugin: die Tasten funktionieren auch, wenn das Spiel im Vordergrund ist.
 #P
 Rückgängig: {T1}
 Wiederholt: {T1}

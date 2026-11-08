@@ -4,7 +4,8 @@
 
 import { readProject, channel } from '../storage/storage.js';
 import { createAvatar } from './engine.js';
-import { createEffects, SCENE_NAMES } from './effects.js';
+import { createEffects, SCENE_NAMES, EFFECTS } from './effects.js';
+import { createDeckLink, deckCatalog } from './decklink.js';
 import { FORMATS, formatById, applyAnchor, layoutScene } from './formats.js';
 import { makeImageProvider, avatarExpressions, avatarSettings, initialExpression, avatarProfiles, effectsConfig } from './assets.js';
 
@@ -16,6 +17,24 @@ const $ = (id) => document.getElementById(id);
 let doc = null;
 let provider = null;
 let av = null;
+let deck = null; // liaison avec le plugin Stream Deck
+
+/** Plugin Stream Deck : actif si coché dans le mode PNGtuber (ou ?deck=1 ; ?deck=0 pour l'ignorer). */
+function syncDeck() {
+  const want = params.get('deck') === '1' || (params.get('deck') !== '0' && !!doc?.pngtuber.deck);
+  if (want && !deck) {
+    deck = createDeckLink({
+      url: params.get('deckurl') || undefined,
+      name: () => doc?.name || '',
+      catalog: () => deckCatalog({ expressions: avatarExpressions(doc), profiles: avatarProfiles(doc), effects: EFFECTS.filter((e) => e.kind !== 'voice'), scenes: SCENE_NAMES }),
+      state: () => av.snapshot(),
+      onCommand: (c) => av.command(c),
+    });
+  } else if (!want && deck) {
+    deck.close();
+    deck = null;
+  } else deck?.refresh();
+}
 
 function message(text) {
   $('msg').hidden = false;
@@ -32,6 +51,7 @@ function setBg(v) {
   $('scene').style.background = SCENE_NAMES[v] ? '#000' : BG[v] || v;
   document.body.style.background = v === 'transparent' ? 'transparent' : '#000';
   $('bg').value = v;
+  deck?.update();
 }
 // cadre de diffusion : format, taille et position de l'avatar (suivent l'éditeur)
 const frame = { format: params.get('fmt') || null, fill: 0, anchor: null };
@@ -88,6 +108,7 @@ async function load(keepExpression = null) {
       stage: $('scene'),
       fx,
       onBackground: (id) => setBg(id),
+      background: () => bgId,
       width: doc.width,
       height: doc.height,
       getImage: (pf, ex, m, b) => provider(pf, ex, m, b),
@@ -104,6 +125,7 @@ async function load(keepExpression = null) {
     av.refresh();
   }
   fillExpressions();
+  syncDeck();
 }
 
 async function boot() {

@@ -38,7 +38,7 @@ export function createEffects(o) {
   };
   const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const P = [];
-  const st = { t: 0, last: 0, flash: 0, zoom: 0, shake: 0, lines: 0, emote: null, expr: undefined, shoutCd: 0, talkTime: 0, dirty: true, U: 1, GW: 64, GH: 48, ox: 0, oy: 0, head: null, sx: 0, sy: 0 };
+  const st = { t: 0, last: 0, flash: 0, zoom: 0, shake: 0, lines: 0, emote: null, expr: undefined, shoutCd: 0, talkTime: 0, dirty: true, U: 1, GW: 64, GH: 48, ox: 0, oy: 0, head: null, sx: 0, sy: 0, manualAmb: new Set() };
   const bctx = o.back.getContext('2d');
   const fctx = o.front.getContext('2d');
   const unit = Math.max(1, Math.round(Math.min(o.width, o.height) / 40)); // pixels du dessin par pixel d'effet
@@ -443,7 +443,7 @@ export function createEffects(o) {
       if (!first) for (const id of (c.byExpr || {})[s.expression || ''] || []) if (ONESHOT.includes(id)) trigger(id, false);
     }
     const linked = ((c.byExpr || {})[s.expression || ''] || []).filter((id) => AMB[id]);
-    const amb = new Set([...(c.ambient || []), ...linked]);
+    const amb = new Set([...(c.ambient || []), ...linked, ...st.manualAmb]);
     const voice = new Set(c.voice || []);
     if (voice.has('notes')) amb.add('notes');
     st.talkTime = s.talking ? st.talkTime + dt : Math.max(0, st.talkTime - dt * 3);
@@ -521,9 +521,21 @@ export function createEffects(o) {
     return true;
   }
 
+  /** Ambiance allumée / éteinte à la demande (Stream Deck). on : true, false ou indéfini (bascule). */
+  function toggleAmbient(id, on) {
+    if (!AMB[id]) return false;
+    const next = on === undefined ? !st.manualAmb.has(id) : !!on;
+    if (next) st.manualAmb.add(id); else st.manualAmb.delete(id);
+    st.dirty = true;
+    return next;
+  }
+
   return {
     frame,
     trigger,
+    toggleAmbient,
+    /** Ambiances allumées à la demande. */
+    ambientOn: () => [...st.manualAmb],
     clear() { P.length = 0; st.emote = null; st.flash = st.zoom = st.shake = st.lines = 0; st.dirty = true; },
     /** Vignette d'un décor (w×h pixels d'art, instant t en secondes) : icônes Stream Deck. */
     sceneThumb(id, w, h, t = 2) {

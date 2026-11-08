@@ -1235,6 +1235,13 @@ editor de pixel art e PNGtuber
 Idioma…
 O guia completo existe em francês e em inglês: nos outros idiomas, ele aparece em inglês.
 As traduções podem conter erros: fique à vontade para avisar.
+Plugin do Stream Deck
+Plugin conectado
+Aguardando o plugin (o software do Stream Deck está aberto?)
+Baixar o plugin do Stream Deck
+O plugin do Stream Deck «Pixel Atelier» controla o avatar (expressões, efeitos, fundos, perfis, fala) mesmo com um jogo em primeiro plano
+Plugin para o software do Stream Deck (Windows, Mac): clique duas vezes no arquivo para instalar
+Instale o plugin (clique duplo no arquivo), marque «Plugin do Stream Deck» e arraste as ações do Pixel Atelier (Expressão, Efeito, Fundo, Perfil, Falar) para suas teclas. A janela de captura e o avatar OBS (.html) também se conectam ao plugin: as teclas funcionam mesmo com o jogo em primeiro plano.
 #P
 Desfeito: {T1}
 Refeito: {T1}

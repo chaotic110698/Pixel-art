@@ -1238,6 +1238,13 @@ export const DICT = {
   "Langue…": "Lingua…",
   "Le guide complet existe en français et en anglais : dans les autres langues, il s'affiche en anglais.": "La guida completa esiste in francese e in inglese: nelle altre lingue viene mostrata in inglese.",
   "Les traductions peuvent contenir des erreurs : n'hésitez pas à les signaler.": "Le traduzioni possono contenere errori: segnalali pure.",
+  "Plugin Stream Deck": "Plugin Stream Deck",
+  "Plugin connecté": "Plugin connesso",
+  "En attente du plugin (logiciel Stream Deck lancé ?)": "In attesa del plugin (il software Stream Deck è aperto?)",
+  "Télécharger le plugin Stream Deck": "Scarica il plugin Stream Deck",
+  "Le plugin Stream Deck « Pixel Atelier » pilote l'avatar (expressions, effets, fonds, profils, parler) même quand un jeu est au premier plan": "Il plugin Stream Deck «Pixel Atelier» controlla l'avatar (espressioni, effetti, sfondi, profili, parlato) anche quando un gioco è in primo piano",
+  "Plugin pour le logiciel Stream Deck (Windows, Mac) : double-cliquez sur le fichier pour l'installer": "Plugin per il software Stream Deck (Windows, Mac): fai doppio clic sul file per installarlo",
+  "Installez le plugin (double-clic sur le fichier), cochez « Plugin Stream Deck », puis glissez les actions Pixel Atelier (Expression, Effet, Fond, Profil, Parler) sur vos touches. La fenêtre de capture et l'avatar OBS (.html) se connectent aussi au plugin : les touches marchent même quand le jeu est au premier plan.": "Installa il plugin (doppio clic sul file), spunta «Plugin Stream Deck», poi trascina le azioni Pixel Atelier (Espressione, Effetto, Sfondo, Profilo, Parla) sui tuoi tasti. Anche la finestra di cattura e l'avatar OBS (.html) si collegano al plugin: i tasti funzionano anche con il gioco in primo piano.",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

@@ -1208,4 +1208,11 @@ export const EN = {
   'Langue…': 'Language…',
   'Le guide complet existe en français et en anglais : dans les autres langues, il s\'affiche en anglais.': 'The complete guide exists in French and English: in other languages it is shown in English.',
   'Les traductions peuvent contenir des erreurs : n\'hésitez pas à les signaler.': 'Translations may contain mistakes: please report any error.',
+  'Plugin Stream Deck': 'Stream Deck plugin',
+  'Plugin connecté': 'Plugin connected',
+  'En attente du plugin (logiciel Stream Deck lancé ?)': 'Waiting for the plugin (is the Stream Deck software running?)',
+  'Télécharger le plugin Stream Deck': 'Download the Stream Deck plugin',
+  'Le plugin Stream Deck « Pixel Atelier » pilote l\'avatar (expressions, effets, fonds, profils, parler) même quand un jeu est au premier plan': 'The "Pixel Atelier" Stream Deck plugin controls the avatar (expressions, effects, backgrounds, profiles, talking) even when a game is in the foreground',
+  'Plugin pour le logiciel Stream Deck (Windows, Mac) : double-cliquez sur le fichier pour l\'installer': 'Plugin for the Stream Deck software (Windows, Mac): double-click the file to install it',
+  'Installez le plugin (double-clic sur le fichier), cochez « Plugin Stream Deck », puis glissez les actions Pixel Atelier (Expression, Effet, Fond, Profil, Parler) sur vos touches. La fenêtre de capture et l\'avatar OBS (.html) se connectent aussi au plugin : les touches marchent même quand le jeu est au premier plan.': 'Install the plugin (double-click the file), tick "Stream Deck plugin", then drag the Pixel Atelier actions (Expression, Effect, Background, Profile, Talk) onto your keys. The capture window and the OBS avatar (.html) also connect to the plugin: keys work even when the game is in the foreground.',
 };

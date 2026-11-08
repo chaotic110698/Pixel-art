@@ -21,6 +21,7 @@
 - **Diffusion dans OBS** :
   - une **fenêtre de capture** qui n'affiche que l'avatar et suit l'éditeur (expressions, enregistrements, fond, effets) ;
   - des **formats de scène prédéfinis** (1920 × 1080, 1280 × 720, 2560 × 1440, vertical 1080 × 1920, carré, 4:3, coins webcam) avec taille et position de l'avatar dans le cadre ; la fenêtre de capture s'ouvre au bon format ;
+  - un **plugin Stream Deck** (Windows, Mac) : actions Expression, Effet, Fond, Profil et Parler qui pilotent l'avatar même quand un jeu est au premier plan, touches éclairées selon l'état, listes remplies avec le projet ([`stream-deck/`](stream-deck/)) ;
   - un **pack d'icônes Stream Deck** (144 × 144, une par effet et par décor) à télécharger depuis le mode PNGtuber, aussi dans le dossier [`stream-deck/`](stream-deck/) ;
   - un **avatar autonome `.html`** à ajouter comme source navigateur (fond transparent, paramètres `?bg=`, `?mic=1`, `?ui=0`, `?scale=`) ;
   - des **images prêtes pour les logiciels PNGtuber** (repos / parle / entrouverte / clignement, par expression).

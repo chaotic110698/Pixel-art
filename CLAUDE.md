@@ -63,6 +63,7 @@ js/pngtuber/
   effects.js          effets (confettis, émotes, ambiances, voix) et décors animés : createEffects AUTONOME aussi ; grille de pixels alignée sur l'avatar ; réglages doc.pngtuber.effects (effectsConfig dans assets.js), ambiance propre au profil (profile.fxAmbient)
   assets.js           overrides (expression, bouche closed/half/open, clignement), images, réglages
   formats.js          formats de scène (FORMATS : 1080p, vertical…), ANCHORS, layoutScene/applyAnchor (éditeur et capture)
+  decklink.js         liaison avec le plugin Stream Deck : createDeckLink AUTONOME (WebSocket ws://127.0.0.1:39217, catalogue + état, commandes -> engine.command) ; active si doc.pngtuber.deck (ou ?deck=1)
   streamdeck.js       icônes Stream Deck 144×144 (effets dessinés sur une grille de 24, décors via sceneThumb) et ZIP ; scripts/make-streamdeck.js régénère le dossier stream-deck/
   pngtuber.js         fenêtre PNGtuber de l'éditeur ; capture.js + capture.html : fenêtre de capture OBS
   standalone.js       export de l'avatar .html autonome
@@ -76,6 +77,7 @@ js/ui/guide.js        fenêtre « Guide » (sommaire, recherche, boutons « Essa
 js/ui/history-panel.js, js/ui/i18n.js + i18n-en.js, shortcuts.js (touches simples personnalisables : singleKeyActions)
 js/ui/settings.js     fenêtre Paramètres ; thèmes (THEMES) appliqués par applyAppearance() via des variables CSS sur <html> ; SETTING_KEYS = réglages exportables
 js/ui/toolbar.js      outils regroupés (TOOL_GROUPS) avec menu de groupe, barre d'options contextuelle
+stream-deck/plugin/   plugin Stream Deck (Node, SANS dépendance) : com.pixelatelier.avatar.sdPlugin (manifest.json, bin/plugin.js, bin/ws.js WebSocket minimal, ui/inspector.html) ; `node scripts/make-streamdeck-plugin.js` régénère les images et le paquet stream-deck/com.pixelatelier.avatar.streamDeckPlugin (à relancer après toute modification du plugin) ; test : scripts/audit/deck.js (faux logiciel Stream Deck)
 scripts/sw-files.mjs  vérifie ou régénère la liste de précache de sw.js
 icone-a-deposer/      l'utilisateur y dépose l'icône de l'appli ; `python3 scripts/make-icons.py` fabrique toutes les tailles dans icons/ (192, 512, maskable, apple-touch, favicons ; pixel art agrandi sans flou), puis sw-files --write et VERSION
 scripts/audit/        batterie de tests Playwright (run.sh, voir son README)

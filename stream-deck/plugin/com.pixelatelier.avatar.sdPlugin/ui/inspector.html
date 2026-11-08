@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Pixel Atelier</title>
+<style>
+  /* Inspecteur de propriétés (panneau du logiciel Stream Deck) */
+  body { margin: 0; padding: 8px 12px 12px; background: #2d2d2d; color: #d8d8d8; font: 13px system-ui, "Segoe UI", sans-serif; }
+  .row { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 8px; margin: 6px 0; }
+  label { color: #969696; text-align: right; }
+  select { width: 100%; background: #3d3d3d; color: #d8d8d8; border: 0; border-radius: 3px; padding: 5px 4px; font: inherit; }
+  .status { margin: 10px 0 4px; padding: 7px 9px; border-radius: 4px; background: #3a2f2f; line-height: 1.35; }
+  .status.ok { background: #2f3a31; }
+  .status b { color: #fff; }
+  .hint { color: #969696; font-size: 12px; line-height: 1.4; margin: 6px 0 0; }
+  button { background: #4d4d4d; color: #d8d8d8; border: 0; border-radius: 3px; padding: 5px 10px; font: inherit; cursor: pointer; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="row" id="row-item"><label for="item" id="item-label">Choix</label><select id="item"></select></div>
+<div class="row" id="row-mode" hidden><label for="mode">Mode</label><select id="mode"></select></div>
+<div class="status" id="status">Recherche de l'avatar…</div>
+<p class="hint" id="hint"></p>
+<div class="row" style="grid-template-columns: 1fr"><button id="refresh" type="button">Actualiser les listes</button></div>
+<script>
+  // Protocole du logiciel Stream Deck (SDK 2) : il appelle connectElgatoStreamDeckSocket.
+  let ws = null, uuid = '', action = '', settings = {}, data = null;
+  const $ = (id) => document.getElementById(id);
+  const kind = () => action.split('.').pop();
+  const LABELS = { expression: 'Expression', effect: 'Effet', background: 'Fond', profile: 'Profil', talk: '' };
+  const HINTS = {
+    expression: '« Temporaire » : l\'expression dure tant que la touche est appuyée, puis l\'avatar revient à la précédente.',
+    effect: 'Les effets ponctuels (confettis, cœurs…) partent à chaque appui. Les ambiances (neige, pluie…) s\'allument puis s\'éteignent à l\'appui suivant ; la touche s\'éclaire tant qu\'elles sont actives.',
+    background: 'La touche s\'éclaire quand ce fond est affiché.',
+    profile: 'Change de tenue ou de personnage (profils créés dans l\'onglet Expressions de Pixel Atelier).',
+    talk: '« Maintenir » : l\'avatar parle tant que la touche est appuyée (pratique sans micro).',
+  };
+
+  function send(msg) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg)); }
+  function save() {
+    send({ event: 'setSettings', context: uuid, payload: settings });
+  }
+  function option(sel, value, text) {
+    const o = document.createElement('option');
+    o.value = value; o.textContent = text;
+    sel.append(o);
+    return o;
+  }
+
+  function render() {
+    const k = kind();
+    const c = (data && data.catalog) || {};
+    const sel = $('item');
+    sel.replaceChildren();
+    $('item-label').textContent = LABELS[k] || 'Choix';
+    $('row-item').hidden = k === 'talk';
+    let list = [];
+    if (k === 'expression') { option(sel, '', '(état par défaut)'); list = c.expressions || []; }
+    if (k === 'profile') { option(sel, '', '(profil par défaut)'); list = c.profiles || []; }
+    if (k === 'background') list = c.backgrounds || [];
+    if (k === 'effect') {
+      const groups = { oneshot: 'Effets ponctuels', ambient: 'Ambiances (allumer / éteindre)' };
+      for (const [g, label] of Object.entries(groups)) {
+        const og = document.createElement('optgroup');
+        og.label = label;
+        for (const e of (c.effects || []).filter((x) => (x.kind || 'oneshot') === g)) {
+          const o = document.createElement('option'); o.value = e.id; o.textContent = e.name; og.append(o);
+        }
+        if (og.children.length) sel.append(og);
+      }
+    }
+    for (const x of list) option(sel, x.id, x.name + (x.hold ? ' (temporaire)' : ''));
+    // choix enregistré absent de la liste (avatar fermé) : on le garde
+    if (settings.id && ![...sel.querySelectorAll('option')].some((o) => o.value === settings.id)) option(sel, settings.id, settings.name || settings.id);
+    sel.value = settings.id || '';
+    if (k === 'effect' && !settings.id && sel.value) { settings.id = sel.value; settings.name = sel.selectedOptions[0].textContent; save(); }
+
+    const mode = $('mode');
+    mode.replaceChildren();
+    $('row-mode').hidden = !(k === 'expression' || k === 'talk');
+    if (k === 'expression') { option(mode, 'switch', 'Bascule (un appui)'); option(mode, 'hold', 'Temporaire (maintenir)'); }
+    if (k === 'talk') { option(mode, 'hold', 'Maintenir pour parler'); option(mode, 'toggle', 'Bascule (un appui)'); }
+    mode.value = settings.mode || (k === 'talk' ? 'hold' : 'switch');
+
+    const st = $('status');
+    if (data && data.connected) {
+      st.className = 'status ok';
+      st.innerHTML = 'Avatar connecté : <b></b>';
+      st.querySelector('b').textContent = data.name || 'Pixel Atelier';
+    } else {
+      st.className = 'status';
+      st.textContent = 'Aucun avatar connecté. Dans Pixel Atelier : mode PNGtuber > « Plugin Stream Deck », puis ouvrez la fenêtre de capture ou l\'avatar OBS (.html). Les expressions et profils apparaîtront ici.';
+    }
+    $('hint').textContent = HINTS[k] || '';
+  }
+
+  $('item').addEventListener('change', () => {
+    const o = $('item').selectedOptions[0];
+    settings.id = $('item').value || null;
+    settings.name = o ? o.textContent.replace(/ \(temporaire\)$/, '') : '';
+    // une expression marquée « temporaire » dans Pixel Atelier : on propose le même mode
+    const ex = ((data && data.catalog && data.catalog.expressions) || []).find((x) => x.id === settings.id);
+    if (kind() === 'expression' && ex && ex.hold && !settings.mode) { settings.mode = 'hold'; }
+    save();
+    render();
+  });
+  $('mode').addEventListener('change', () => { settings.mode = $('mode').value; save(); });
+  $('refresh').addEventListener('click', () => send({ event: 'sendToPlugin', action, context: uuid, payload: { type: 'catalog?' } }));
+
+  // appelée par le logiciel Stream Deck
+  window.connectElgatoStreamDeckSocket = function (port, piUUID, registerEvent, info, actionInfo) {
+    uuid = piUUID;
+    try {
+      const a = JSON.parse(actionInfo);
+      action = a.action;
+      settings = (a.payload && a.payload.settings) || {};
+    } catch (e) { /* informations absentes */ }
+    ws = new WebSocket('ws://127.0.0.1:' + port);
+    ws.onopen = () => {
+      send({ event: registerEvent, uuid: piUUID });
+      send({ event: 'sendToPlugin', action, context: uuid, payload: { type: 'catalog?' } });
+      render();
+    };
+    ws.onmessage = (ev) => {
+      const m = JSON.parse(ev.data);
+      if (m.event === 'sendToPropertyInspector' && m.payload && m.payload.type === 'catalog') { data = m.payload; render(); }
+      if (m.event === 'didReceiveSettings' && m.payload) { settings = m.payload.settings || {}; render(); }
+    };
+  };
+</script>
+</body>
+</html>

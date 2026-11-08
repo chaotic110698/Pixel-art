@@ -1238,6 +1238,13 @@ export const DICT = {
   "Langue…": "言語…",
   "Le guide complet existe en français et en anglais : dans les autres langues, il s'affiche en anglais.": "完全ガイドはフランス語と英語のみです: 他の言語では英語で表示されます。",
   "Les traductions peuvent contenir des erreurs : n'hésitez pas à les signaler.": "翻訳には誤りが含まれる場合があります: お気軽にお知らせください。",
+  "Plugin Stream Deck": "Stream Deck プラグイン",
+  "Plugin connecté": "プラグイン接続済み",
+  "En attente du plugin (logiciel Stream Deck lancé ?)": "プラグインを待っています（Stream Deck ソフトは起動していますか？）",
+  "Télécharger le plugin Stream Deck": "Stream Deck プラグインをダウンロード",
+  "Le plugin Stream Deck « Pixel Atelier » pilote l'avatar (expressions, effets, fonds, profils, parler) même quand un jeu est au premier plan": "Stream Deck プラグイン「Pixel Atelier」は、ゲームが前面にあってもアバター（表情、エフェクト、背景、プロフィール、話す）を操作できます",
+  "Plugin pour le logiciel Stream Deck (Windows, Mac) : double-cliquez sur le fichier pour l'installer": "Stream Deck ソフト用プラグイン（Windows、Mac）: ファイルをダブルクリックしてインストール",
+  "Installez le plugin (double-clic sur le fichier), cochez « Plugin Stream Deck », puis glissez les actions Pixel Atelier (Expression, Effet, Fond, Profil, Parler) sur vos touches. La fenêtre de capture et l'avatar OBS (.html) se connectent aussi au plugin : les touches marchent même quand le jeu est au premier plan.": "プラグインをインストール（ファイルをダブルクリック）し、「Stream Deck プラグイン」にチェックを入れて、Pixel Atelier のアクション（表情、エフェクト、背景、プロフィール、話す）をキーにドラッグします。キャプチャウィンドウと OBS アバター (.html) もプラグインに接続するので、ゲームが前面にあってもキーが使えます。",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

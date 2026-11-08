@@ -1235,6 +1235,13 @@ Tiled (ZIP)
 语言…
 完整指南只有法语和英语版本：其他语言下显示英文版。
 翻译可能有误：欢迎反馈。
+Stream Deck 插件
+插件已连接
+正在等待插件（Stream Deck 软件已运行吗？）
+下载 Stream Deck 插件
+Stream Deck 插件“Pixel Atelier”可控制头像（表情、特效、背景、配置、说话），即使游戏在前台也有效
+适用于 Stream Deck 软件的插件（Windows、Mac）：双击文件即可安装
+安装插件（双击文件），勾选“Stream Deck 插件”，然后把 Pixel Atelier 的操作（表情、特效、背景、配置、说话）拖到按键上。捕获窗口和 OBS 头像 (.html) 也会连接插件：即使游戏在前台，按键也能使用。
 #P
 已撤销：{T1}
 已重做：{T1}

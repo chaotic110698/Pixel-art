@@ -1238,6 +1238,13 @@ export const DICT = {
   "Langue…": "语言…",
   "Le guide complet existe en français et en anglais : dans les autres langues, il s'affiche en anglais.": "完整指南只有法语和英语版本：其他语言下显示英文版。",
   "Les traductions peuvent contenir des erreurs : n'hésitez pas à les signaler.": "翻译可能有误：欢迎反馈。",
+  "Plugin Stream Deck": "Stream Deck 插件",
+  "Plugin connecté": "插件已连接",
+  "En attente du plugin (logiciel Stream Deck lancé ?)": "正在等待插件（Stream Deck 软件已运行吗？）",
+  "Télécharger le plugin Stream Deck": "下载 Stream Deck 插件",
+  "Le plugin Stream Deck « Pixel Atelier » pilote l'avatar (expressions, effets, fonds, profils, parler) même quand un jeu est au premier plan": "Stream Deck 插件“Pixel Atelier”可控制头像（表情、特效、背景、配置、说话），即使游戏在前台也有效",
+  "Plugin pour le logiciel Stream Deck (Windows, Mac) : double-cliquez sur le fichier pour l'installer": "适用于 Stream Deck 软件的插件（Windows、Mac）：双击文件即可安装",
+  "Installez le plugin (double-clic sur le fichier), cochez « Plugin Stream Deck », puis glissez les actions Pixel Atelier (Expression, Effet, Fond, Profil, Parler) sur vos touches. La fenêtre de capture et l'avatar OBS (.html) se connectent aussi au plugin : les touches marchent même quand le jeu est au premier plan.": "安装插件（双击文件），勾选“Stream Deck 插件”，然后把 Pixel Atelier 的操作（表情、特效、背景、配置、说话）拖到按键上。捕获窗口和 OBS 头像 (.html) 也会连接插件：即使游戏在前台，按键也能使用。",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

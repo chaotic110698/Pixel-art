@@ -1238,6 +1238,13 @@ export const DICT = {
   "Langue…": "Язык…",
   "Le guide complet existe en français et en anglais : dans les autres langues, il s'affiche en anglais.": "Полное руководство есть на французском и английском: на других языках оно показывается на английском.",
   "Les traductions peuvent contenir des erreurs : n'hésitez pas à les signaler.": "Переводы могут содержать ошибки: сообщайте о них.",
+  "Plugin Stream Deck": "Плагин Stream Deck",
+  "Plugin connecté": "Плагин подключён",
+  "En attente du plugin (logiciel Stream Deck lancé ?)": "Ожидание плагина (запущена ли программа Stream Deck?)",
+  "Télécharger le plugin Stream Deck": "Скачать плагин Stream Deck",
+  "Le plugin Stream Deck « Pixel Atelier » pilote l'avatar (expressions, effets, fonds, profils, parler) même quand un jeu est au premier plan": "Плагин Stream Deck «Pixel Atelier» управляет аватаром (выражения, эффекты, фоны, профили, речь), даже когда на переднем плане игра",
+  "Plugin pour le logiciel Stream Deck (Windows, Mac) : double-cliquez sur le fichier pour l'installer": "Плагин для программы Stream Deck (Windows, Mac): дважды щёлкните файл, чтобы установить",
+  "Installez le plugin (double-clic sur le fichier), cochez « Plugin Stream Deck », puis glissez les actions Pixel Atelier (Expression, Effet, Fond, Profil, Parler) sur vos touches. La fenêtre de capture et l'avatar OBS (.html) se connectent aussi au plugin : les touches marchent même quand le jeu est au premier plan.": "Установите плагин (двойной щелчок по файлу), отметьте «Плагин Stream Deck» и перетащите действия Pixel Atelier (Выражение, Эффект, Фон, Профиль, Говорить) на клавиши. Окно захвата и аватар OBS (.html) тоже подключаются к плагину: клавиши работают, даже когда игра на переднем плане.",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)
