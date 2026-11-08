@@ -74,7 +74,7 @@ function stamp(g, rows, x, y) {
 }
 
 // ---------- zones ----------
-const EAR = (x, y) => x >= 29 && x <= 33 && y >= 22 && y <= 28;
+const EAR = (x, y) => x >= 30 && x <= 32 && y >= 23 && y <= 29;
 const BUN = (x, y) => (y <= 18 && x >= 35) || (y <= 13 && x >= 32);
 const inHair = (x, y) => y <= 18 || (y <= 30 && x >= 26) || (x <= 13 && y <= 24);
 const inBeard = (x, y) => y >= 29 && y <= 36 && x <= 27;
@@ -104,8 +104,8 @@ function head() {
     else if (x >= 27 && y >= 19) g.set(X, Y, 'M');
   });
   g.outline('o');
-  // oreille (côté arrière, à droite)
-  draw((x, y, ch) => (EAR(x, y) && (SKIN.includes(ch) || ch === 'o' || ch === 'j') ? (ch === 'j' ? 'K' : ch) : null), g);
+  // oreille (côté arrière, à droite) : petite, 3 pixels de large comme sur la référence
+  draw((x, y, ch) => (EAR(x, y) && (SKIN.includes(ch) || ch === 'o') ? ch : null), g);
   return g;
 }
 
@@ -209,61 +209,76 @@ const MOUTH_STATES = {
 const MOUTH_LABELS = [['closed', 'fermée'], ['half', 'entrouverte'], ['open', 'ouverte'], ['smile', 'sourire'], ['sad', 'triste'], ['surprised', 'surprise']];
 
 // ---------- corps et vêtements ----------
-// largeur du torse ligne par ligne (d'après la référence), ajustée par physique
-function shirtRows() {
-  const rows = {};
-  for (let y = 37; y <= 49; y++) {
-    let l = 99, r = -1;
-    for (let x = X0; x <= X1; x++) if ('cC'.includes(at(x, y))) { l = Math.min(l, x); r = Math.max(r, x); }
-    if (r >= 0) rows[y] = [l, r];
-  }
-  return rows;
-}
+// Le t-shirt est repris tel quel de la référence (contour, encolure, plis, ombre du dos),
+// puis élargi ou rétréci par physique en dupliquant / retirant des colonnes intérieures.
 export const BODYQD = {
   'qd-fin': { name: 'Fin (portrait)', dl: 2, dr: -2 },
   'qd-moyen': { name: 'Moyen (portrait)', dl: 0, dr: 0 },
-  'qd-costaud': { name: 'Costaud (portrait)', dl: -2, dr: 2, up: 1 },
+  'qd-costaud': { name: 'Costaud (portrait)', dl: -2, dr: 2 },
 };
-function torsoMask(t, role) {
+const SHIRT_TOP = 37;
+const isShirt = (x, y) => {
+  const ch = at(x, y);
+  if (y < SHIRT_TOP) return null;
+  if ('cC'.includes(ch)) return ch;
+  // contour du t-shirt : un 'o' qui touche du tissu
+  if (ch === 'o' && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => 'cC'.includes(at(x + dx, y + dy)))) return 'o';
+  return null;
+};
+/** Ligne y du t-shirt (x0..x1 de la référence) ajustée au physique. */
+function shirtRow(t, y) {
+  let row = [];
+  for (let x = X0; x <= X1; x++) row.push(isShirt(x, y));
+  const xs = row.map((v, i) => (v ? i : -1)).filter((i) => i >= 0);
+  if (!xs.length) return { row, from: X0 };
+  const l = xs[0], r = xs[xs.length - 1];
+  const k = Math.min(1, (y - SHIRT_TOP) / 4); // les épaules s'élargissent vers le bas
+  const nl = Math.round(-t.dl * k), nr = Math.round(t.dr * k); // > 0 : élargir
+  // côté droit d'abord (les indices du côté gauche restent valables)
+  const cr = r - 3;
+  if (nr > 0) row.splice(cr, 0, ...Array(nr).fill(row[cr]));
+  else if (nr < 0) row.splice(cr + nr + 1, -nr);
+  const cl = l + 3;
+  let from = X0;
+  if (nl > 0) { row.splice(cl, 0, ...Array(nl).fill(row[cl])); from -= nl; }
+  else if (nl < 0) { row.splice(cl, -nl); from -= nl; }
+  return { row, from };
+}
+function shirtShape(t) {
   const g = G();
-  const rows = shirtRows();
-  for (const [ys, [l, r]] of Object.entries(rows)) {
-    const y = +ys;
-    const k = Math.min(1, (y - 37) / 4); // les épaules s'élargissent vers le bas
-    const L = Math.round(l + t.dl * k), R = Math.round(r + t.dr * k);
-    for (let x = L; x <= R; x++) put(g, x, y - (t.up && y > 40 ? 0 : 0), role);
+  for (let y = SHIRT_TOP; y <= Y1; y++) {
+    const { row, from } = shirtRow(t, y);
+    row.forEach((v, i) => { if (v) put(g, from + i, y, v); });
   }
-  if (t.up) for (const [ys, [l, r]] of Object.entries(rows)) { const y = +ys; if (y === 38 || y === 39) for (let x = l - 1; x <= r + 1; x++) if (!get(g, x, y - 1)) put(g, x, y - 1, role); }
   return g;
 }
 function neck(g) {
-  draw((x, y, ch) => (isNeck(x, y) && y <= 41 && SKIN.includes(ch) ? ch : null), g);
+  draw((x, y, ch) => (isNeck(x, y) && y <= 41 && SKIN.includes(ch) && !get(g, x, y) ? ch : null), g);
   // partie cachée sous la mâchoire
   for (let y = 27; y <= 34; y++) for (let x = 22; x <= 30; x++) if (!get(g, x, y)) put(g, x, y, 'K');
   return g;
 }
 function bust(t) {
-  const g = torsoMask(t, 's');
-  g.each((X, Y) => { const x = X - OX; if (g.get(X, Y) === 115 && (x <= 6 || x >= 33)) g.set(X, Y, 'M'); });
+  const g = shirtShape(t);
+  // torse nu : le tissu devient de la peau (ombre côté dos), sans encolure
+  g.each((X, Y) => {
+    const x = X - OX, y = Y - OY, v = g.get(X, Y);
+    if (v === 99) g.set(X, Y, x >= 33 ? 'M' : 's');
+    else if (v === 67) g.set(X, Y, 'M');
+    else if (v === 111 && y >= SHIRT_TOP && x >= 20 && x <= 30 && y <= 41) g.set(X, Y, null);
+  });
   neck(g);
+  g.each((X, Y) => { if (g.get(X, Y) === 111) g.set(X, Y, null); });
   g.outline('o');
   return g;
 }
-/** Haut ajusté au physique : encolure autour du cou, plis et ombres. */
+/** Haut ajusté au physique : t-shirt de la référence + détails propres au vêtement. */
 function shirt(t, opts = {}) {
-  const g = torsoMask(t, 'c');
-  // encolure : le cou reste visible au-dessus de la ligne 41
-  draw((x, y) => (isNeck(x, y) && y <= 40 ? '.' : null), g);
-  g.each((X, Y) => { if (g.get(X, Y) === 46) g.set(X, Y, null); });
-  // ombres : côté droit (dos) et plis des bras
-  g.each((X, Y) => {
-    const x = X - OX, y = Y - OY;
-    if (g.get(X, Y) !== 99) return; // 'c'
-    const right = !get(g, x + 1, y) || !get(g, x + 2, y);
-    if (right || ((x === 13 || x === 14) && y >= 45) || ((x === 30 || x === 31) && y >= 44)) g.set(X, Y, 'C');
-  });
+  const g = shirtShape(t);
   if (opts.after) opts.after(g);
-  g.outline('o');
+  // les ajouts dessinés en 'x' reçoivent leur propre contour
+  g.outline('o', { only: ['x'] });
+  g.recolor('x', 'C');
   return g;
 }
 const TOPS = [
@@ -273,8 +288,8 @@ const TOPS = [
     draw: (t) => shirt(t, {
       after: (g) => {
         // capuche repliée derrière la nuque (côté dos), cordons
-        for (let y = 35; y <= 41; y++) for (let x = 27; x <= 36; x++) if (((x + 0.5 - 31.5) / 5) ** 2 + ((y + 0.5 - 38.5) / 3.2) ** 2 <= 1 && !isNeck(x, y)) put(g, x, y, 'C');
-        for (let y = 42; y <= 47; y++) { put(g, 21, y, 'a'); put(g, 24, y, 'a'); }
+        for (let y = 34; y <= 40; y++) for (let x = 31; x <= 38; x++) if (((x + 0.5 - 34.5) / 4) ** 2 + ((y + 0.5 - 38.5) / 4) ** 2 <= 1 && !SKIN.includes(at(x, y)) && !(at(x, y) === 'o' && x <= 32)) put(g, x, y, 'x');
+        for (let y = 42; y <= 47; y++) { put(g, 22, y, 'a'); put(g, 26, y, 'a'); }
         for (let x = 8; x <= 34; x++) if (get(g, x, 46) === 99) put(g, x, 46, 'C');
       },
     }),
