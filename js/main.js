@@ -328,6 +328,8 @@ async function boot() {
     app.storage = await storage.initStorage(app);
     const restored = await app.storage.restoreLast();
     if (!restored) app.setDoc(doc);
+    // sauvegardes hors du navigateur (dossier, Google Drive) et rappel
+    import('./storage/backup.js').then((m) => m.initBackup(app)).catch((e) => console.warn('[backup]', e));
   } catch (err) {
     console.warn('Stockage indisponible', err);
     app.setDoc(doc);

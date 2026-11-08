@@ -66,6 +66,14 @@ const PATTERNS = [
   [/^Erreur : (.+)$/, (m, a) => `Error: ${a}`],
   [/^(.+) : variante (précédente|suivante)$/, (m, a, b) => `${a}: ${b === 'précédente' ? 'previous' : 'next'} variant`],
   [/^Les pièces sont prévues pour un canevas d'au moins 64×64 px \(actuel : (\d+)×(\d+)\).+$/, (m, a, b) => `Parts are designed for a canvas of at least 64×64 px (current: ${a}×${b}): it will be enlarged automatically when the first part is added (undoable). Tip: "New character" directly creates a full character.`],
+  [/^(\d+) × (\d+) tuiles de (\d+) × (\d+) px · (\d+) × (\d+) px · (\d+) case\(s\) remplie\(s\)$/, (m, a, b, c, d, e, f, n) => `${a} × ${b} tiles of ${c} × ${d} px · ${e} × ${f} px · ${n} filled cell(s)`],
+  [/^(\d+) tuiles choisies : .+$/, (m, n) => `${n} tiles selected: the brush places one at random (ideal for varying grass, ground, bricks).`],
+  [/^Supprimer la carte « (.+) » \?$/, (m, a) => `Delete map "${a}"?`],
+  [/^Sauvegarde dans « (.+) » activée \((\d+) projets?\)$/, (m, a, n) => `Backup to "${a}" enabled (${n} project${+n > 1 ? 's' : ''})`],
+  [/^(\d+) projets? copiés? dans « (.+) »$/, (m, n, a) => `${n} project${+n > 1 ? 's' : ''} copied to "${a}"`],
+  [/^(\d+) projets? envoyés? sur Google Drive$/, (m, n) => `${n} project${+n > 1 ? 's' : ''} uploaded to Google Drive`],
+  [/^Sauvegarde téléchargée : (\d+) projets?$/, (m, n) => `Backup downloaded: ${n} project${+n > 1 ? 's' : ''}`],
+  [/^(\d+) projets? restaurés?$/, (m, n) => `${n} project${+n > 1 ? 's' : ''} restored`],
   [/^(\d+)×(\d+) · (\d+) % · (.+)$/, (m, w, h, z, rest) => `${w}×${h} · ${z}% · ${rest.replace('sél.', 'sel.').replace(/image (\d+)\/(\d+)/, 'frame $1/$2')}`],
 ];
 

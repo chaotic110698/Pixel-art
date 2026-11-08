@@ -69,6 +69,8 @@ js/pngtuber/
 capture.html          page de capture (lit IndexedDB, suit l'éditeur via BroadcastChannel « pixel-atelier »)
 js/storage/           db.js (IndexedDB), serialize.js, storage.js (autosave incrémental), project-file.js (fichiers, File System Access), aseprite.js (import .ase), projects-ui.js
 js/export/psd.js      export Photoshop (calques, dossiers « lsct », noms Unicode « luni »)
+js/ui/tilemap.js      carte de tuiles : jeu de tuiles = dessin découpé (tileset), doc.tilemaps [{ id, name, tw, th, cols, rows, cells }] (cells remplacé à chaque trait), export PNG et Tiled (.tmj)
+js/storage/backup.js  sauvegardes : dossier (showDirectoryPicker, handle dans kv « backup:dir »), Google Drive (OAuth jeton via oauth.html, drive.file), ZIP de tous les projets, restauration ; backup-ui.js = onglet Paramètres > Sauvegarde
 js/ui/keycapture.js   raccourcis PNGtuber : touche simple ou combinaison (« Ctrl+Maj+1 »), capture (captureCombo), conflits (keyOwner) ; même lecture que engine.js (chiffres lus sur la touche physique)
 js/ui/guide.js        fenêtre « Guide » (sommaire, recherche, boutons « Essayer ») ; contenu bilingue dans guide-content.js (paires T(fr, en), **gras**, [[touche]])
 js/ui/history-panel.js, js/ui/i18n.js + i18n-en.js, shortcuts.js (touches simples personnalisables : singleKeyActions)
@@ -120,4 +122,4 @@ Points à revérifier après une modification importante :
 
 ## Pistes pour la suite
 
-Carte de niveau (tilemap) en mode tuiles, pièces dessinées à la main pour le gabarit ×2, vêtements spécifiques aux corps entiers (pantalons, jupes), plus de langues.
+Tuiles animées et retournées dans la carte de tuiles, pièces dessinées à la main pour le gabarit ×2, vêtements spécifiques aux corps entiers (pantalons, jupes), plus de langues.

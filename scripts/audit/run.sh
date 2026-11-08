@@ -11,7 +11,7 @@ if ! curl -s -o /dev/null "$AUDIT_URL"; then
   trap 'kill $SERVER' EXIT
   sleep 1
 fi
-TESTS=${*:-"tools export files pt fx keys lib ui guide misc mobile a11y en sizes storage fuzz"}
+TESTS=${*:-"tools export files backup tilemap pt fx keys lib ui guide misc mobile a11y en sizes storage fuzz"}
 FAIL=0
 for t in $TESTS; do
   echo "== $t"

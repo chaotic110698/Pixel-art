@@ -65,10 +65,13 @@ const H = require('./h.js');
     }
     for (let i = 0; i < 3; i++) { await p.keyboard.press('Escape'); await p.waitForTimeout(80); }
   }
+  await ev(async () => (await import('./js/ui/tilemap.js')).openTilemap(window.pixelAtelier));
+  await p.waitForTimeout(500); await scan('tilemap');
+  for (let i = 0; i < 2; i++) { await p.keyboard.press('Escape'); await p.waitForTimeout(80); }
   await ev(() => window.pixelAtelier.openSettings());
   await p.waitForTimeout(300);
   const tabs = await ev(() => [...document.querySelectorAll('.set-tab')].length);
-  for (let i = 0; i < tabs; i++) { await p.locator('.set-tab').nth(i).click({ timeout: 2000 }).catch(() => {}); await p.waitForTimeout(200); await scan('settings' + i); }
+  for (let i = 0; i < tabs; i++) { await p.locator('.set-tab').nth(i).click({ timeout: 2000 }).catch(() => {}); await p.waitForTimeout(500); await ev(() => document.querySelectorAll('.settings-body details').forEach((d) => { d.open = true; })); await scan('settings' + i); }
   await p.keyboard.press('Escape');
   for (const t of ['Expressions', 'Grid', 'History', 'Layers']) { const c = p.locator('#panel-tabs button', { hasText: t }).first(); if (await c.count()) { await c.click({ timeout: 2000 }).catch(() => {}); await p.waitForTimeout(200); await scan('panel ' + t); } }
   await p.keyboard.press('?'); await p.waitForTimeout(300); await scan('aide'); await p.keyboard.press('Escape');

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connexion Google — Pixel Atelier</title>
+<style>body{font:15px system-ui,sans-serif;background:#15151c;color:#ececf3;display:grid;place-items:center;height:100vh;margin:0;text-align:center}</style>
+</head>
+<body>
+<p id="msg">Connexion à Google Drive…</p>
+<script>
+  // Page de retour de la connexion Google : transmet le jeton (dans l'ancre #) à l'éditeur,
+  // qui l'a ouverte, puis se ferme. Rien n'est enregistré ni envoyé ailleurs.
+  if (window.opener && location.hash) {
+    window.opener.postMessage({ type: 'pixel-atelier-oauth', hash: location.hash }, location.origin);
+    setTimeout(() => window.close(), 150);
+  } else {
+    document.getElementById('msg').textContent = 'Vous pouvez fermer cette fenêtre.';
+  }
+</script>
+</body>
+</html>

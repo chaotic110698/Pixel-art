@@ -53,6 +53,7 @@ export function docToRecord(doc, { withCels = true } = {}) {
     fps: doc.fps,
     activeId: doc.activeId,
     tags: doc.tags,
+    tilemaps: doc.tilemaps,
     profiles: doc.profiles,
     celLinks,
     expressions: doc.expressions,
@@ -96,6 +97,7 @@ export function recordToDoc(r) {
   }
   doc.tags = (r.tags || []).filter((t) => t.from <= t.to && t.to < doc.frames.length);
   doc.profiles = r.profiles || [];
+  doc.tilemaps = (r.tilemaps || []).filter((m) => m && Array.isArray(m.cells) && m.cells.length === m.cols * m.rows);
   doc.root = doc.nodes.get('root');
   if (!doc.root) throw new Error('Projet corrompu (racine absente)');
   // nettoyage : enfants manquants

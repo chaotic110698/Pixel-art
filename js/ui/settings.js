@@ -84,6 +84,7 @@ const TABS = [
   ['nav', 'Navigation', 'hand'],
   ['view', 'Affichage', 'eye'],
   ['lang', 'Langue et aide', 'help'],
+  ['backup', 'Sauvegarde', 'folder'],
   ['data', 'Données', 'save'],
 ];
 
@@ -126,9 +127,20 @@ export function openSettings(app, initial = 'look') {
   }
 
   function render() {
+    if (tab === 'backup') return renderBackup();
     keepScroll(body, renderNow);
   }
+  // onglet Sauvegarde : contenu construit de façon asynchrone (état des dossiers), puis échangé
+  let backupSeq = 0;
+  async function renderBackup() {
+    const seq = ++backupSeq;
+    const { backupTab } = await import('../storage/backup-ui.js');
+    const nodes = (await backupTab(app, render)).flat(3).filter(Boolean);
+    if (seq !== backupSeq || tab !== 'backup') return;
+    keepScroll(body, () => { clear(body); body.append(...nodes); });
+  }
   function renderNow() {
+    if (tab === 'backup') { clear(body); renderBackup(); return; }
     clear(body);
     const s = st();
     const u = s.ui || {};
@@ -229,7 +241,8 @@ export function openSettings(app, initial = 'look') {
 
 // clés d'état qui sont des réglages (exportés / réinitialisés)
 const SETTING_KEYS = ['ui', 'theme', 'lang', 'wheelPans', 'wheelZoom', 'wheelInvert', 'touchDraw', 'twoFingerUndo', 'threeFingerRedo',
-  'showPixelGrid', 'showBrushCursor', 'showVariantBar', 'showMinimap', 'showStatus', 'confirmDelete', 'autosaveDelay', 'keymap'];
+  'showPixelGrid', 'showBrushCursor', 'showVariantBar', 'showMinimap', 'showStatus', 'confirmDelete', 'autosaveDelay', 'keymap',
+  'driveClientId', 'backupHistory', 'backupReminderDays'];
 
 function exportSettings(app) {
   const data = { format: 'pixel-atelier-settings', version: 1 };

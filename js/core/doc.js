@@ -66,6 +66,7 @@ export class Doc {
     this.frame = 0;
     this.fps = 8;
     this.tags = []; // balises d'animation : { id, name, from, to, color }
+    this.tilemaps = []; // cartes de tuiles : { id, name, tw, th, cols, rows, cells: [index de tuile | -1] }
     // profils (tenues / personnages) : { id, name, key, visibility, states, pngtuber }
     this.profiles = [];
     this.activeId = null;
@@ -302,6 +303,7 @@ export class Doc {
       frames: this.frames.map((f) => ({ ...f })),
       frame: this.frame,
       tags: this.tags.map((t) => ({ ...t })),
+      tilemaps: this.tilemaps.map((m) => ({ ...m, cells: m.cells })), // cells : remplacé, jamais modifié en place
       profiles: JSON.parse(JSON.stringify(this.profiles)),
       expressions: JSON.parse(JSON.stringify(this.expressions)),
       charColors: this.charColors ? { ...this.charColors } : null,
@@ -331,6 +333,7 @@ export class Doc {
     this.frames = s.frames.map((f) => ({ ...f }));
     this.frame = Math.min(s.frame, this.frames.length - 1);
     if (s.tags) this.tags = s.tags.map((t) => ({ ...t }));
+    if (s.tilemaps) this.tilemaps = s.tilemaps.map((m) => ({ ...m }));
     if (s.profiles) this.profiles = JSON.parse(JSON.stringify(s.profiles));
     this.expressions = JSON.parse(JSON.stringify(s.expressions));
     this.charColors = s.charColors ? { ...s.charColors } : null;

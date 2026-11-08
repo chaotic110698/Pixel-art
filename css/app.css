@@ -779,6 +779,14 @@ input[type='search'] { margin-bottom: 8px; }
 .switch input:checked + span { background: var(--accent); border-color: var(--accent); }
 .switch input:checked + span::after { left: 23px; background: #fff; }
 .switch input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+.set-card { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px 12px; margin: 10px 0; display: grid; gap: 8px; background: var(--bg); }
+.set-card h3 { margin: 0; display: flex; align-items: center; gap: 6px; }
+.set-card .hint { margin: 0; }
+.warn-text { color: var(--accent); }
+.set-help summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; }
+.set-help ol { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 4px; }
+.set-help code { user-select: all; background: var(--panel2); padding: 1px 5px; border-radius: 5px; word-break: break-all; }
+.restore-list { display: grid; gap: 4px; max-height: 50vh; overflow: auto; }
 .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
 .theme-card { border: 2px solid; border-radius: 12px; padding: 10px; min-height: 70px; display: flex; flex-direction: column; justify-content: space-between; text-align: left; font-weight: 650; opacity: .85; }
 .theme-card.on { opacity: 1; box-shadow: 0 0 0 3px var(--text); }
@@ -866,3 +874,16 @@ body.no-status #statusbar { display: none; }
 .fx-bg { z-index: 0; }
 .pt-stage { background: #0b0b10; }
 .pt-stage.framed .pt-scene { box-shadow: 0 0 0 1px rgba(255, 255, 255, .28); overflow: hidden; }
+
+/* ---------- Carte de tuiles ---------- */
+.tm { display: grid; gap: 8px; }
+.tm-head { display: grid; gap: 6px; }
+.tm-head .row { flex-wrap: wrap; gap: 6px; align-items: center; }
+.tm-hint { margin: 0; }
+.tm-main { display: grid; grid-template-columns: minmax(120px, 290px) minmax(0, 1fr); gap: 10px; min-height: 0; }
+.tm-side { display: grid; gap: 4px; align-content: start; max-height: 62vh; overflow: auto; }
+.tm-tileset, .tm-map { image-rendering: pixelated; touch-action: none; display: block; background: repeating-conic-gradient(#777 0% 25%, #aaa 0% 50%) 0 0 / 16px 16px; }
+.tm-tileset { max-width: 100%; cursor: pointer; border-radius: 6px; }
+.tm-mapwrap { overflow: auto; max-height: 62vh; border: 1px solid var(--line); border-radius: 8px; background: var(--stage, #101016); padding: 6px; }
+.tm-map { cursor: crosshair; }
+@media (max-width: 760px) { .tm-main { grid-template-columns: 1fr; } .tm-side, .tm-mapwrap { max-height: 40vh; } }

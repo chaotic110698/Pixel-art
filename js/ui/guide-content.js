@@ -392,6 +392,20 @@ export const GUIDE = [
             'The drawing is repeated all around to check the seam. With **Wrapped drawing**, a stroke crossing an edge continues on the other side. Then export a **tile sheet** from the export window.'),
         ],
       },
+      {
+        id: 'tilemap', icon: 'grid', title: T('Carte de tuiles (tilemap)', 'Tile map'),
+        body: [
+          p('Menu ☰ > **Carte de tuiles** : votre dessin, découpé selon la grille (16 × 16 par défaut), devient un **jeu de tuiles** ; vous peignez une carte (niveau de jeu, décor) avec ces tuiles. La carte est enregistrée dans le projet.',
+            '☰ menu > **Tile map**: your drawing, cut along the grid (16 × 16 by default), becomes a **tileset**; you paint a map (game level, scenery) with these tiles. The map is saved in the project.'),
+          list(
+            ['Cliquez une tuile à gauche, puis peignez à droite. **Maj + clic** sur d\'autres tuiles : le pinceau en pose une **au hasard** (herbe, sol, briques variés).', 'Click a tile on the left, then paint on the right. **Shift + click** other tiles: the brush places one **at random** (varied grass, ground, bricks).'],
+            ['Outils : **pinceau**, **rectangle**, **pot** (remplit une zone), **gomme** (ou clic droit), **pipette** (ou [[Alt]] + clic). [[Ctrl+Z]] annule.', 'Tools: **brush**, **rectangle**, **bucket** (fills an area), **eraser** (or right click), **picker** (or [[Alt]] + click). [[Ctrl+Z]] undoes.'],
+            ['Taille de la carte (colonnes × lignes) et des tuiles réglables ; plusieurs cartes par projet.', 'Map size (columns × rows) and tile size are adjustable; several maps per project.'],
+            ['Modifiez le dessin : la carte se met à jour aussitôt (pratique avec le **mode tuiles** [[T]] pour les raccords).', 'Edit the drawing: the map updates at once (handy with **tile mode** [[T]] for seams).'],
+            ['Export **PNG** de la carte, ou **Tiled (ZIP)** : carte .tmj et jeu de tuiles .png, à ouvrir dans Tiled, Godot, GameMaker, Unity…', 'Export the map as **PNG**, or **Tiled (ZIP)**: .tmj map and .png tileset, to open in Tiled, Godot, GameMaker, Unity…'],
+          ),
+        ],
+      },
     ],
   },
   // ------------------------------------------------------------------
@@ -604,6 +618,22 @@ export const GUIDE = [
             ['**Ouvrir un fichier** : projet .pxa.json, ZIP exporté avec son projet, ou fichier **Aseprite** (.ase, .aseprite).', '**Open a file**: .pxa.json project, ZIP exported with its project, or **Aseprite** file (.ase, .aseprite).'],
             ['**Importer une image comme calque** (PNG, JPEG, GIF, WebP) ou la coller avec [[Ctrl+V]].', '**Import an image as a layer** (PNG, JPEG, GIF, WebP) or paste it with [[Ctrl+V]].'],
           ),
+        ],
+      },
+      {
+        id: 'backup', icon: 'folder', title: T('Sauvegardes (dossier, Google Drive, ZIP)', 'Backups (folder, Google Drive, ZIP)'),
+        body: [
+          p('Vos projets sont enregistrés dans le navigateur. Pour ne jamais les perdre (données du site effacées, autre appareil), gardez-en une copie ailleurs : menu ☰ > **Sauvegardes**, ou Paramètres > **Sauvegarde**.',
+            'Your projects are stored in the browser. To never lose them (site data cleared, another device), keep a copy elsewhere: ☰ menu > **Backups**, or Settings > **Backup**.'),
+          list(
+            ['**Dossier de l\'ordinateur** (Chrome, Edge, Opera sur ordinateur) : choisissez un dossier ; chaque projet y est copié automatiquement (au plus une fois par minute et à la fermeture de l\'onglet), avec une copie par jour dans « historique » pendant 14 jours.', '**Computer folder** (Chrome, Edge, Opera on a computer): choose a folder; each project is copied there automatically (at most once a minute and when the tab closes), with one copy per day in "historique" for 14 days.'],
+            ['**Astuce** : choisissez un dossier synchronisé (**Google Drive pour ordinateur**, OneDrive, Dropbox) : vous avez alors aussi une copie en ligne, sans autre réglage.', '**Tip**: choose a synced folder (**Google Drive for desktop**, OneDrive, Dropbox): you then also get an online copy, with no other setup.'],
+            ['**Google Drive en direct** (tous les navigateurs, y compris téléphone) : il faut une fois un « identifiant client » Google gratuit (les étapes sont dans l\'onglet Sauvegarde). Ensuite « Se connecter » : les projets vont dans un dossier « Pixel Atelier » de votre Drive. La connexion dure environ une heure.', '**Google Drive directly** (every browser, phones included): you need a free Google "client ID" once (steps in the Backup tab). Then "Connect": projects go into a "Pixel Atelier" folder in your Drive. The connection lasts about an hour.'],
+            ['**Archive ZIP** : tous les projets dans un fichier, partout. **Restaurer une archive** les remet dans le navigateur (sur n\'importe quel appareil).', '**ZIP archive**: all projects in one file, everywhere. **Restore an archive** puts them back into the browser (on any device).'],
+            ['**Restaurer…** (dossier ou Drive) : cochez les projets ou les copies datées à récupérer.', '**Restore…** (folder or Drive): tick the projects or dated copies to recover.'],
+            ['Un **rappel** apparaît si aucune sauvegarde n\'a été faite depuis 7 jours (réglable).', 'A **reminder** appears if no backup has been made for 7 days (adjustable).'],
+          ),
+          go('settings:backup', 'Ouvrir les sauvegardes', 'Open backups'),
         ],
       },
       {
