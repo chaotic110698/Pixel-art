@@ -28,10 +28,10 @@ export function normCombo(k) {
   return k.length === 1 || !k.includes('+') ? k.toUpperCase() : k;
 }
 
-/** Texte affiché (Maj -> Shift en anglais). */
+/** Texte affiché (Maj -> Shift hors du français). */
 export function formatCombo(k) {
   const n = normCombo(k);
-  return getLang() === 'en' ? n.replace(/Maj\+/g, 'Shift+') : n;
+  return getLang() !== 'fr' ? n.replace(/Maj\+/g, 'Shift+') : n;
 }
 
 /**

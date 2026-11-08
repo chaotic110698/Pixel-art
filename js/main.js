@@ -289,7 +289,7 @@ async function boot() {
   app.init(canvas);
 
   // document de départ (remplacé par le dernier projet si disponible)
-  setLanguage(app.state.lang);
+  await setLanguage(app.state.lang);
   const doc = new Doc(64, 64, tr('Sans titre'));
   doc.palette = app.doc.palette;
   const l = doc.createLayer(tr('Calque 1'));

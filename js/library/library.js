@@ -21,7 +21,7 @@ import { headsQD, hairQD, beardsQD, eyesQD, browsQD, mouthsQD, bodiesQD, topsQD 
 import { accQD, hairQDMore, eyesQDMore, browsQDMore, mouthsQDMore, topsQDMore } from './parts/3qd-more.js';
 import { TEMPLATE, roleColors, rasterize, DEFAULT_COLORS } from './builder.js';
 import { uid } from '../core/doc.js';
-import { tr } from '../ui/i18n.js';
+import { tr, getLang } from '../ui/i18n.js';
 
 export const CATEGORIES = [
   { id: 'body', name: 'Corps', pieces: [...bodies, ...bodies3q, ...bodiesQD], exclusive: true },
@@ -184,11 +184,12 @@ export function nodesOfKind(doc, piece) {
 /** Nom de calque « Catégorie (pièce) » traduit morceau par morceau (interface anglaise). */
 const LAYER_HEADS = { 'Corps entier': 'Full body', 'Cheveux arrière': 'Hair back', 'Cheveux avant': 'Hair front', Cheveux: 'Hair', Corps: 'Body', 'Tête': 'Head', Haut: 'Top', Nez: 'Nose', Main: 'Hand' };
 function trName(name) {
-  if (tr('Calque') === 'Calque') return name; // interface en français
+  if (getLang() === 'fr') return name;
   const m = name.match(/^(.+?) \((.+?)(, 3\/4|, portrait)?\)$/);
   if (!m) return tr(name);
   const cap = m[2].charAt(0).toUpperCase() + m[2].slice(1);
-  return `${LAYER_HEADS[m[1]] || tr(m[1])} (${tr(cap).toLowerCase()}${m[3] || ''})`;
+  const head = getLang() === 'en' ? LAYER_HEADS[m[1]] || tr(m[1]) : tr(m[1]);
+  return `${head} (${tr(cap).toLowerCase()}${m[3] || ''})`;
 }
 
 /** Index d'insertion dans la racine selon l'ordre z des pièces. */

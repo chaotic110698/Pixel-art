@@ -3,6 +3,7 @@
 import { popupMenu } from './dialogs.js';
 import { showShortcuts, openKeymapDialog } from './shortcuts.js';
 import * as img from '../core/image-ops.js';
+import { LANGS } from './i18n.js';
 
 export function openMainMenu(app, anchor) {
   const A = app.actions;
@@ -43,7 +44,7 @@ export function openMainMenu(app, anchor) {
     { label: 'Ajuster à l\'écran', icon: 'fit', hint: '0', action: () => app.viewport.fit() },
     { label: 'Taille réelle (100 %)', icon: 'one', hint: '1', action: () => app.viewport.actualSize() },
     { label: 'Paramètres (thème, couleurs, navigation…)', icon: 'settings', action: () => app.openSettings() },
-    { label: 'Langue : English', icon: 'help', action: () => { app.setState({ lang: st.lang === 'en' ? 'fr' : 'en' }); app.savePrefs.flush(); app.storage?.saveNow().finally(() => location.reload()); } },
+    { label: 'Langue…', icon: 'help', hint: LANGS.find(([id]) => id === (st.lang || 'fr'))?.[1], action: () => app.openSettings('lang') },
     { heading: 'Aide' },
     { label: 'Guide complet (outils, navigation, fonctionnalités)…', icon: 'book', hint: 'F1', action: () => app.openGuide() },
     { label: 'Raccourcis clavier et gestes', icon: 'keyboard', hint: '?', action: () => showShortcuts(app) },

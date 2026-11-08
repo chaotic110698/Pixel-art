@@ -1,14 +1,33 @@
-// Interface en anglais : traduction à la volée du DOM (textes, infobulles,
-// libellés d'accessibilité) à partir du dictionnaire i18n-en.js.
-// Le code reste écrit en français ; les contenus de l'utilisateur (noms de
-// calques, d'expressions, de projets…) sont marqués translate="no" et ignorés.
+// Interface multilingue : traduction à la volée du DOM (textes, infobulles,
+// libellés d'accessibilité). Le code reste écrit en français.
+// - anglais : dictionnaire i18n-en.js (clé = texte français) + motifs ci-dessous ;
+// - autres langues : js/ui/lang/<code>.js (DICT, même clés ; P = modèles des motifs,
+//   dans l'ordre de PATTERNS), générés par scripts/i18n-lang.py depuis i18n/<code>.txt.
+//   Un texte absent retombe sur l'anglais.
+// Les contenus de l'utilisateur (noms de calques, d'expressions, de projets…) sont
+// marqués translate="no" et ignorés.
 
 import { EN } from './i18n-en.js';
 
+/** Langues proposées : [code, nom dans la langue]. */
+export const LANGS = [
+  ['fr', 'Français'], ['en', 'English'], ['es', 'Español'], ['de', 'Deutsch'], ['it', 'Italiano'],
+  ['pt', 'Português'], ['ru', 'Русский'], ['ja', '日本語'], ['zh', '中文（简体）'], ['ko', '한국어'],
+];
 let lang = 'fr';
+let DICT = null; // dictionnaire de la langue (hors anglais)
+let PT = null; // modèles des motifs de la langue
 const ATTRS = ['title', 'aria-label', 'placeholder'];
+const has = (o, k) => !!o && Object.prototype.hasOwnProperty.call(o, k);
+/** Texte traduit (langue choisie, sinon anglais) ou undefined. */
+function lookup(t) {
+  if (has(DICT, t)) return DICT[t];
+  if (has(EN, t)) return EN[t];
+  return undefined;
+}
 
-// Motifs pour les textes dynamiques : [regex, fonction de remplacement]
+// Motifs pour les textes dynamiques : [regex, fonction de remplacement en anglais].
+// Toujours AJOUTER un motif à la fin (les langues s'y réfèrent par leur rang).
 const PATTERNS = [
   [/^Annulé : (.+)$/, (m, a) => `Undone: ${tr(a)}`],
   [/^Rétabli : (.+)$/, (m, a) => `Redone: ${tr(a)}`],
@@ -40,7 +59,7 @@ const PATTERNS = [
   [/^Enregistré dans « (.+) »$/, (m, a) => `Saved to "${a}"`],
   [/^Enregistré \(navigateur \+ « (.+) »\)$/, (m, a) => `Saved (browser + "${a}")`],
   [/^Projet « (.+) » ouvert$/, (m, a) => `Project "${a}" opened`],
-  [/^Palette (.+)$/, (m, a) => (EN['Palette ' + a] ? EN['Palette ' + a] : `Palette ${a}`)],
+  [/^Palette (.+)$/, (m, a) => lookup('Palette ' + a) || `Palette ${a}`],
   [/^Symétrie : (.+)$/, (m, a) => `Symmetry: ${{ aucune: 'none', 'verticale (gauche/droite)': 'vertical (left/right)', 'horizontale (haut/bas)': 'horizontal (top/bottom)', 'les deux': 'both' }[a] || a}`],
   [/^★ Favoris \((\d+)\)$/, (m, n) => `★ Favorites (${n})`],
   [/^(.+) \((.+)\) — clic droit ou appui long : autres outils$/, (m, a, k) => `${tr(a)} (${k}) — right click or long press: other tools`],
@@ -77,6 +96,8 @@ const PATTERNS = [
   [/^(\d+)×(\d+) · (\d+) % · (.+)$/, (m, w, h, z, rest) => `${w}×${h} · ${z}% · ${rest.replace('sél.', 'sel.').replace(/image (\d+)\/(\d+)/, 'frame $1/$2')}`],
 ];
 
+const STATUS_I = PATTERNS.findIndex(([rx]) => rx.source.startsWith('^(\\d+)×(\\d+) · '));
+
 export function getLang() {
   return lang;
 }
@@ -91,24 +112,45 @@ export function tr(s) {
   return s.replace(t, out);
 }
 
+/** Remplit un modèle : {1} groupe, {T1} groupe traduit, {C1} traduit en minuscules, {K1} touche, {?1:texte}. */
+function fill(tpl, m) {
+  return tpl
+    .replace(/\{\?(\d):([^}]*)\}/g, (_, i, txt) => (m[+i] ? txt : ''))
+    .replace(/\{([TCK]?)(\d)\}/g, (_, f, i) => {
+      const v = m[+i] ?? '';
+      if (f === 'T') return tr(v);
+      if (f === 'C') return tr(v.charAt(0).toUpperCase() + v.slice(1)).toLowerCase();
+      if (f === 'K') return v.replace(/Maj\+/g, 'Shift+');
+      return v;
+    });
+}
+
 function translateCore(t) {
-  if (Object.prototype.hasOwnProperty.call(EN, t)) return EN[t];
-  for (const [rx, fn] of PATTERNS) {
+  const direct = lookup(t);
+  if (direct !== undefined) return direct;
+  for (let i = 0; i < PATTERNS.length; i++) {
+    const [rx, fn] = PATTERNS[i];
     const m = t.match(rx);
-    if (m) return fn(...m);
+    if (!m) continue;
+    if (PT && PT[i]) {
+      // barre d'état : « sél. » et « image n/m » traduits avant le modèle
+      if (i === STATUS_I && m[4]) m[4] = m[4].replace('sél.', tr('sél.')).replace(/image (\d+)\/(\d+)/, `${tr('image')} $1/$2`);
+      return fill(PT[i], m);
+    }
+    return fn(...m);
   }
   // suffixe entre parenthèses : « Crayon (B) », « Nouveau calque (Ctrl+Maj+N) »
   let m = t.match(/^(.+?)(\s*\((?:[^()]*)\))$/);
-  if (m && EN[m[1]]) return EN[m[1]] + m[2].replace(/Maj/g, 'Shift').replace(/Suppr/g, 'Del');
+  if (m && lookup(m[1])) return lookup(m[1]) + m[2].replace(/Maj/g, 'Shift').replace(/Suppr/g, 'Del');
   // ponctuation finale
   m = t.match(/^(.+?)(\s*(?:…|:|\.|\?|!))$/);
-  if (m && EN[m[1]]) return EN[m[1]] + m[2].trim().replace(/^:$/, ':');
+  if (m && lookup(m[1])) return lookup(m[1]) + m[2].trim().replace(/^:$/, ':');
   // préfixe symbole / émoji
   m = t.match(/^([^\p{L}\p{N}«"(]+)(.+)$/u);
-  if (m && EN[m[2]]) return m[1] + EN[m[2]];
+  if (m && lookup(m[2])) return m[1] + lookup(m[2]);
   // message « Libellé : détail »
   m = t.match(/^(.+?) : (.+)$/);
-  if (m && EN[m[1]]) return `${EN[m[1]]}: ${m[2]}`;
+  if (m && lookup(m[1])) return `${lookup(m[1])}: ${m[2]}`;
   return null;
 }
 
@@ -149,10 +191,23 @@ function translateTree(root) {
 }
 
 let observer = null;
-export function setLanguage(l) {
-  lang = l === 'en' ? 'en' : 'fr';
+/** Choisit la langue (charge son dictionnaire) et traduit la page. À attendre avant de bâtir l'interface. */
+export async function setLanguage(l) {
+  lang = LANGS.some(([id]) => id === l) ? l : 'fr';
+  DICT = null;
+  PT = null;
+  if (lang !== 'fr' && lang !== 'en') {
+    try {
+      const mod = await import(`./lang/${lang}.js`);
+      DICT = mod.DICT;
+      PT = mod.P || null;
+    } catch (err) {
+      console.warn('[i18n]', lang, err);
+      lang = 'en';
+    }
+  }
   document.documentElement.lang = lang;
-  if (lang === 'en') {
+  if (lang !== 'fr') {
     translateTree(document.body);
     if (!observer) {
       observer = new MutationObserver((list) => {
@@ -165,6 +220,6 @@ export function setLanguage(l) {
       observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
     }
     // titre de la page
-    document.title = document.title.replace('éditeur de pixel art & PNGtuber', 'pixel art & PNGtuber editor');
+    document.title = document.title.replace('éditeur de pixel art & PNGtuber', tr('éditeur de pixel art & PNGtuber'));
   }
 }

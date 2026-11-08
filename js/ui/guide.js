@@ -15,10 +15,11 @@ import { EFFECTS, SCENE_NAMES } from '../pngtuber/effects.js';
 
 const BG_NAMES = { green: 'Vert', blue: 'Bleu', magenta: 'Magenta', black: 'Noir', white: 'Blanc', checker: 'Damier', ...SCENE_NAMES };
 
-const L = (t) => (t ? (getLang() === 'en' ? t.en : t.fr) : '');
+// guide en français ou en anglais (les autres langues affichent l'anglais)
+const L = (t) => (t ? (getLang() === 'fr' ? t.fr : t.en) : '');
 const KEY_EN = { Maj: 'Shift', Suppr: 'Del', 'Entrée': 'Enter', 'Échap': 'Esc', 'Flèches': 'Arrows', Espace: 'Space', 'Retour arrière': 'Backspace', 'Clic droit': 'Right click', 'Clic milieu': 'Middle click', Molette: 'Wheel', 'Appui long': 'Long press', '1 doigt': '1 finger', '2 doigts': '2 fingers', 'Tape à 2 doigts': '2-finger tap', 'Tape à 3 doigts': '3-finger tap' };
 /** Nom de touche affiché dans la langue de l'interface. */
-const keyLabel = (k) => (getLang() === 'en' ? (KEY_EN[k] || k.split('+').map((x) => KEY_EN[x] || x).join('+')) : k);
+const keyLabel = (k) => (getLang() !== 'fr' ? (KEY_EN[k] || k.split('+').map((x) => KEY_EN[x] || x).join('+')) : k);
 const norm = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 /** Texte avec **gras** et [[touche]]. */
@@ -62,7 +63,7 @@ export function openGuide(app, chapterId = null, sectionId = null) {
     placeholder: L({ fr: 'Rechercher dans le guide…', en: 'Search the guide…' }),
     'aria-label': L({ fr: 'Rechercher dans le guide', en: 'Search the guide' }),
   });
-  const root = h('div', { class: 'guide', translate: 'no', lang: getLang() },
+  const root = h('div', { class: 'guide', translate: 'no', lang: getLang() === 'fr' ? 'fr' : 'en' },
     h('aside', { class: 'guide-side' }, search, navList), main);
 
   function act(target) {

@@ -887,3 +887,5 @@ body.no-status #statusbar { display: none; }
 .tm-mapwrap { overflow: auto; max-height: 62vh; border: 1px solid var(--line); border-radius: 8px; background: var(--stage, #101016); padding: 6px; }
 .tm-map { cursor: crosshair; }
 @media (max-width: 760px) { .tm-main { grid-template-columns: 1fr; } .tm-side, .tm-mapwrap { max-height: 40vh; } }
+
+.lang-grid { display: flex; flex-wrap: wrap; gap: 6px; max-width: 520px; }

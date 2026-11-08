@@ -1,0 +1,1303 @@
+#0
+Sin título
+Menú
+Menú principal
+Cancelar
+Deshacer (Ctrl+Z)
+Deshacer
+Deshacer (Ctrl+Z)
+Rehacer
+Rehacer (Ctrl+Y)
+Cuadrícula
+Ajustar a la pantalla
+Alejar
+Acercar
+Biblioteca
+Biblioteca de piezas
+Modo PNGtuber
+Exportar
+Mostrar/ocultar cuadrícula
+Renombrar proyecto
+Opciones de la herramienta
+Herramientas
+Zona de dibujo
+Paneles
+Variantes rápidas
+Vista a tamaño real (clic: ajustar)
+Colores
+Capas
+Expresiones
+Historial
+Piezas
+PNGtuber
+Hay una nueva versión de Pixel Atelier disponible.
+Recargar
+Más tarde
+Cuadrícula visible
+Cuadrícula oculta
+Mostrar cuadrícula
+Ocultar cuadrícula
+Modo mosaico: vista repetida
+Modo mosaico desactivado
+Nombre del proyecto
+Anterior
+Siguiente
+Almacenamiento no disponible
+Lápiz
+Dibujo
+Formas
+Goma
+Relleno
+Cuentagotas
+Sombreado
+Degradado
+Línea
+Rectángulo
+Elipse
+Selección rectangular
+Lazo
+Varita mágica
+Mover
+Mano (mover la vista)
+Simetría (S)
+Simetría
+Tramado (D)
+Color principal (clic: editar)
+Color secundario (clic: editar)
+Color principal
+Color secundario
+Intercambiar colores (X)
+Intercambiar colores
+Tamaño
+Grosor
+Menos
+Más
+Pincel cuadrado
+Pincel redondo
+Pixel perfect
+Elimina los píxeles dobles en las curvas (tamaño 1)
+Normal
+Reemplazar
+☀ Aclarar
+☾ Oscurecer
+Sigue la paleta · clic derecho = inverso
+Lineal
+Radial
+Toda la capa
+Zona tocada
+Tramado
+Arrastra de A a B · la selección limita la zona
+Contorno
+Relleno
+Contiguo
+Global
+Todas las capas
+Usar la imagen visible como límite
+Tolerancia
+Imagen
+Capa activa
+Volver a la herramienta anterior
+Nuevo
++ Añadir
+− Quitar
+El mismo color en todas partes
+Imagen visible
+Voltear horizontal (Mayús+H)
+Voltear vertical (Mayús+V)
+Rotar 90° (Mayús+R)
+Rotación / escala libre (Ctrl+T)
+Copiar (Ctrl+C)
+Pegar
+Borrar la selección (Supr)
+Aplicar
+Deseleccionar
+Tramado
+Tramado (D)
+Patrón de tramado
+A + vacío
+A + B
+No
+Dibujo envolvente
+Los trazos que salen por un borde vuelven por el otro
+Transformar
+Ángulo
+Ancho
+Alto
+Mantener proporciones
+Suavizado pixel art
+Rotación tipo RotSprite: evita píxeles rotos
+Damero 50 %
+25 %
+75 %
+12,5 %
+Damero grande
+Líneas horiz.
+Líneas vert.
+Diagonales
+Puntos
+Trama cruzada
+Píxel transparente
+El sombreado recorre la paleta: añade tonos claros y oscuros
+Ninguna capa seleccionada
+Selecciona una capa (no un grupo)
+Capa bloqueada 🔒
+Capa oculta: hazla visible para dibujar
+Cargar una paleta…
+Paletas predefinidas
+Selector avanzado
+Ocultar el selector
++ Añadir A
+Añadir el color A
+Añadir el color A a la paleta
+Añadir a la paleta
+Quitar el color A
+Reemplazar… (color A en todas partes)
+Ordenar por tono
+Paleta del dibujo
+Importar (.hex, .gpl, .json, .pal)
+Extraer de una imagen…
+Exportar en .hex
+Exportar en .gpl (GIMP/Aseprite)
+Vaciar la paleta
+¿Vaciar la paleta?
+Vaciar
+Recientes
+Los colores que uses aparecerán aquí.
+Código hexadecimal
+Selector de color del sistema
+Editar el color principal
+Editar el color secundario
+Opciones de la paleta
+Más opciones de paleta
+Paleta
+Color añadido
+Color quitado
+Ya está en la paleta
+El color A no está en la paleta
+Paleta ordenada
+Paleta vaciada
+Paleta cambiada
+Paleta extraída del dibujo
+Archivo de paleta no reconocido
+Extraer una paleta
+Número máximo de colores a extraer:
+Extraer
+Escala de grises
+Piel y cabello
+Nueva capa (Ctrl+Mayús+N)
+Nuevo grupo
+Nuevo grupo de variantes
+Duplicar
+Fusionar hacia abajo
+Subir
+Bajar
+Eliminar
+Más acciones
+Selección múltiple (o Ctrl/Mayús + clic)
+Selección múltiple
+Agrupar la capa activa
+Convertir en grupo de variantes
+Aplanar el grupo
+Borrar el contenido
+Importar una imagen como capa
+Importar una imagen de referencia
+Añadir a mi biblioteca
+Recolorear el personaje
+Arrastra para mover
+Desplegar
+Plegar
+Desplegar/plegar
+Mostrar esta variante
+Variante activa
+Ocultar
+Mostrar
+Visibilidad
+Bloquear
+Desbloquear
+Bloquear
+Grupo de variantes: solo una visible a la vez
+variantes
+Capa de referencia: no se exporta
+ref.
+Renombrar
+Opacidad
+Grupo de variantes (solo una visible)
+Consejo: cada hijo es una variante (p. ej. boca cerrada / abierta). Usa el botón redondo para elegir la visible, o la pestaña Expresiones.
+Capa de referencia (no se exporta)
+Una capa de referencia es semitransparente en pantalla y nunca se exporta
+Ajustar al lienzo
+Mover (herramienta V)
+Se muestra a resolución completa y nunca se exporta. Pon esta capa abajo para verla bajo el dibujo, o arriba para calcar encima.
+No hay capas. Añade una con +.
+Grupo
+Como variantes
+Fusionar
+Borrar la selección
+Nombre
+Estado inicial
+⟲ Estado inicial
+Las acciones aparecerán aquí. Haz clic en una línea para volver a ese momento.
+Volver justo después de esta acción
+Rehacer hasta esta acción
+Nueva capa
+Agrupar capas
+Agrupar como variantes
+Fusionar capas
+Cambiar de variante
+Mover capa
+Reordenar
+Propiedad de capa
+Grupo de variantes
+Grupo normal
+Borrar la selección
+Borrar la capa
+Guardar expresión
+Actualizar expresión
+Renombrar expresión
+Eliminar expresión
+Atajo de expresión
+Reordenar expresiones
+Selección
+Añadir a la selección
+Restar de la selección
+Transformar la selección
+Rotación / escala
+Contorno automático
+Tamaño del lienzo
+Escalar
+Voltear horizontal
+Voltear vertical
+Rotar 90°
+Recortar
+Ajuste de cuadrícula
+Ajustes PNGtuber
+Imágenes por segundo
+Duración del fotograma
+Nuevo fotograma
+Duplicar fotograma
+Fotograma vinculado
+Desvincular fotograma
+Eliminar fotograma
+Mover fotograma
+Nueva etiqueta
+Editar etiqueta
+Eliminar etiqueta
+Referencia
+Importar referencia
+Importar imagen
+Capa de referencia
+Capa normal
+Colores del personaje
+Reemplazar un color
+Recolorear
+Opacidad
+Lápiz
+Variantes
+No hay grupo de variantes. Crea uno en la pestaña Capas (botón «grupo de variantes») o usa «Nuevo personaje».
+Variante anterior
+Variante siguiente
+Una expresión recuerda la variante elegida de cada grupo (p. ej. «Contento» = ojos felices + boca abierta).
+Guardar la expresión actual
+Nombre de la expresión
+Actualizar con el estado actual
+Asignar una tecla…
+Opciones de la expresión
+Tecla asignada (modo PNGtuber)
+Tecla asignada (temporal: mientras se mantiene)
+Pulsa una tecla (letra o número). Activará la expresión en el modo PNGtuber, en la ventana de captura y en el avatar OBS.
+Temporal: solo mientras se mantiene la tecla
+Ejemplo: mantén S para «Sorprendido» y suelta para volver a la expresión anterior.
+Quitar
+Aceptar
+Aplicar
+Ajustar formas y selecciones
+Líneas, rectángulos, elipses, selecciones (rectángulo y lazo) y desplazamientos se ajustan a la cuadrícula
+Celdas
+Ancho de celda
+Alto de celda
+Desplazamiento X
+Desplazamiento Y
+Líneas principales
+Cada N celdas (0 = ninguna)
+Grosor principal (px de pantalla)
+Aspecto
+Color
+Grosor (px de pantalla)
+Cuadrícula de píxeles con mucho zoom
+Predefinidos
+Todo el lienzo
+La cuadrícula es solo una guía visual: nunca se exporta. Atajo: tecla # o el botón de cuadrícula arriba.
+Borrar la selección
+Más opciones
+Deshecho
+Archivo
+Nuevo dibujo…
+Nuevo personaje (PNGtuber)…
+Mis proyectos…
+Guardar ahora
+Guardar en un archivo (ordenador)…
+Descargar el archivo del proyecto
+Abrir un archivo (proyecto, Aseprite)…
+Importar una imagen como capa…
+Importar una imagen de referencia…
+Exportar…
+Tamaño de imagen / lienzo…
+Recortar a la selección
+Recortar al contenido
+Rotar 90° a la derecha
+Rotar 90° a la izquierda
+Reemplazar un color…
+Contorno automático…
+Rotación / escala libre de la selección
+Personaje
+Biblioteca de piezas…
+Recolorear el personaje…
+Modos
+Modo mosaico (repetido)
+Animación (línea de tiempo)
+Vista
+Tamaño real (100 %)
+Vista a tamaño real
+Barra de variantes en el lienzo
+Rueda = desplazar (si no, zoom)
+Tema claro
+Tema oscuro
+Ayuda
+Atajos de teclado y gestos
+Personalizar atajos…
+Volver a ver el tutorial
+Imagen
+Idioma: Français
+Teclas simples (personalizables)
+Intercambiar colores A/B
+Tramado sí/no
+Simetría (ciclo)
+Formas rellenas sí/no
+Tamaño del pincel −
+Tamaño del pincel +
+Tamaño real
+Cuadrícula sí/no
+Modo mosaico sí/no
+Papel cebolla sí/no
+Ayuda de atajos
+Edición
+Copiar / cortar / pegar
+Seleccionar todo
+Invertir la selección
+Validar el desplazamiento
+Mover la selección 1 px (Mayús: 8 px)
+Voltear la selección
+Rotar la selección 90°
+Rotación / escala libre
+Línea recta desde el último punto
+Cuadrado / círculo / 45°
+Dibujar con el color B
+Duplicar
+Capa activa anterior / siguiente
+Variante siguiente del grupo activo
+Vista
+Zoom
+Mover la vista
+Acercar / alejar
+Proyectos
+Guardar (navegador + archivo vinculado)
+Guardar en un archivo…
+Esta ayuda
+Táctil
+Dibujar
+Zoom / desplazar
+Elegir como color B
+Clic derecho
+Mayús (lápiz)
+Mayús (formas)
+Flechas
+Intro
+Supr
+Rueda / pellizco
+Espacio + arrastrar, clic central
+1 dedo
+2 dedos
+Toque con 2 dedos
+Toque con 3 dedos
+Pulsación larga en un color
+Cuentagotas (o mantener Alt)
+Sombreado (aclarar/oscurecer según la paleta)
+Degradado tramado
+Personalizar teclas…
+Personalizar atajos
+Cerrar
+Restablecer todo
+Tecla predeterminada
+Haz clic en una tecla y pulsa la nueva (letra, número o símbolo). Escape cancela, Retroceso quita la tecla. Los atajos con Ctrl son fijos.
+Selecciona una capa dentro de un grupo de variantes
+Confirmación
+Entrada
+Continuar
+Crear
+Cerrar
+Nuevo dibujo
+Predefinidos:
+Ancho (px)
+Alto (px)
+Fondo
+Transparente
+Blanco
+Color B
+Tamaño de la imagen
+Modo
+Redimensionar el lienzo (sin deformar)
+Escalar la imagen (vecino más cercano)
+Anclaje (modo lienzo)
+Imagen más grande que el lienzo
+Reducir para que quepa
+Tamaño real (recortar)
+Agrandar el lienzo
+Imagen ilegible
+Imagen importada como capa
+Referencia añadida (nítida, no se exporta). Usa la herramienta Mover para colocarla; tamaño en el panel Capas.
+Reemplaza el color A por el color B.
+Alcance
+Todas las capas (todos los fotogramas)
+Añade un contorno de un píxel del color A alrededor del contenido de la capa activa (o de la selección).
+Posición
+Exterior (alrededor del dibujo)
+Interior (en el borde del dibujo)
+Incluir esquinas (contorno diagonal más grueso)
+Nada que copiar
+Copiado
+Cortado
+Portapapeles vacío
+Dibujo vacío
+Sin selección
+Imagen vacía
+No es posible en un grupo de variantes
+No hay capa justo debajo para fusionar
+Selecciona una capa para fusionar
+Selecciona al menos dos capas visibles para fusionar
+Imagen (PNG)
+La imagen tal como se ve (variantes actuales).
+Paquete PNGtuber completo (ZIP)
+Imagen, capas, variantes, expresiones y manifest.json juntos.
+Imágenes para apps PNGtuber (ZIP)
+Por expresión: reposo, hablando, entreabierta, con y sin parpadeo (veadotube, PNGTuber Plus…).
+Avatar OBS (.html)
+Un archivo para añadir en OBS como fuente de navegador: fondo transparente, micro, parpadeo, expresiones.
+Photoshop (PSD)
+Capas y grupos conservados, para Photoshop, GIMP, Krita, Photopea… (tamaño real, fotograma actual).
+Capa por capa (ZIP)
+Un PNG por capa, todos del tamaño del lienzo para un alineado perfecto.
+Por variante (ZIP)
+Un PNG por variante de cada grupo de variantes.
+Por expresión (ZIP)
+Un PNG compuesto por expresión guardada.
+Todas las combinaciones (ZIP)
+Un PNG por cada combinación posible de grupos de variantes.
+Hoja de sprites / de mosaicos (PNG)
+Todos los fotogramas de la animación (o mosaicos) en una hoja.
+GIF animado
+Animación de los fotogramas de la línea de tiempo.
+Fotogramas sueltos (ZIP)
+Un PNG por fotograma de la línea de tiempo.
+Opciones
+Escala
+Personalizado…
+Escalado por vecino más cercano: nunca borroso. La transparencia siempre se conserva.
+Recorte
+Mantener el tamaño del lienzo
+Recortar alrededor del contenido (caja común, alineado conservado)
+Recortar cada imagen por separado
+Incluir el archivo del proyecto (.pxa.json) en el ZIP
+Columnas
+Espaciado (px)
+Con archivo JSON
+Consejo: añade fotogramas en la línea de tiempo (menú ☰ > Animación).
+El ZIP contiene un manifest.json que describe capas, grupos, variantes y expresiones.
+Exportando…
+Exportación terminada
+Generar
+No hay grupo de variantes en este proyecto.
+No hay expresiones guardadas.
+Nada que exportar.
+Haz clic en una pieza para añadirla como capa (o grupo de variantes). Todo sigue siendo editable píxel a píxel. Los colores de abajo también recolorean el personaje existente.
+Piel
+Cabello
+Ojos
+Ropa
+Accesorios
+Reemplazar la pieza existente
+Reemplaza la pieza de la misma categoría ya presente
+Nuevo personaje…
+Nuevo personaje
+Cuerpo
+Cabezas
+Peinados
+Cejas
+Nariz
+Bocas
+★ Mi biblioteca
+★ Favoritos
+Añadir la capa activa
+Importar
+Tu biblioteca está vacía. Selecciona una capa o grupo y luego «Añadir a mi biblioteca» (menú ⋯ del panel Capas).
+Insertar
+Renombrar la pieza
+Nombre de la pieza
+Personaje recoloreado
+Tamaño del lienzo
+64 × 64 (recomendado)
+64 × 80 (más espacio arriba)
+96 × 96 (márgenes alrededor)
+128 × 128 (márgenes grandes)
+Piel:
+Cabello:
+Piezas
+Peinado
+Cabeza
+Boca
+Ropa
+— Ninguno —
+— Ninguna —
+🎲 Al azar
+Ojos, boca y cejas se crean como grupos de variantes, con expresiones listas (Neutral, Habla, Contento…).
+Crear el personaje
+¡Personaje creado! Prueba el modo PNGtuber 📺
+Cambia los colores de piel, cabello, ojos, ropa y accesorios de las piezas de la biblioteca (cambio de paleta). Tus retoques en esos mismos colores también cambian.
+Este proyecto aún no contiene piezas de la biblioteca.
+Buscar una pieza…
+Añadir a favoritos
+Quitar de favoritos
+Ninguna pieza coincide.
+Sin favoritos: toca ☆ en una pieza para encontrarla aquí.
+Plantilla detallada ×2 (128 × 128)
+Gafas
+Sombreros
+Orejas
+Pendientes
+Detalles de la cara
+Barbas y bigotes
+Maquillaje
+Manos
+Delgado
+Mediano
+Ancho
+Redondo
+Redonda
+Ovalada
+Cuadrada
+Barbilla puntiaguda
+Mofletuda
+Corto
+Largo
+Coleta
+Trenzas
+Moño
+De punta
+Flequillo recto
+Melena corta
+Mecha lateral
+Afro
+Coletas
+Cresta
+Rapado
+Calvo (ninguno)
+Puntos
+Grandes
+Almendrados
+Monos
+Pestañas
+Somnolientos
+Finas
+Gruesas
+Arqueadas
+Cortas
+Discreta
+Pequeña
+Puente
+Botón
+Puntiaguda
+Fosas nasales
+Simple
+Gato (:3)
+Colmillito
+Labios
+Gafas redondas
+Gafas cuadradas
+Gafas de sol
+Gorro
+Gorra
+Sombrero puntiagudo
+Sombrero de copa
+Corona
+Lazo
+Diadema
+Orejas de gato
+Orejas de zorro
+Orejas de conejo
+Orejas de oso
+Cuernitos
+Aros
+Perlas
+Estrellas
+Mejillas sonrosadas
+Pecas
+Lunar
+Tirita
+Camiseta
+Sudadera con capucha
+Camisa
+Camiseta de tirantes
+Cuello alto
+Peto
+Chaqueta abierta
+Vestido
+Kimono
+Armadura
+Jersey de rayas
+Larga ondulada
+Undercut
+Dos moños
+Rizada corta
+Cuerpo entero (delgado)
+Cuerpo entero (mediano)
+Robot
+Fantasma
+Gato
+Slime
+Perro
+Bigote
+Bigote de manillar
+Perilla
+Barba corta
+Barba completa
+Delineador
+Sombra de ojos
+Destellos
+Corazones en las mejillas
+Cicatriz
+Tatuaje de estrella
+Tatuaje de lágrima
+Saludo
+Pulgar arriba
+Señal de paz
+Mano en la barbilla
+Piezas ampliadas ×2 con suavizado de diagonales (Scale2x), para un personaje más grande que retocar
+Los cuerpos enteros amplían automáticamente la altura del lienzo (plantilla 64 × 96).
+abiertos
+cerrados
+contentos
+sorprendidos
+normales
+altas
+fruncidas
+tristes
+cerrada
+entreabierta
+abierta
+sonrisa
+triste
+sorprendida
+Neutral
+Habla
+Contento
+Triste
+Sorprendido
+Enfadado
+Ojos cerrados
+Dibujo libre
+Mi personaje
+Capa
+Capa 1
+Grupo
+Variante 1
+Fusionada
+Vista previa PNGtuber
+Verde
+Azul
+Magenta
+Negro
+Damero
+Imagen…
+Micrófono
+🔒 El sonido se analiza solo en este dispositivo: no se graba ni se envía nada.
+Activar el micro
+Silenciar el micro
+Mantener para hablar
+Mantén pulsado para simular que hablas (o tecla Espacio)
+Volumen del micro (rosa = habla, violeta = muy abierta)
+Umbral de habla
+Muy abierta
+Umbral de habla
+Umbral de boca muy abierta
+Grupo de la boca
+Cerrada (silencio)
+Entreabierta (voz suave, opcional)
+Abierta (voz fuerte)
+Ojos y parpadeo
+Grupo de los ojos
+Abiertos
+Cerrados (parpadeo)
+Parpadear cada
+s (0 = nunca), duración
+Animaciones
+Rebote al hablar
+Respiración en reposo
+Sacudida al gritar
+Por encima del umbral de boca muy abierta, con margen
+Inclinación al hablar
+Actual
+Ninguna expresión: créalas en la pestaña Expresiones.
+Expresión temporal (tecla mantenida)
+Teclas: las asignadas a las expresiones (pestaña Expresiones > ⋯ > Asignar una tecla; «temporal» = solo mientras se mantiene). Espacio = hablar, Escape = salir.
+Directo (OBS)
+Ventana de captura
+Ventana solo con el avatar, para capturar en OBS (captura de ventana + clave de color)
+Archivo .html independiente para añadir en OBS como fuente de navegador (fondo transparente)
+Pantalla completa
+Ventana de captura: sigue tus cambios de expresión y guardados. Avatar OBS: añade el archivo como «Fuente de navegador» (archivo local); el fondo es transparente. Para el micro en OBS, inicia OBS con --use-fake-ui-for-media-stream y añade ?mic=1 a la URL, o haz clic en «Interactuar».
+Imágenes para apps PNGtuber
+Este proyecto no tiene grupo de variantes: crea un grupo «Boca» (cerrada / abierta) o usa «Nuevo personaje».
+Micro activado (procesado local)
+Avatar OBS exportado
+Ventana bloqueada: permite las ventanas emergentes para este sitio
+(estado predeterminado)
+Fondo verde
+Fondo azul
+Fondo magenta
+Fondo negro
+Fondo blanco
+🎤 Activar el micro
+🎤 Micro activo
+Espacio = hablar · los ajustes se ocultan solos
+Abre esta ventana desde el modo PNGtuber de Pixel Atelier.
+Reproducir
+Reproducir / pausa (en bucle sobre el rango o la etiqueta seleccionada)
+FPS
+Papel cebolla (N)
+Papel cebolla
+Nuevo fotograma vacío
+Duplicar como fotograma vinculado (mismos píxeles, editados juntos)
+Desvincular el fotograma actual
+Mover a la derecha
+Nueva etiqueta (sobre el rango seleccionado con Mayús+clic, o el fotograma actual)
+Cerrar la línea de tiempo
+Nombre de la etiqueta (p. ej. Caminar, Saltar)
+Fotogramas
+a
+Haz clic en una etiqueta de la línea de tiempo para reproducirla en bucle. La exportación (GIF, hoja, fotogramas) puede producir una animación por etiqueta.
+Duración de este fotograma (ms)
+Se necesita al menos un fotograma
+Este fotograma no está vinculado a ningún otro
+Mis proyectos
+Abrir un archivo
+Los proyectos se guardan automáticamente en este navegador. Recuerda descargar un archivo de proyecto como copia de seguridad.
+Ningún proyecto guardado.
+Abrir
+Proyecto guardado en este dispositivo
+Archivo de proyecto descargado
+Almacenamiento local no disponible en este navegador
+Ajustes
+Ajustes (tema, colores, navegación…)
+Categorías de ajustes
+Navegación
+Visualización
+Idioma y ayuda
+Datos
+Tema
+Oscuro
+Claro
+Medianoche
+Bosque
+Sepia
+Pastel
+Alto contraste
+Colores personalizados
+Color principal (acento)
+Color de fondo de la interfaz
+Los paneles y bordes se deducen automáticamente
+Fondo alrededor del dibujo
+Volver a los colores del tema
+Tamaño de la interfaz
+Tamaño de textos y botones
+Compacta
+Normal
+Grande
+Damero de transparencia
+Colores del damero
+Según el tema
+Personalizado
+Ratón y trackpad
+Rueda
+Hace zoom
+Mueve la vista
+Ctrl + rueda (o pellizco en el trackpad) siempre hace zoom
+Zoom con la rueda
+Por pasos (nítido)
+Progresivo
+Invertir el sentido de la rueda
+Pantalla táctil y lápiz
+Dibujar con el dedo
+Dedo y lápiz
+Solo lápiz
+«Solo lápiz»: el dedo mueve la vista (ideal con lápiz, evita trazos accidentales con la palma)
+Toque con 2 dedos = deshacer
+Toque con 3 dedos = rehacer
+Disposición
+Modo zurdo (ordenador)
+Herramientas a la derecha, paneles a la izquierda
+Reducir animaciones
+Teclado
+En el lienzo
+Contorno del pincel bajo el cursor
+Barra de estado (tamaño, zoom, posición)
+Comportamiento
+Confirmar antes de eliminar una capa
+Solo grupos
+Siempre
+Nunca
+Guardado automático
+Rápido
+Cada 5 s
+Desactivado
+Desactivado: guarda con Ctrl+S o el menú
+Idioma
+Idioma de la interfaz
+La página se recarga para aplicar el idioma
+Tus ajustes
+Los ajustes se guardan en este navegador. Expórtalos para usarlos en otro dispositivo.
+Exportar ajustes
+Importar ajustes
+Restablecer
+Borrar los colores recientes
+Restablecer todo
+Colores recientes borrados
+Ajustes restablecidos
+Ajustes importados
+¿Restablecer todos los ajustes (tema, navegación, atajos…)? Tus proyectos no se modifican.
+Perfiles
+Perfiles (atuendos, personajes)
+Un perfil recuerda las capas visibles, las variantes y la boca/ojos del PNGtuber. Cambia de atuendo o de personaje con una sola tecla (F13 a F24, ideal con un Stream Deck).
+Guardar el estado actual como perfil
+Nombre del perfil (p. ej. Atuendo de invierno, Personaje 2)
+Guardar el perfil actual
+Tecla del perfil
+Opciones del perfil
+Aplicar este perfil
+Renombrar el perfil
+Guardar el perfil
+Actualizar el perfil
+Eliminar el perfil
+Ajustes del perfil
+Ningún perfil: créalos en la pestaña Expresiones (sección Perfiles) para cambiar de atuendo o personaje con F13 a F24.
+Por perfil (ZIP)
+Un PNG por perfil (atuendo o personaje).
+Ningún perfil guardado (pestaña Expresiones > Perfiles).
+Cambiar de perfil (atuendo / personaje), ver pestaña Expresiones
+Teclas: F13 a F24 para los perfiles, las asignadas a las expresiones (pestaña Expresiones > ⋯ > Asignar una tecla; «temporal» = solo mientras se mantiene). Espacio = hablar, Escape = salir.
+Visita guiada
+¡Bienvenido a Pixel Atelier!
+Un editor de pixel art completo, gratuito y sin conexión. Todo se queda en tu dispositivo: no se envía nada a internet.
+Las herramientas
+Lápiz, goma, relleno, formas, selecciones… En ordenador, cada herramienta tiene una tecla (B, E, G, I…). Pulsa ? para ver todos los atajos.
+Navegar
+En el móvil: 1 dedo dibuja, 2 dedos hacen zoom y mueven, un toque con 2 dedos deshace. En ordenador: rueda para el zoom, espacio + arrastrar para mover.
+Colores y capas
+Elige los colores en la paleta (clic = color A, clic derecho o pulsación larga = color B). Organiza tu dibujo en capas, grupos y variantes.
+Crear un PNGtuber
+«Nuevo personaje» (menú ☰) crea una base con ojos y boca ya organizados en variantes. La biblioteca (botón «Piezas» en el móvil) añade peinados, accesorios, ropa… Todo sigue siendo editable píxel a píxel.
+Probar y exportar
+El modo PNGtuber anima la boca con tu micro (procesado local) y hace parpadear los ojos. Luego exporta en PNG: imagen, capa por capa, variantes, expresiones… con un archivo manifest.json.
+Guardado automático
+Tus proyectos se guardan automáticamente en el navegador. El menú ☰ da acceso a tus proyectos, la exportación y la ayuda. ¡Buen dibujo!
+Saltar
+Anterior
+Siguiente
+Empezar
+Ctrl+D / Esc
+Ctrl+Y / Ctrl+Mayús+Z
+Mayús+H / Mayús+V
+Mayús+R
+Ctrl+Mayús+I
+Ctrl+Mayús+N
+Ctrl+Mayús+S
+Ctrl+Mayús+E
+El guardado automático no es posible en este navegador (navegación privada o almacenamiento lleno). Recuerda descargar el archivo del proyecto (menú ☰).
+Opacidad de la capa
+Parpadear cada (s)
+Duración del parpadeo (s)
+Guía completa: herramientas, navegación, funciones (F1)
+Guía
+¿Cómo se usa esta herramienta? (F1)
+Ayuda de esta herramienta
+Guía completa (herramientas, navegación, funciones)…
+Guía completa
+Guía completa (se abre en la herramienta activa)
+Tus proyectos se guardan automáticamente en el navegador. El menú ☰ da acceso a tus proyectos, la exportación y la ayuda.
+Para saberlo todo sobre cada herramienta, la navegación y todas las funciones, abre la Guía: botón del libro encima de los colores, tecla F1 (ayuda de la herramienta activa), botón «?» de la barra de opciones o menú ☰ > Guía completa. ¡Buen dibujo!
+Confeti
+Corazones
+Destellos
+Fuegos artificiales
+Estrellas fugaces
+Impacto
+Signo de exclamación
+Signo de interrogación
+Gota de sudor
+Vena de enfado
+Lágrimas
+Líneas de choque
+Zzz
+Nieve
+Lluvia
+Pétalos
+Luciérnagas
+Burbujas
+Llamas
+Aura de voz
+Contorno arcoíris
+Notas musicales
+Rebote elástico
+Efectos
+Intensidad
+Suave
+Fuerte
+Elegir…
+Activar (clic) · tecla opcional
+Tecla…
+Pulsa una tecla…
+Asignar una tecla (Retroceso: quitar, Esc: cancelar)
+Ambiente continuo
+Ambiente continuo · perfil
+Ligados a la voz
+Cuando grito
+Ligados a las expresiones
+Los efectos también aparecen en la ventana de captura y en el avatar OBS (.html).
+Los efectos puntuales se lanzan cuando empieza la expresión; los ambientes duran mientras se muestra.
+Ambiente del perfil
+Cielo
+Noche estrellada
+Atardecer
+Aurora boreal
+Synthwave
+Ciudad neón
+Espacio
+Bosque al anochecer
+Montañas
+Playa
+Bajo el agua
+Nubes pastel
+Patrón en movimiento
+Habitación acogedora
+Escenarios animados
+Asigna una tecla o una combinación (p. ej. Ctrl+Mayús+C; Retroceso: quitar, Esc: cancelar)
+⌨ Teclas de fondo…
+Asigna una tecla o una combinación a cada fondo
+Teclas de fondo
+Asigna una tecla (p. ej. B) o una combinación (p. ej. Ctrl+Mayús+1) a cada fondo. Funcionan en el modo PNGtuber, la ventana de captura y el avatar OBS (.html). Retroceso: quitar, Esc: cancelar.
+Tecla del perfil (F13–F24 o una combinación)
+Otra tecla…
+Pulsa…
+Pulsa una tecla (letra, número, F1–F24) o una combinación (p. ej. Ctrl+Mayús+1, Alt+H). Activará la expresión en el modo PNGtuber, en la ventana de captura y en el avatar OBS.
+Hablar (mantener)
+Salir del modo PNGtuber
+Teclas elegidas
+Expresiones, perfiles, efectos y fondos (tecla o combinación, p. ej. Ctrl+Mayús+1)
+Glosario completo
+Esc
+Cara alargada
+Cara llena
+Corto y despeinado
+Entradas
+Jersey
+Camisa abierta
+Chaqueta
+Mejillas encendidas
+Arrugas
+Natural
+Cansados
+Afilados
+Entornados
+Rectas
+Aguileña
+Natural
+Labios carnosos
+Barba
+Cabello trasero
+Cabello delantero
+Robusto
+Mandíbula cuadrada
+Largo
+Despeinado
+Peinado hacia atrás
+Raya al lado
+Rizado
+Aro
+Pendiente de botón
+Pequeños
+Párpados pesados
+Pobladas
+Rectas
+Fuerte
+Respingona
+Línea
+Barba de tres días
+Vista:
+De frente
+3/4 derecha
+Aún no hay piezas de este tipo para esta vista: aquí están las de frente.
+3/4
+Retrato detallado
+Orientación:
+Orientación
+Mirando a la izquierda
+Mirando a la derecha
+Sentido del perfil (un personaje ya colocado se voltea en espejo, se puede deshacer)
+Personaje girado a la izquierda
+Personaje girado a la derecha
+Orientación del personaje
+Sentido del perfil: las piezas se voltean en espejo si hace falta
+Cara (retrato)
+Moño (retrato)
+Corto (retrato)
+Largo (retrato)
+Rapado (retrato)
+Barba (retrato)
+Bigote (retrato)
+Barba de tres días (retrato)
+Ojos (retrato)
+Cejas (retrato)
+Boca (retrato)
+Delgado (retrato)
+Mediano (retrato)
+Robusto (retrato)
+Camiseta (retrato)
+Sudadera con capucha (retrato)
+Jersey (retrato)
+Chaqueta abierta (retrato)
+Formato de la escena (tamaño capturado)
+Formato de la escena
+Tamaño del avatar
+Tamaño del avatar en el marco
+Posición del avatar
+Iconos Stream Deck (ZIP)
+Iconos Stream Deck descargados
+Un icono de 144 × 144 por efecto y por decorado, con la lista de tus teclas
+Libre (toda la ventana)
+1920 × 1080 — Full HD 16:9
+1080 × 1920 — vertical (TikTok, Shorts, Reels)
+1080 × 1080 — cuadrado
+500 × 500 — esquina webcam
+400 × 600 — esquina retrato
+Abajo al centro
+Abajo a la izquierda
+Abajo a la derecha
+Centro
+Gafas (retrato)
+Gafas redondas (retrato)
+Gafas de sol (retrato)
+Gorra (retrato)
+Gorro (retrato)
+Auriculares con micro (retrato)
+Pendiente de botón (retrato)
+Aro (retrato)
+Collar (retrato)
+Mejillas sonrosadas (retrato)
+Pecas (retrato)
+Cicatriz (retrato)
+Lunar (retrato)
+Coleta (retrato)
+Larga con flequillo (retrato)
+Melena corta (retrato)
+Rizado (retrato)
+Corto con flequillo (retrato)
+Ojos con pestañas (retrato)
+Cejas gruesas (retrato)
+Cejas finas (retrato)
+Boca con labios (retrato)
+Camisa (retrato)
+Camiseta de tirantes (retrato)
+Cuello alto (retrato)
+Auriculares
+Collares
+Auriculares
+Collar
+Mejillas sonrosadas
+Larga con flequillo
+Corto con flequillo
+Flequillo
+Copia de seguridad
+Copias de seguridad (carpeta, Google Drive, ZIP)…
+Carpeta del ordenador
+Cada proyecto se copia automáticamente en la carpeta que elijas (como máximo una vez por minuto y al cerrar la pestaña), con una copia diaria en «historique» durante 14 días. Consejo: elige una carpeta sincronizada (Google Drive para ordenador, OneDrive, Dropbox…) para tener también una copia en línea sin configurar nada más.
+Carpeta
+Última copia
+Problema
+Cambiar de carpeta…
+Elegir una carpeta…
+Permitir de nuevo
+Acceso a la carpeta restablecido
+Copiar todo ahora
+Restaurar…
+Detener
+Guardar una copia diaria (carpeta «historique», 14 días)
+Este navegador no puede escribir en una carpeta (Chrome, Edge u Opera en ordenador sí pueden). Usa Google Drive o el archivo ZIP de abajo.
+ID de cliente de Google
+ID de cliente de Google (OAuth)
+Los proyectos se envían a una carpeta «Pixel Atelier» de tu Drive. Pixel Atelier solo accede a los archivos que él mismo creó, no al resto de tu Drive. La conexión dura alrededor de una hora: después basta un clic en «Conectar».
+Conectado. Último envío
+Estado
+conexión caducada
+no conectado
+nunca
+Enviar todo ahora
+Desconectar
+Conectar a Google Drive
+Google Drive conectado
+Cómo obtener el ID de cliente (una sola vez, unos 5 minutos)
+Abre console.cloud.google.com con tu cuenta de Google y crea un proyecto (por ejemplo «Pixel Atelier»).
+Menú «API y servicios» > «Biblioteca»: activa «Google Drive API».
+«Pantalla de consentimiento de OAuth»: tipo «Externo», nombre de la aplicación, tu correo; añádete como «usuario de prueba».
+«Credenciales» > «Crear credenciales» > «ID de cliente de OAuth» > tipo «Aplicación web».
+«Orígenes de JavaScript autorizados»
+«URI de redireccionamiento autorizados»
+Copia el «ID de cliente» (termina en .apps.googleusercontent.com) en el campo de arriba y luego «Conectar».
+Archivo de todos los proyectos
+Funciona en todas partes (móvil, tableta, cualquier navegador): un archivo ZIP con todos tus proyectos, para guardarlo donde quieras. Se restaura aquí, en cualquier dispositivo.
+Último archivo
+Descargar todos los proyectos (ZIP)
+Restaurar un archivo…
+Recordarme hacer una copia
+Si no ha habido copia fuera del navegador desde hace…
+3 días
+7 días
+30 días
+Recordatorio
+Tus proyectos se guardan en este navegador. Borrar los datos del sitio, cambiar de dispositivo o reinstalar el navegador los haría desaparecer: guarda una copia en otro lugar.
+Restaurar proyectos
+Un proyecto ya presente en este navegador se sustituye por la versión elegida (las copias fechadas vienen del historial).
+Restaurar
+Marca al menos un proyecto
+No se encontró ninguna copia
+Ningún proyecto que copiar
+No se pudo restaurar ningún proyecto
+Carpeta inaccesible
+Copia interrumpida
+Inicio de sesión de Google rechazado
+Primero indica tu ID de cliente de Google (ver la ayuda de abajo)
+hay que renovar el permiso de la carpeta
+hay que volver a conectarse a Google
+Recuerda hacer una copia de tus proyectos fuera del navegador: Ajustes > Copia de seguridad
+Tus proyectos solo se guardan en este navegador. Ajustes > Copia de seguridad para ponerlos a salvo (carpeta, Google Drive o ZIP).
+Google Drive
+Mapa de mosaicos…
+Mapa de mosaicos
+Juego de mosaicos
+Juego de mosaicos (tu dibujo)
+Mapa
+Nuevo mapa
+Renombrar el mapa
+Eliminar el mapa
+Nombre del mapa
+Filas
+Mosaico (px)
+Ancho de los mosaicos
+Alto de los mosaicos
+Herramienta del mapa
+Pincel de mosaicos
+Rectángulo de mosaicos
+Rellenar la zona
+Goma (o clic derecho)
+Cuentagotas (o Alt + clic)
+Tiled (ZIP)
+¿Vaciar todo el mapa?
+Haz clic en un mosaico y pinta el mapa. Mayús + clic en otros mosaicos: colocación al azar. Clic derecho: goma. Los mosaicos se actualizan cuando modificas el dibujo.
+Mapa exportado en PNG
+Mapa exportado para Tiled (ZIP)
+Nuevo mapa de mosaicos
+Pintar el mapa de mosaicos
+Tamaño del mapa
+Tamaño de los mosaicos
+Eliminar el mapa de mosaicos
+Vaciar el mapa de mosaicos
+Cuerpo entero
+Parte de arriba
+Mano
+ninguna
+vertical (izquierda/derecha)
+horizontal (arriba/abajo)
+ambas
+importados
+extraídos
+anterior
+siguiente
+sel.
+fotograma
+editor de pixel art y PNGtuber
+Idioma…
+La guía completa existe en francés y en inglés: en los demás idiomas se muestra en inglés.
+Las traducciones pueden contener errores: no dudes en señalarlos.
+#P
+Deshecho: {T1}
+Rehecho: {T1}
+«{1}» añadido{?2: (con una cabeza y un cuerpo de base)}
+«{1}»: pieza quitada
+«{1}» añadido a tu biblioteca
+Añadir «{T1}»
+{1} — clic: color A, clic derecho / pulsación larga: color B
+Expresión «{1}»
+Eliminar {1} elementos{?2:?}
+Duplicar {1} elementos
+{1} elementos seleccionados
+{1} acción(es) · {2} MB
+{1} archivo(s)
+{1} fotograma(s)
+Rango {1}–{2}
+Fotograma {1} — {2} ms (Mayús+clic: rango, doble clic: duración)
+Fotograma {1}
+Etiqueta «{1}»
+{1} (fotogramas {2}–{3}) — clic: en bucle, doble clic: editar
+Lienzo ampliado a {1}×{2} para las piezas
+Nuevo dibujo {1}×{2}
+Tecla para «{1}»
+¿Eliminar la expresión «{1}»?
+¿Eliminar el grupo «{1}» y su contenido?
+¿Eliminar definitivamente «{1}»? Esta acción no se puede deshacer.
+¿Quitar «{1}» de tu biblioteca?
+Modo PNGtuber — {1}
+Guardado en «{1}»
+Guardado (navegador + «{1}»)
+Proyecto «{1}» abierto
+Paleta {1}
+Simetría: {T1}
+★ Favoritos ({1})
+{T1} ({2}) — clic derecho o pulsación larga: otras herramientas
+{T1}: {T2}
+{T1} (3/4)
+{T1} ({C2}, 3/4)
+Perfil «{1}»
+Efectos de «{1}»
+Atajo: {K1} (cambiar)
+Tecla para {T1}
+La tecla {1} ya la usa «{2}»
+¿Eliminar el perfil «{1}»?
+Opacidad: {1} %
+{1} %
+{1} colores {T2}
+Se generarán {1} imágenes. ¿Continuar?
+Incluir todas las combinaciones ({1})
+Una animación por etiqueta ({1})
+✔ {1} ({2} imagen(es))
+Archivo Aseprite importado: {1} capa(s), {2} fotograma(s)
+Variante del grupo «{1}».
+No se puede abrir «{1}»: {2}
+Error: {1}
+{1}: variante {T2}
+Las piezas están pensadas para un lienzo de al menos 64×64 px (actual: {1}×{2}): se ampliará automáticamente al añadir la primera pieza (se puede deshacer). Consejo: «Nuevo personaje» crea directamente un personaje completo.
+{1} × {2} mosaicos de {3} × {4} px · {5} × {6} px · {7} casilla(s) llena(s)
+{1} mosaicos elegidos: el pincel coloca uno al azar (ideal para variar hierba, suelo, ladrillos).
+¿Eliminar el mapa «{1}»?
+Copia en «{1}» activada ({2} proyecto(s))
+{1} proyecto(s) copiado(s) en «{2}»
+{1} proyecto(s) enviado(s) a Google Drive
+Copia descargada: {1} proyecto(s)
+{1} proyecto(s) restaurado(s)
+{1}×{2} · {3} % · {4}

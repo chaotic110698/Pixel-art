@@ -1,0 +1,1303 @@
+#0
+Ohne Titel
+Menü
+Hauptmenü
+Abbrechen
+Rückgängig (Strg+Z)
+Rückgängig
+Rückgängig (Strg+Z)
+Wiederholen
+Wiederholen (Strg+Y)
+Raster
+An Bildschirm anpassen
+Verkleinern
+Vergrößern
+Bibliothek
+Teilebibliothek
+PNGtuber-Modus
+Exportieren
+Raster ein-/ausblenden
+Projekt umbenennen
+Werkzeugoptionen
+Werkzeuge
+Zeichenfläche
+Bereiche
+Schnelle Varianten
+Vorschau in Originalgröße (Klick: anpassen)
+Farben
+Ebenen
+Ausdrücke
+Verlauf
+Teile
+PNGtuber
+Eine neue Version von Pixel Atelier ist verfügbar.
+Neu laden
+Später
+Raster sichtbar
+Raster ausgeblendet
+Raster anzeigen
+Raster ausblenden
+Kachelmodus: gekachelte Vorschau
+Kachelmodus aus
+Projektname
+Zurück
+Weiter
+Speicher nicht verfügbar
+Stift
+Zeichnen
+Formen
+Radierer
+Füllen
+Pipette
+Schattieren
+Farbverlauf
+Linie
+Rechteck
+Ellipse
+Rechteckauswahl
+Lasso
+Zauberstab
+Verschieben
+Hand (Ansicht verschieben)
+Symmetrie (S)
+Symmetrie
+Rasterung (D)
+Hauptfarbe (Klick: bearbeiten)
+Zweitfarbe (Klick: bearbeiten)
+Hauptfarbe
+Zweitfarbe
+Farben tauschen (X)
+Farben tauschen
+Größe
+Stärke
+Weniger
+Mehr
+Quadratischer Pinsel
+Runder Pinsel
+Pixel perfect
+Entfernt doppelte Pixel in Kurven (Größe 1)
+Normal
+Ersetzen
+☀ Aufhellen
+☾ Abdunkeln
+Folgt der Palette · Rechtsklick = umgekehrt
+Linear
+Radial
+Ganze Ebene
+Berührter Bereich
+Gerastert
+Von A nach B ziehen · die Auswahl begrenzt den Bereich
+Kontur
+Gefüllt
+Zusammenhängend
+Global
+Alle Ebenen
+Sichtbares Bild als Grenze verwenden
+Toleranz
+Bild
+Aktive Ebene
+Zurück zum vorherigen Werkzeug
+Neu
++ Hinzufügen
+− Entfernen
+Überall dieselbe Farbe
+Sichtbares Bild
+Horizontal spiegeln (Umschalt+H)
+Vertikal spiegeln (Umschalt+V)
+90° drehen (Umschalt+R)
+Frei drehen / skalieren (Strg+T)
+Kopieren (Strg+C)
+Einfügen
+Auswahl löschen (Entf)
+Anwenden
+Auswahl aufheben
+Rasterung
+Rasterung (D)
+Rastermuster
+A + leer
+A + B
+Aus
+Umlaufendes Zeichnen
+Striche, die einen Rand verlassen, kommen am anderen wieder herein
+Transformieren
+Winkel
+Breite
+Höhe
+Seitenverhältnis beibehalten
+Pixel-Art-Glättung
+Drehung wie RotSprite: vermeidet zerbrochene Pixel
+Schachbrett 50 %
+25 %
+75 %
+12,5 %
+Großes Schachbrett
+Horiz. Linien
+Vert. Linien
+Diagonalen
+Punkte
+Kreuzschraffur
+Transparentes Pixel
+Das Schattieren folgt der Palette: füge helle und dunkle Töne hinzu
+Keine Ebene ausgewählt
+Wähle eine Ebene (keine Gruppe)
+Ebene gesperrt 🔒
+Ausgeblendete Ebene: zum Zeichnen sichtbar machen
+Palette laden…
+Vordefinierte Paletten
+Erweiterte Auswahl
+Auswahl ausblenden
++ A hinzufügen
+Farbe A hinzufügen
+Farbe A zur Palette hinzufügen
+Zur Palette hinzufügen
+Farbe A entfernen
+Ersetzen… (Farbe A überall)
+Nach Farbton sortieren
+Palette aus der Zeichnung
+Importieren (.hex, .gpl, .json, .pal)
+Aus einem Bild extrahieren…
+Als .hex exportieren
+Als .gpl exportieren (GIMP/Aseprite)
+Palette leeren
+Palette leeren?
+Leeren
+Zuletzt
+Verwendete Farben erscheinen hier.
+Hex-Code
+Farbwähler des Systems
+Hauptfarbe bearbeiten
+Zweitfarbe bearbeiten
+Palettenoptionen
+Weitere Palettenoptionen
+Palette
+Farbe hinzugefügt
+Farbe entfernt
+Schon in der Palette
+Farbe A ist nicht in der Palette
+Palette sortiert
+Palette geleert
+Palette geändert
+Palette aus der Zeichnung extrahiert
+Palettendatei nicht erkannt
+Palette extrahieren
+Maximale Anzahl zu extrahierender Farben:
+Extrahieren
+Graustufen
+Haut und Haare
+Neue Ebene (Strg+Umschalt+N)
+Neue Gruppe
+Neue Variantengruppe
+Duplizieren
+Nach unten zusammenführen
+Nach oben
+Nach unten
+Löschen
+Weitere Aktionen
+Mehrfachauswahl (oder Strg/Umschalt + Klick)
+Mehrfachauswahl
+Aktive Ebene gruppieren
+In Variantengruppe umwandeln
+Gruppe reduzieren
+Inhalt löschen
+Bild als Ebene importieren
+Referenzbild importieren
+Zu meiner Bibliothek hinzufügen
+Figur umfärben
+Zum Verschieben ziehen
+Aufklappen
+Zuklappen
+Auf-/zuklappen
+Diese Variante anzeigen
+Aktive Variante
+Ausblenden
+Anzeigen
+Sichtbarkeit
+Sperren
+Entsperren
+Sperren
+Variantengruppe: immer nur eine sichtbar
+Varianten
+Referenzebene: wird nicht exportiert
+Ref.
+Umbenennen
+Deckkraft
+Variantengruppe (nur eine sichtbar)
+Tipp: jedes Kind ist eine Variante (z. B. Mund zu / offen). Wähle die sichtbare mit dem runden Knopf oder im Reiter Ausdrücke.
+Referenzebene (wird nicht exportiert)
+Eine Referenzebene ist am Bildschirm halbtransparent und wird nie exportiert
+An Leinwand anpassen
+Verschieben (Werkzeug V)
+In voller Auflösung angezeigt, nie exportiert. Lege diese Ebene nach unten, um sie unter der Zeichnung zu sehen, oder nach oben, um darauf nachzuzeichnen.
+Keine Ebenen. Füge eine mit + hinzu.
+Gruppe
+Als Varianten
+Zusammenführen
+Auswahl löschen
+Name
+Ausgangszustand
+⟲ Ausgangszustand
+Aktionen erscheinen hier. Klicke auf eine Zeile, um zu diesem Moment zurückzukehren.
+Zurück zu direkt nach dieser Aktion
+Bis zu dieser Aktion wiederholen
+Neue Ebene
+Ebenen gruppieren
+Als Varianten gruppieren
+Ebenen zusammenführen
+Variante wechseln
+Ebene verschieben
+Neu anordnen
+Ebeneneigenschaft
+Variantengruppe
+Normale Gruppe
+Auswahl löschen
+Ebene leeren
+Ausdruck speichern
+Ausdruck aktualisieren
+Ausdruck umbenennen
+Ausdruck löschen
+Tastenkürzel des Ausdrucks
+Ausdrücke neu anordnen
+Auswahl
+Zur Auswahl hinzufügen
+Von der Auswahl abziehen
+Auswahl transformieren
+Drehen / skalieren
+Automatische Kontur
+Leinwandgröße
+Skalieren
+Horizontal spiegeln
+Vertikal spiegeln
+90° drehen
+Zuschneiden
+Rastereinstellung
+PNGtuber-Einstellungen
+Bilder pro Sekunde
+Bilddauer
+Neues Bild
+Bild duplizieren
+Verknüpftes Bild
+Bildverknüpfung lösen
+Bild löschen
+Bild verschieben
+Neues Tag
+Tag bearbeiten
+Tag löschen
+Referenz
+Referenz importieren
+Bild importieren
+Referenzebene
+Normale Ebene
+Figurenfarben
+Eine Farbe ersetzen
+Umfärben
+Deckkraft
+Stift
+Varianten
+Keine Variantengruppe. Erstelle eine im Reiter Ebenen (Knopf „Variantengruppe“) oder nutze „Neue Figur“.
+Vorherige Variante
+Nächste Variante
+Ein Ausdruck merkt sich die gewählte Variante jeder Gruppe (z. B. „Fröhlich“ = fröhliche Augen + offener Mund).
+Aktuellen Ausdruck speichern
+Name des Ausdrucks
+Mit aktuellem Zustand aktualisieren
+Taste zuweisen…
+Ausdrucksoptionen
+Zugewiesene Taste (PNGtuber-Modus)
+Zugewiesene Taste (vorübergehend: solange gedrückt)
+Drücke eine Taste (Buchstabe oder Ziffer). Sie löst den Ausdruck im PNGtuber-Modus, im Aufnahmefenster und im OBS-Avatar aus.
+Vorübergehend: nur solange die Taste gedrückt ist
+Beispiel: halte S für „Überrascht“ gedrückt und lass los, um zum vorherigen Ausdruck zurückzukehren.
+Entfernen
+OK
+Anwenden
+Formen und Auswahlen einrasten
+Linien, Rechtecke, Ellipsen, Auswahlen (Rechteck und Lasso) und Verschiebungen rasten am Raster ein
+Zellen
+Zellenbreite
+Zellenhöhe
+Versatz X
+Versatz Y
+Hauptlinien
+Alle N Zellen (0 = keine)
+Stärke der Hauptlinien (Bildschirm-px)
+Aussehen
+Farbe
+Stärke (Bildschirm-px)
+Pixelraster bei starkem Zoom
+Vorgaben
+Ganze Leinwand
+Das Raster ist nur eine visuelle Hilfe: es wird nie exportiert. Kürzel: Taste # oder der Raster-Knopf oben.
+Auswahl löschen
+Weitere Optionen
+Rückgängig gemacht
+Datei
+Neue Zeichnung…
+Neue Figur (PNGtuber)…
+Meine Projekte…
+Jetzt speichern
+In einer Datei speichern (Computer)…
+Projektdatei herunterladen
+Datei öffnen (Projekt, Aseprite)…
+Bild als Ebene importieren…
+Referenzbild importieren…
+Exportieren…
+Bild-/Leinwandgröße…
+Auf Auswahl zuschneiden
+Auf Inhalt zuschneiden
+90° im Uhrzeigersinn drehen
+90° gegen den Uhrzeigersinn drehen
+Eine Farbe ersetzen…
+Automatische Kontur…
+Auswahl frei drehen / skalieren
+Figur
+Teilebibliothek…
+Figur umfärben…
+Modi
+Kachelmodus (gekachelt)
+Animation (Zeitleiste)
+Ansicht
+Originalgröße (100 %)
+Vorschau in Originalgröße
+Variantenleiste auf der Leinwand
+Mausrad = verschieben (sonst Zoom)
+Helles Design
+Dunkles Design
+Hilfe
+Tastenkürzel und Gesten
+Tastenkürzel anpassen…
+Tutorial erneut ansehen
+Bild
+Sprache: Français
+Einzeltasten (anpassbar)
+Farben A/B tauschen
+Rasterung ein/aus
+Symmetrie (wechseln)
+Gefüllte Formen ein/aus
+Pinselgröße −
+Pinselgröße +
+Originalgröße
+Raster ein/aus
+Kachelmodus ein/aus
+Zwiebelhaut ein/aus
+Hilfe zu Tastenkürzeln
+Bearbeiten
+Kopieren / ausschneiden / einfügen
+Alles auswählen
+Auswahl umkehren
+Verschiebung bestätigen
+Auswahl um 1 px verschieben (Umschalt: 8 px)
+Auswahl spiegeln
+Auswahl um 90° drehen
+Frei drehen / skalieren
+Gerade Linie vom letzten Punkt
+Quadrat / Kreis / 45°
+Mit Farbe B zeichnen
+Duplizieren
+Vorherige / nächste aktive Ebene
+Nächste Variante der aktiven Gruppe
+Ansicht
+Zoom
+Ansicht verschieben
+Vergrößern / verkleinern
+Projekte
+Speichern (Browser + verknüpfte Datei)
+In einer Datei speichern…
+Diese Hilfe
+Touch
+Zeichnen
+Zoom / verschieben
+Als Farbe B wählen
+Rechtsklick
+Umschalt (Stift)
+Umschalt (Formen)
+Pfeiltasten
+Eingabe
+Entf
+Mausrad / Zwei-Finger-Zoom
+Leertaste + ziehen, mittlere Maustaste
+1 Finger
+2 Finger
+Tippen mit 2 Fingern
+Tippen mit 3 Fingern
+Lange auf eine Farbe drücken
+Pipette (oder Alt gedrückt halten)
+Schattieren (aufhellen/abdunkeln entlang der Palette)
+Gerasterter Verlauf
+Tasten anpassen…
+Tastenkürzel anpassen
+Schließen
+Alles zurücksetzen
+Standardtaste
+Klicke auf eine Taste und drücke dann die neue (Buchstabe, Ziffer oder Zeichen). Escape bricht ab, Rücktaste entfernt die Taste. Strg-Kürzel bleiben fest.
+Wähle eine Ebene innerhalb einer Variantengruppe
+Bestätigung
+Eingabe
+Weiter
+Erstellen
+Schließen
+Neue Zeichnung
+Vorgaben:
+Breite (px)
+Höhe (px)
+Hintergrund
+Transparent
+Weiß
+Farbe B
+Bildgröße
+Modus
+Leinwand vergrößern/verkleinern (ohne Verzerrung)
+Bild skalieren (nächster Nachbar)
+Anker (Leinwandmodus)
+Bild größer als die Leinwand
+Verkleinern, damit es passt
+Originalgröße (zuschneiden)
+Leinwand vergrößern
+Bild nicht lesbar
+Bild als Ebene importiert
+Referenz hinzugefügt (scharf, nicht exportiert). Mit dem Werkzeug Verschieben platzieren; Größe im Bereich Ebenen.
+Ersetzt Farbe A durch Farbe B.
+Bereich
+Alle Ebenen (alle Bilder)
+Fügt eine ein Pixel breite Kontur in Farbe A um den Inhalt der aktiven Ebene (oder der Auswahl) hinzu.
+Position
+Außen (um die Zeichnung)
+Innen (am Rand der Zeichnung)
+Ecken einschließen (dickere diagonale Kontur)
+Nichts zu kopieren
+Kopiert
+Ausgeschnitten
+Zwischenablage leer
+Leere Zeichnung
+Keine Auswahl
+Leeres Bild
+In einer Variantengruppe nicht möglich
+Keine Ebene direkt darunter zum Zusammenführen
+Wähle eine Ebene zum Zusammenführen
+Wähle mindestens zwei sichtbare Ebenen zum Zusammenführen
+Bild (PNG)
+Das Bild wie angezeigt (aktuelle Varianten).
+Komplettes PNGtuber-Paket (ZIP)
+Bild, Ebenen, Varianten, Ausdrücke und manifest.json zusammen.
+Bilder für PNGtuber-Apps (ZIP)
+Pro Ausdruck: Ruhe, Sprechen, halb offen, mit und ohne Blinzeln (veadotube, PNGTuber Plus…).
+OBS-Avatar (.html)
+Eine Datei, die in OBS als Browserquelle hinzugefügt wird: transparenter Hintergrund, Mikrofon, Blinzeln, Ausdrücke.
+Photoshop (PSD)
+Ebenen und Gruppen bleiben erhalten, für Photoshop, GIMP, Krita, Photopea… (Originalgröße, aktuelles Bild).
+Ebene für Ebene (ZIP)
+Ein PNG pro Ebene, alle in Leinwandgröße für perfekte Ausrichtung.
+Pro Variante (ZIP)
+Ein PNG pro Variante jeder Variantengruppe.
+Pro Ausdruck (ZIP)
+Ein zusammengesetztes PNG pro gespeichertem Ausdruck.
+Alle Kombinationen (ZIP)
+Ein PNG für jede mögliche Kombination der Variantengruppen.
+Spritesheet / Kachelblatt (PNG)
+Alle Animationsbilder (oder Kacheln) auf einem Blatt.
+Animiertes GIF
+Animation der Bilder der Zeitleiste.
+Einzelne Animationsbilder (ZIP)
+Ein PNG pro Bild der Zeitleiste.
+Optionen
+Skalierung
+Benutzerdefiniert…
+Skalierung mit nächstem Nachbarn: nie unscharf. Transparenz bleibt immer erhalten.
+Zuschnitt
+Leinwandgröße beibehalten
+Um den Inhalt zuschneiden (gemeinsamer Rahmen, Ausrichtung bleibt)
+Jedes Bild einzeln zuschneiden
+Projektdatei (.pxa.json) ins ZIP aufnehmen
+Spalten
+Abstand (px)
+Mit JSON-Datei
+Tipp: füge Bilder in der Zeitleiste hinzu (Menü ☰ > Animation).
+Das ZIP enthält eine manifest.json, die Ebenen, Gruppen, Varianten und Ausdrücke beschreibt.
+Exportiere…
+Export abgeschlossen
+Erzeugen
+Keine Variantengruppe in diesem Projekt.
+Kein gespeicherter Ausdruck.
+Nichts zu exportieren.
+Klicke auf ein Teil, um es als Ebene (oder Variantengruppe) hinzuzufügen. Alles bleibt Pixel für Pixel bearbeitbar. Die Farben unten färben auch die vorhandene Figur um.
+Haut
+Haare
+Augen
+Kleidung
+Accessoires
+Vorhandenes Teil ersetzen
+Ersetzt das bereits vorhandene Teil derselben Kategorie
+Neue Figur…
+Neue Figur
+Körper
+Köpfe
+Frisuren
+Augenbrauen
+Nase
+Münder
+★ Meine Bibliothek
+★ Favoriten
+Aktive Ebene hinzufügen
+Importieren
+Deine Bibliothek ist leer. Wähle eine Ebene oder Gruppe und dann „Zu meiner Bibliothek hinzufügen“ (Menü ⋯ im Bereich Ebenen).
+Einfügen
+Teil umbenennen
+Name des Teils
+Figur umgefärbt
+Leinwandgröße
+64 × 64 (empfohlen)
+64 × 80 (mehr Platz oben)
+96 × 96 (Ränder ringsum)
+128 × 128 (große Ränder)
+Haut:
+Haare:
+Teile
+Frisur
+Kopf
+Mund
+Kleidung
+— Keine —
+— Keine —
+🎲 Zufällig
+Augen, Mund und Augenbrauen werden als Variantengruppen angelegt, mit fertigen Ausdrücken (Neutral, Sprechen, Fröhlich…).
+Figur erstellen
+Figur erstellt! Probiere den PNGtuber-Modus 📺
+Ändert die Farben von Haut, Haaren, Augen, Kleidung und Accessoires der Bibliotheksteile (Palettentausch). Deine Änderungen in denselben Farben werden mit umgefärbt.
+Dieses Projekt enthält noch keine Bibliotheksteile.
+Teil suchen…
+Zu Favoriten hinzufügen
+Aus Favoriten entfernen
+Kein passendes Teil.
+Keine Favoriten: tippe auf ☆ bei einem Teil, um es hier wiederzufinden.
+Detaillierte Vorlage ×2 (128 × 128)
+Brillen
+Hüte
+Ohren
+Ohrringe
+Gesichtsdetails
+Bärte und Schnurrbärte
+Make-up
+Hände
+Schlank
+Mittel
+Breit
+Rund
+Rund
+Oval
+Eckig
+Spitzes Kinn
+Pausbackig
+Kurz
+Lang
+Pferdeschwanz
+Zöpfe
+Dutt
+Stachelig
+Gerader Pony
+Bob
+Seitenscheitel
+Afro
+Zöpfchen
+Irokese
+Rasiert
+Glatze (keine)
+Punkte
+Groß
+Mandelförmig
+Niedlich
+Wimpern
+Verschlafen
+Dünn
+Dick
+Geschwungen
+Kurz
+Dezent
+Klein
+Nasenrücken
+Knopfnase
+Spitz
+Nasenlöcher
+Einfach
+Katze (:3)
+Kleiner Eckzahn
+Lippen
+Runde Brille
+Eckige Brille
+Sonnenbrille
+Mütze
+Kappe
+Spitzhut
+Zylinder
+Krone
+Schleife
+Haarreif
+Katzenohren
+Fuchsohren
+Hasenohren
+Bärenohren
+Kleine Hörner
+Creolen
+Perlen
+Sterne
+Rosige Wangen
+Sommersprossen
+Muttermal
+Pflaster
+T-Shirt
+Kapuzenpulli
+Hemd
+Tanktop
+Rollkragen
+Latzhose
+Offene Jacke
+Kleid
+Kimono
+Rüstung
+Gestreifter Pullover
+Lang gewellt
+Undercut
+Doppelter Dutt
+Kurz lockig
+Ganzer Körper (schlank)
+Ganzer Körper (mittel)
+Roboter
+Geist
+Katze
+Schleim
+Hund
+Schnurrbart
+Zwirbelbart
+Ziegenbart
+Kurzer Bart
+Vollbart
+Eyeliner
+Lidschatten
+Funkeln
+Herzwangen
+Narbe
+Stern-Tattoo
+Tränen-Tattoo
+Winken
+Daumen hoch
+Peace-Zeichen
+Hand am Kinn
+Teile ×2 vergrößert mit geglätteten Diagonalen (Scale2x), für eine größere Figur zum Nachbearbeiten
+Ganzkörperfiguren vergrößern die Leinwandhöhe automatisch (Vorlage 64 × 96).
+offen
+geschlossen
+fröhlich
+überrascht
+normal
+hochgezogen
+wütend
+traurig
+geschlossen
+halb offen
+offen
+Lächeln
+traurig
+überrascht
+Neutral
+Sprechen
+Fröhlich
+Traurig
+Überrascht
+Wütend
+Augen zu
+Freies Zeichnen
+Meine Figur
+Ebene
+Ebene 1
+Gruppe
+Variante 1
+Zusammengeführt
+PNGtuber-Vorschau
+Grün
+Blau
+Magenta
+Schwarz
+Schachbrett
+Bild…
+Mikrofon
+🔒 Der Ton wird nur auf diesem Gerät analysiert: nichts wird aufgenommen oder gesendet.
+Mikrofon einschalten
+Mikrofon stummschalten
+Zum Sprechen halten
+Gedrückt halten, um Sprechen zu simulieren (oder Leertaste)
+Mikrofonlautstärke (rosa = Sprechen, lila = weit offen)
+Sprechschwelle
+Weit offen
+Sprechschwelle
+Schwelle für weit offenen Mund
+Mundgruppe
+Geschlossen (Stille)
+Halb offen (leise Stimme, optional)
+Offen (laute Stimme)
+Augen und Blinzeln
+Augengruppe
+Offen
+Geschlossen (Blinzeln)
+Blinzeln alle
+s (0 = nie), Dauer
+Animationen
+Hüpfen beim Sprechen
+Atmen in Ruhe
+Wackeln beim Schreien
+Über der Schwelle für weit offen, mit Abstand
+Neigen beim Sprechen
+Aktuell
+Kein Ausdruck: erstelle welche im Reiter Ausdrücke.
+Vorübergehender Ausdruck (Taste gehalten)
+Tasten: die den Ausdrücken zugewiesenen (Reiter Ausdrücke > ⋯ > Taste zuweisen; „vorübergehend“ = nur solange gedrückt). Leertaste = sprechen, Escape = beenden.
+Streaming (OBS)
+Aufnahmefenster
+Fenster nur mit dem Avatar, zum Aufnehmen in OBS (Fensteraufnahme + Chroma Key)
+Eigenständige .html-Datei, die in OBS als Browserquelle hinzugefügt wird (transparenter Hintergrund)
+Vollbild
+Aufnahmefenster: folgt deinen Ausdruckswechseln und Speicherungen. OBS-Avatar: füge die Datei als „Browserquelle“ hinzu (lokale Datei); der Hintergrund ist transparent. Für das Mikrofon in OBS starte OBS mit --use-fake-ui-for-media-stream und hänge ?mic=1 an die URL an, oder klicke auf „Interagieren“.
+Bilder für PNGtuber-Apps
+Dieses Projekt hat keine Variantengruppe: erstelle eine Gruppe „Mund“ (zu / offen) oder nutze „Neue Figur“.
+Mikrofon an (lokale Verarbeitung)
+OBS-Avatar exportiert
+Fenster blockiert: erlaube Pop-ups für diese Seite
+(Standardzustand)
+Grüner Hintergrund
+Blauer Hintergrund
+Magenta Hintergrund
+Schwarzer Hintergrund
+Weißer Hintergrund
+🎤 Mikrofon einschalten
+🎤 Mikrofon an
+Leertaste = sprechen · Einstellungen blenden sich selbst aus
+Öffne dieses Fenster aus dem PNGtuber-Modus von Pixel Atelier.
+Abspielen
+Abspielen / Pause (in Schleife über den gewählten Bereich oder das Tag)
+FPS
+Zwiebelhaut (N)
+Zwiebelhaut
+Neues leeres Bild
+Als verknüpftes Bild duplizieren (gleiche Pixel, gemeinsam bearbeitet)
+Verknüpfung des aktuellen Bildes lösen
+Nach rechts
+Neues Tag (auf dem mit Umschalt+Klick gewählten Bereich oder dem aktuellen Bild)
+Zeitleiste schließen
+Tag-Name (z. B. Laufen, Springen)
+Bilder
+bis
+Klicke auf ein Tag in der Zeitleiste, um es in Schleife abzuspielen. Der Export (GIF, Blatt, Bilder) kann eine Animation pro Tag erzeugen.
+Dauer dieses Bildes (ms)
+Mindestens ein Bild ist nötig
+Dieses Bild ist mit keinem anderen verknüpft
+Meine Projekte
+Datei öffnen
+Projekte werden automatisch in diesem Browser gespeichert. Denke daran, eine Projektdatei als Sicherung herunterzuladen.
+Kein gespeichertes Projekt.
+Öffnen
+Projekt auf diesem Gerät gespeichert
+Projektdatei heruntergeladen
+Lokaler Speicher in diesem Browser nicht verfügbar
+Einstellungen
+Einstellungen (Design, Farben, Navigation…)
+Kategorien der Einstellungen
+Navigation
+Anzeige
+Sprache und Hilfe
+Daten
+Design
+Dunkel
+Hell
+Mitternacht
+Wald
+Sepia
+Pastell
+Hoher Kontrast
+Eigene Farben
+Hauptfarbe (Akzent)
+Hintergrundfarbe der Oberfläche
+Bereiche und Rahmen werden automatisch abgeleitet
+Hintergrund um die Zeichnung
+Zurück zu den Designfarben
+Größe der Oberfläche
+Größe von Texten und Knöpfen
+Kompakt
+Normal
+Groß
+Transparenz-Schachbrett
+Schachbrettfarben
+Nach Design
+Benutzerdefiniert
+Maus und Trackpad
+Mausrad
+Zoomt
+Verschiebt die Ansicht
+Strg + Mausrad (oder Zwei-Finger-Zoom am Trackpad) zoomt immer
+Zoom mit dem Mausrad
+In Stufen (scharf)
+Stufenlos
+Mausrad-Richtung umkehren
+Touchscreen und Stift
+Mit dem Finger zeichnen
+Finger und Stift
+Nur Stift
+„Nur Stift“: der Finger verschiebt die Ansicht (ideal mit Stift, verhindert versehentliche Striche mit der Handfläche)
+Tippen mit 2 Fingern = rückgängig
+Tippen mit 3 Fingern = wiederholen
+Anordnung
+Linkshändermodus (Computer)
+Werkzeuge rechts, Bereiche links
+Animationen reduzieren
+Tastatur
+Auf der Leinwand
+Pinselumriss unter dem Cursor
+Statusleiste (Größe, Zoom, Position)
+Verhalten
+Vor dem Löschen einer Ebene bestätigen
+Nur Gruppen
+Immer
+Nie
+Automatisch speichern
+Schnell
+Alle 5 s
+Aus
+Aus: mit Strg+S oder über das Menü speichern
+Sprache
+Sprache der Oberfläche
+Die Seite wird neu geladen, um die Sprache anzuwenden
+Deine Einstellungen
+Die Einstellungen werden in diesem Browser gespeichert. Exportiere sie, um sie auf einem anderen Gerät zu nutzen.
+Einstellungen exportieren
+Einstellungen importieren
+Zurücksetzen
+Zuletzt verwendete Farben löschen
+Alles zurücksetzen
+Zuletzt verwendete Farben gelöscht
+Einstellungen zurückgesetzt
+Einstellungen importiert
+Alle Einstellungen zurücksetzen (Design, Navigation, Tastenkürzel…)? Deine Projekte bleiben unverändert.
+Profile
+Profile (Outfits, Figuren)
+Ein Profil merkt sich sichtbare Ebenen, Varianten sowie Mund/Augen des PNGtubers. Wechsle Outfit oder Figur mit einer einzigen Taste (F13 bis F24, ideal mit einem Stream Deck).
+Aktuellen Zustand als Profil speichern
+Profilname (z. B. Winteroutfit, Figur 2)
+Aktuelles Profil speichern
+Profiltaste
+Profiloptionen
+Dieses Profil anwenden
+Profil umbenennen
+Profil speichern
+Profil aktualisieren
+Profil löschen
+Profileinstellungen
+Kein Profil: erstelle welche im Reiter Ausdrücke (Abschnitt Profile), um Outfit oder Figur mit F13 bis F24 zu wechseln.
+Pro Profil (ZIP)
+Ein PNG pro Profil (Outfit oder Figur).
+Kein gespeichertes Profil (Reiter Ausdrücke > Profile).
+Profil wechseln (Outfit / Figur), siehe Reiter Ausdrücke
+Tasten: F13 bis F24 für Profile, die den Ausdrücken zugewiesenen (Reiter Ausdrücke > ⋯ > Taste zuweisen; „vorübergehend“ = nur solange gedrückt). Leertaste = sprechen, Escape = beenden.
+Rundgang
+Willkommen bei Pixel Atelier!
+Ein vollständiger, kostenloser Pixel-Art-Editor, der offline funktioniert. Alles bleibt auf deinem Gerät: nichts wird ins Internet gesendet.
+Die Werkzeuge
+Stift, Radierer, Füllen, Formen, Auswahlen… Am Computer hat jedes Werkzeug eine Taste (B, E, G, I…). Drücke ?, um alle Kürzel zu sehen.
+Navigieren
+Am Handy: 1 Finger zeichnet, 2 Finger zoomen und verschieben, Tippen mit 2 Fingern macht rückgängig. Am Computer: Mausrad zum Zoomen, Leertaste + ziehen zum Verschieben.
+Farben und Ebenen
+Wähle Farben in der Palette (Klick = Farbe A, Rechtsklick oder langes Drücken = Farbe B). Ordne deine Zeichnung in Ebenen, Gruppen und Varianten.
+Einen PNGtuber erstellen
+„Neue Figur“ (Menü ☰) erstellt eine Basis mit Augen und Mund, bereits als Varianten organisiert. Die Bibliothek (Knopf „Teile“ am Handy) fügt Frisuren, Accessoires, Kleidung… hinzu. Alles bleibt Pixel für Pixel bearbeitbar.
+Testen und exportieren
+Der PNGtuber-Modus bewegt den Mund mit deinem Mikrofon (lokal verarbeitet) und lässt die Augen blinzeln. Exportiere dann als PNG: Bild, Ebene für Ebene, Varianten, Ausdrücke… mit einer manifest.json-Datei.
+Automatisch speichern
+Deine Projekte werden automatisch im Browser gespeichert. Das Menü ☰ öffnet deine Projekte, den Export und die Hilfe. Viel Spaß beim Zeichnen!
+Überspringen
+Zurück
+Weiter
+Los geht’s
+Strg+D / Esc
+Strg+Y / Strg+Umschalt+Z
+Umschalt+H / Umschalt+V
+Umschalt+R
+Strg+Umschalt+I
+Strg+Umschalt+N
+Strg+Umschalt+S
+Strg+Umschalt+E
+Automatisches Speichern ist in diesem Browser nicht möglich (privates Surfen oder Speicher voll). Denke daran, die Projektdatei herunterzuladen (Menü ☰).
+Deckkraft der Ebene
+Blinzeln alle (s)
+Blinzeldauer (s)
+Vollständige Anleitung: Werkzeuge, Navigation, Funktionen (F1)
+Anleitung
+Wie benutze ich dieses Werkzeug? (F1)
+Hilfe zu diesem Werkzeug
+Vollständige Anleitung (Werkzeuge, Navigation, Funktionen)…
+Vollständige Anleitung
+Vollständige Anleitung (öffnet sich beim aktiven Werkzeug)
+Deine Projekte werden automatisch im Browser gespeichert. Das Menü ☰ öffnet deine Projekte, den Export und die Hilfe.
+Um alles über jedes Werkzeug, die Navigation und alle Funktionen zu erfahren, öffne die Anleitung: Buch-Knopf über den Farben, Taste F1 (Hilfe zum aktiven Werkzeug), Knopf „?“ in der Optionsleiste oder Menü ☰ > Vollständige Anleitung. Viel Spaß beim Zeichnen!
+Konfetti
+Herzen
+Funkeln
+Feuerwerk
+Sternschnuppen
+Aufprall
+Ausrufezeichen
+Fragezeichen
+Schweißtropfen
+Zornesader
+Tränen
+Schocklinien
+Zzz
+Schnee
+Regen
+Blütenblätter
+Glühwürmchen
+Blasen
+Flammen
+Stimmaura
+Regenbogenkontur
+Musiknoten
+Gummi-Effekt
+Effekte
+Intensität
+Sanft
+Stark
+Auswählen…
+Auslösen (Klick) · optionale Taste
+Taste…
+Drücke eine Taste…
+Taste zuweisen (Rücktaste: entfernen, Esc: abbrechen)
+Dauerhafte Atmosphäre
+Dauerhafte Atmosphäre · Profil
+Stimmgesteuert
+Wenn ich schreie
+An Ausdrücke gebunden
+Die Effekte erscheinen auch im Aufnahmefenster und im OBS-Avatar (.html).
+Einmalige Effekte starten, wenn der Ausdruck beginnt; Atmosphären dauern, solange er angezeigt wird.
+Profilatmosphäre
+Himmel
+Sternennacht
+Sonnenuntergang
+Polarlicht
+Synthwave
+Neonstadt
+Weltall
+Wald in der Dämmerung
+Berge
+Strand
+Unter Wasser
+Pastellwolken
+Laufendes Muster
+Gemütliches Zimmer
+Animierte Kulissen
+Weise eine Taste oder Kombination zu (z. B. Strg+Umschalt+C; Rücktaste: entfernen, Esc: abbrechen)
+⌨ Hintergrundtasten…
+Weise jedem Hintergrund eine Taste oder Kombination zu
+Hintergrundtasten
+Weise jedem Hintergrund eine Taste (z. B. B) oder Kombination (z. B. Strg+Umschalt+1) zu. Sie funktionieren im PNGtuber-Modus, im Aufnahmefenster und im OBS-Avatar (.html). Rücktaste: entfernen, Esc: abbrechen.
+Profiltaste (F13–F24 oder eine Kombination)
+Andere Taste…
+Drücke…
+Drücke eine Taste (Buchstabe, Ziffer, F1–F24) oder eine Kombination (z. B. Strg+Umschalt+1, Alt+H). Sie löst den Ausdruck im PNGtuber-Modus, im Aufnahmefenster und im OBS-Avatar aus.
+Sprechen (halten)
+PNGtuber-Modus verlassen
+Gewählte Tasten
+Ausdrücke, Profile, Effekte und Hintergründe (Taste oder Kombination, z. B. Strg+Umschalt+1)
+Vollständiges Glossar
+Esc
+Langes Gesicht
+Volles Gesicht
+Kurz und zerzaust
+Geheimratsecken
+Pullover
+Offenes Hemd
+Jacke
+Gerötete Wangen
+Falten
+Natürlich
+Müde
+Scharf
+Zusammengekniffen
+Gerade
+Adlernase
+Natürlich
+Volle Lippen
+Bart
+Haare hinten
+Haare vorne
+Kräftig
+Kantiger Kiefer
+Lang
+Zerzaust
+Nach hinten gegelt
+Seitenscheitel
+Lockig
+Creole
+Ohrstecker
+Klein
+Schwere Lider
+Buschig
+Gerade
+Kräftig
+Stupsnase
+Strich
+Dreitagebart
+Ansicht:
+Von vorn
+3/4 rechts
+Noch keine Teile dieser Art für diese Ansicht: hier sind die von vorn.
+3/4
+Detailliertes Porträt
+Blickrichtung:
+Blickrichtung
+Nach links
+Nach rechts
+Profilrichtung (eine vorhandene Figur wird gespiegelt, rückgängig machbar)
+Figur schaut nach links
+Figur schaut nach rechts
+Blickrichtung der Figur
+Profilrichtung: Teile werden bei Bedarf gespiegelt
+Gesicht (Porträt)
+Dutt (Porträt)
+Kurz (Porträt)
+Lang (Porträt)
+Kurzhaarschnitt (Porträt)
+Bart (Porträt)
+Schnurrbart (Porträt)
+Dreitagebart (Porträt)
+Augen (Porträt)
+Augenbrauen (Porträt)
+Mund (Porträt)
+Schlank (Porträt)
+Mittel (Porträt)
+Kräftig (Porträt)
+T-Shirt (Porträt)
+Kapuzenpulli (Porträt)
+Pullover (Porträt)
+Offene Jacke (Porträt)
+Szenenformat (aufgenommene Größe)
+Szenenformat
+Avatargröße
+Avatargröße im Rahmen
+Avatarposition
+Stream-Deck-Symbole (ZIP)
+Stream-Deck-Symbole heruntergeladen
+Ein Symbol 144 × 144 pro Effekt und pro Kulisse, mit der Liste deiner Tasten
+Frei (ganzes Fenster)
+1920 × 1080 — Full HD 16:9
+1080 × 1920 — hochkant (TikTok, Shorts, Reels)
+1080 × 1080 — quadratisch
+500 × 500 — Webcam-Ecke
+400 × 600 — Hochformat-Ecke
+Unten Mitte
+Unten links
+Unten rechts
+Mitte
+Brille (Porträt)
+Runde Brille (Porträt)
+Sonnenbrille (Porträt)
+Kappe (Porträt)
+Mütze (Porträt)
+Headset mit Mikrofon (Porträt)
+Ohrstecker (Porträt)
+Creole (Porträt)
+Halskette (Porträt)
+Rosige Wangen (Porträt)
+Sommersprossen (Porträt)
+Narbe (Porträt)
+Muttermal (Porträt)
+Pferdeschwanz (Porträt)
+Lang mit Pony (Porträt)
+Bob (Porträt)
+Lockig (Porträt)
+Kurz mit Pony (Porträt)
+Augen mit Wimpern (Porträt)
+Dicke Augenbrauen (Porträt)
+Dünne Augenbrauen (Porträt)
+Mund mit Lippen (Porträt)
+Hemd (Porträt)
+Tanktop (Porträt)
+Rollkragen (Porträt)
+Headsets
+Halsketten
+Headset
+Halskette
+Rosige Wangen
+Lang mit Pony
+Kurz mit Pony
+Pony
+Sicherung
+Sicherungen (Ordner, Google Drive, ZIP)…
+Ordner auf dem Computer
+Jedes Projekt wird automatisch in einen Ordner deiner Wahl kopiert (höchstens einmal pro Minute und beim Schließen des Tabs), mit einer Kopie pro Tag in „historique“, 14 Tage lang aufbewahrt. Tipp: wähle einen synchronisierten Ordner (Google Drive für Desktop, OneDrive, Dropbox…), um ohne weitere Einrichtung auch eine Online-Kopie zu haben.
+Ordner
+Letzte Kopie
+Problem
+Ordner wechseln…
+Ordner wählen…
+Erneut erlauben
+Zugriff auf den Ordner wiederhergestellt
+Jetzt alles sichern
+Wiederherstellen…
+Beenden
+Eine Kopie pro Tag behalten (Ordner „historique“, 14 Tage)
+Dieser Browser kann nicht in einen Ordner schreiben (Chrome, Edge oder Opera am Computer können es). Nutze Google Drive oder das ZIP-Archiv unten.
+Google-Client-ID
+Google-Client-ID (OAuth)
+Die Projekte werden in einen Ordner „Pixel Atelier“ in deinem Drive gesendet. Pixel Atelier hat nur Zugriff auf die Dateien, die es selbst erstellt hat, nicht auf den Rest deines Drives. Die Verbindung hält etwa eine Stunde: danach genügt ein Klick auf „Verbinden“.
+Verbunden. Letzter Upload
+Status
+Verbindung abgelaufen
+nicht verbunden
+nie
+Jetzt alles hochladen
+Trennen
+Mit Google Drive verbinden
+Google Drive verbunden
+So bekommst du die Client-ID (einmalig, etwa 5 Minuten)
+Öffne console.cloud.google.com mit deinem Google-Konto und erstelle ein Projekt (zum Beispiel „Pixel Atelier“).
+Menü „APIs und Dienste“ > „Bibliothek“: aktiviere „Google Drive API“.
+„OAuth-Zustimmungsbildschirm“: Typ „Extern“, Name der App, deine E-Mail; füge dich als „Testnutzer“ hinzu.
+„Anmeldedaten“ > „Anmeldedaten erstellen“ > „OAuth-Client-ID“ > Typ „Webanwendung“.
+„Autorisierte JavaScript-Quellen“
+„Autorisierte Weiterleitungs-URIs“
+Kopiere die „Client-ID“ (sie endet auf .apps.googleusercontent.com) in das Feld oben und klicke dann auf „Verbinden“.
+Archiv aller Projekte
+Funktioniert überall (Handy, Tablet, jeder Browser): eine ZIP-Datei mit all deinen Projekten, aufzubewahren, wo du willst. Sie wird hier wiederhergestellt, auf jedem Gerät.
+Letztes Archiv
+Alle Projekte herunterladen (ZIP)
+Archiv wiederherstellen…
+An Sicherung erinnern
+Wenn es keine Sicherung außerhalb des Browsers gab seit…
+3 Tagen
+7 Tagen
+30 Tagen
+Erinnerung
+Deine Projekte werden in diesem Browser gespeichert. Das Löschen der Website-Daten, ein Gerätewechsel oder eine Neuinstallation des Browsers würde sie verschwinden lassen: bewahre eine Kopie woanders auf.
+Projekte wiederherstellen
+Ein bereits in diesem Browser vorhandenes Projekt wird durch die gewählte Version ersetzt (datierte Kopien stammen aus dem Verlauf).
+Wiederherstellen
+Wähle mindestens ein Projekt
+Keine Sicherung gefunden
+Kein Projekt zu sichern
+Kein Projekt konnte wiederhergestellt werden
+Ordner nicht erreichbar
+Sicherung unterbrochen
+Google-Anmeldung abgelehnt
+Gib zuerst deine Google-Client-ID ein (siehe Hilfe unten)
+Ordnerberechtigung muss erneuert werden
+erneute Anmeldung bei Google nötig
+Denke daran, deine Projekte außerhalb des Browsers zu sichern: Einstellungen > Sicherung
+Deine Projekte sind nur in diesem Browser gespeichert. Einstellungen > Sicherung, um sie in Sicherheit zu bringen (Ordner, Google Drive oder ZIP).
+Google Drive
+Kachelkarte…
+Kachelkarte
+Kachelsatz
+Kachelsatz (deine Zeichnung)
+Karte
+Neue Karte
+Karte umbenennen
+Karte löschen
+Name der Karte
+Zeilen
+Kachel (px)
+Kachelbreite
+Kachelhöhe
+Kartenwerkzeug
+Kachelpinsel
+Kachelrechteck
+Bereich füllen
+Radierer (oder Rechtsklick)
+Pipette (oder Alt + Klick)
+Tiled (ZIP)
+Ganze Karte leeren?
+Klicke auf eine Kachel und male dann die Karte. Umschalt + Klick auf weitere Kacheln: zufällige Platzierung. Rechtsklick: Radierer. Die Kacheln werden aktualisiert, wenn du die Zeichnung änderst.
+Karte als PNG exportiert
+Karte für Tiled exportiert (ZIP)
+Neue Kachelkarte
+Kachelkarte malen
+Kartengröße
+Kachelgröße
+Kachelkarte löschen
+Kachelkarte leeren
+Ganzer Körper
+Oberteil
+Hand
+keine
+vertikal (links/rechts)
+horizontal (oben/unten)
+beide
+importiert
+extrahiert
+vorherige
+nächste
+Ausw.
+Bild
+Pixel-Art- & PNGtuber-Editor
+Sprache…
+Die vollständige Anleitung gibt es auf Französisch und Englisch: in den anderen Sprachen wird sie auf Englisch angezeigt.
+Übersetzungen können Fehler enthalten: melde sie gern.
+#P
+Rückgängig: {T1}
+Wiederholt: {T1}
+„{1}“ hinzugefügt{?2: (mit Basiskopf und -körper)}
+„{1}“: Teil entfernt
+„{1}“ zu deiner Bibliothek hinzugefügt
+„{T1}“ hinzufügen
+{1} — Klick: Farbe A, Rechtsklick / langes Drücken: Farbe B
+Ausdruck „{1}“
+{1} Elemente löschen{?2:?}
+{1} Elemente duplizieren
+{1} Elemente ausgewählt
+{1} Aktion(en) · {2} MB
+{1} Datei(en)
+{1} Bild(er)
+Bereich {1}–{2}
+Bild {1} — {2} ms (Umschalt+Klick: Bereich, Doppelklick: Dauer)
+Bild {1}
+Tag „{1}“
+{1} (Bilder {2}–{3}) — Klick: Schleife, Doppelklick: bearbeiten
+Leinwand auf {1}×{2} vergrößert, damit die Teile passen
+Neue Zeichnung {1}×{2}
+Taste für „{1}“
+Ausdruck „{1}“ löschen?
+Gruppe „{1}“ mit Inhalt löschen?
+„{1}“ endgültig löschen? Das kann nicht rückgängig gemacht werden.
+„{1}“ aus deiner Bibliothek löschen?
+PNGtuber-Modus — {1}
+Gespeichert in „{1}“
+Gespeichert (Browser + „{1}“)
+Projekt „{1}“ geöffnet
+Palette {1}
+Symmetrie: {T1}
+★ Favoriten ({1})
+{T1} ({2}) — Rechtsklick oder langes Drücken: weitere Werkzeuge
+{T1}: {T2}
+{T1} (3/4)
+{T1} ({C2}, 3/4)
+Profil „{1}“
+Effekte für „{1}“
+Kürzel: {K1} (ändern)
+Taste für {T1}
+Taste {1} wird bereits von „{2}“ verwendet
+Profil „{1}“ löschen?
+Deckkraft: {1} %
+{1} %
+{1} Farben {T2}
+Es werden {1} Bilder erzeugt. Fortfahren?
+Alle Kombinationen einschließen ({1})
+Eine Animation pro Tag ({1})
+✔ {1} ({2} Bild(er))
+Aseprite-Datei importiert: {1} Ebene(n), {2} Bild(er)
+Variante der Gruppe „{1}“.
+„{1}“ kann nicht geöffnet werden: {2}
+Fehler: {1}
+{1}: {T2} Variante
+Die Teile sind für eine Leinwand von mindestens 64×64 px gedacht (aktuell: {1}×{2}): sie wird beim ersten Teil automatisch vergrößert (rückgängig machbar). Tipp: „Neue Figur“ erstellt direkt eine vollständige Figur.
+{1} × {2} Kacheln zu {3} × {4} px · {5} × {6} px · {7} Feld(er) belegt
+{1} Kacheln gewählt: der Pinsel setzt eine davon zufällig (ideal, um Gras, Boden, Ziegel zu variieren).
+Karte „{1}“ löschen?
+Sicherung in „{1}“ aktiviert ({2} Projekt(e))
+{1} Projekt(e) nach „{2}“ kopiert
+{1} Projekt(e) zu Google Drive hochgeladen
+Sicherung heruntergeladen: {1} Projekt(e)
+{1} Projekt(e) wiederhergestellt
+{1}×{2} · {3} % · {4}

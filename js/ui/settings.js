@@ -4,6 +4,7 @@
 import { h, clear, downloadBlob, pickFile, keepScroll } from '../util/dom.js';
 import { openDialog, confirmDialog } from './dialogs.js';
 import { icon } from './icons.js';
+import { LANGS } from './i18n.js';
 import { hexToU32, toRgba, rgbToHsl, hslToRgb, rgba, u32ToHex } from '../util/color.js';
 
 // ---------- Thèmes ----------
@@ -194,20 +195,25 @@ export function openSettings(app, initial = 'look') {
         row('Sauvegarde automatique', segm([['1500', 'Rapide'], ['5000', 'Toutes les 5 s'], ['0', 'Désactivée']], String(s.autosaveDelay ?? 1500), (v) => set({ autosaveDelay: +v })), 'Désactivée : enregistrez avec Ctrl+S ou le menu'),
       );
     } else if (tab === 'lang') {
-      body.append(
+      body.append(...[
         h('h3', {}, 'Langue'),
-        row('Langue de l\'interface', segm([['fr', 'Français'], ['en', 'English']], s.lang || 'fr', (v) => {
-          if (v === (s.lang || 'fr')) return;
-          app.setState({ lang: v });
-          app.savePrefs.flush();
-          Promise.resolve(app.storage?.saveNow()).finally(() => location.reload());
-        }), 'La page se recharge pour appliquer la langue'),
+        row('Langue de l\'interface', h('div', { class: 'lang-grid', role: 'radiogroup', 'aria-label': 'Langue de l\'interface' }, LANGS.map(([id, name]) => h('button', {
+          class: 'chip' + ((s.lang || 'fr') === id ? ' on' : ''), role: 'radio', 'aria-checked': String((s.lang || 'fr') === id), translate: 'no', lang: id,
+          onclick: () => {
+            if (id === (s.lang || 'fr')) return;
+            app.setState({ lang: id });
+            app.savePrefs.flush();
+            Promise.resolve(app.storage?.saveNow()).finally(() => location.reload());
+          },
+        }, name))), 'La page se recharge pour appliquer la langue'),
+        !['fr', 'en'].includes(s.lang || 'fr') ? h('p', { class: 'hint' }, 'Le guide complet existe en français et en anglais : dans les autres langues, il s\'affiche en anglais.') : null,
+        !['fr', 'en'].includes(s.lang || 'fr') ? h('p', { class: 'hint' }, 'Les traductions peuvent contenir des erreurs : n\'hésitez pas à les signaler.') : null,
         h('h3', {}, 'Aide'),
         h('div', { class: 'row' },
           h('button', { class: 'btn primary', onclick: () => { app.openGuide?.(); } }, icon('book'), 'Guide complet'),
           h('button', { class: 'btn', onclick: () => { app.startTutorial(); } }, icon('help'), 'Revoir le tutoriel'),
           h('button', { class: 'btn', onclick: async () => { const { showShortcuts } = await import('./shortcuts.js'); showShortcuts(app); } }, icon('keyboard'), 'Raccourcis clavier et gestes')),
-      );
+      ].filter(Boolean));
     } else if (tab === 'data') {
       body.append(
         h('h3', {}, 'Vos réglages'),
