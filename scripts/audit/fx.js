@@ -38,10 +38,52 @@ const fs = require('fs');
     await p.waitForTimeout(e.id === 'confetti' ? 300 : 100);
   }
   await p.screenshot({ path: `${H.OUT}/fx_oneshots.png` });
+  // confettis : lancés depuis les deux bords de l'écran
+  await p.waitForTimeout(4500);
+  await p.locator('.fx-grid .fx-row button.grow', { hasText: 'Confettis' }).first().click();
+  await p.waitForTimeout(140);
+  const edges = await ev(() => {
+    const c = document.querySelector('.pt-scene .fx-front');
+    const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    let side = 0, mid = 0;
+    for (let y = 0; y < c.height; y += 2) for (let x = 0; x < c.width; x += 2) if (d[(y * c.width + x) * 4 + 3]) { if (x < c.width * 0.2 || x > c.width * 0.8) side++; else mid++; }
+    return { side, mid };
+  });
+  check('Confettis lancés depuis les deux côtés', edges.side > edges.mid, JSON.stringify(edges));
+  await p.waitForTimeout(4500);
+  // transformations et tenues : l'avatar change d'apparence, puis revient à l'identique
+  const avatarHash = () => ev(() => { const c = document.querySelector('.pt-scene > canvas:not(.fx-layer):not(.fx-back):not(.fx-front):not(.fx-bg)') || document.querySelector('.pt-scene canvas#avatar'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let h = 0; for (let i = 0; i < d.length; i += 4) h = (h * 31 + d[i] * 3 + d[i + 1] * 5 + d[i + 2] * 7 + d[i + 3]) | 0; return h; });
+  await ev(() => { const app = window.pixelAtelier; app.doc.pngtuber.breathe = false; app.doc.pngtuber.bounce = false; app.doc.pngtuber.blinkEvery = 0; });
+  await p.waitForTimeout(300);
+  const base = await avatarHash();
+  const trBad = [];
+  for (const e of EFFECTS.filter((x) => x.kind === 'transform')) {
+    const btn = p.locator('.fx-grid .fx-row button.grow', { hasText: e.name }).first();
+    await btn.click();
+    await p.waitForTimeout(e.id === 'ghost' || e.id === 'glitch' ? 250 : 150);
+    const on = await avatarHash();
+    await p.locator('.fx-grid .fx-row button.grow', { hasText: e.name }).first().click();
+    await p.waitForTimeout(150);
+    const off = await avatarHash();
+    if (on === base || off !== base) trBad.push(`${e.name} (${on === base ? 'inchangé' : 'pas revenu'})`);
+  }
+  check('16 transformations et tenues : l\'avatar change puis revient', trBad.length === 0, trBad.join(', '));
+  // durée : la transformation s'arrête toute seule
+  await ev(() => { const app = window.pixelAtelier; app.doc.pngtuber.effects = { ...(app.doc.pngtuber.effects || {}), transformDuration: 1 }; });
+  await p.locator('.fx-grid .fx-row button.grow', { hasText: 'Démon' }).first().click();
+  await p.waitForTimeout(250);
+  const dOn = await avatarHash();
+  await p.waitForTimeout(1500);
+  check('Durée : la transformation s\'arrête toute seule', dOn !== base && (await avatarHash()) === base);
+  await ev(() => { const app = window.pixelAtelier; app.doc.pngtuber.effects = { ...(app.doc.pngtuber.effects || {}), transformDuration: 0 }; });
+  await p.locator('.fx-grid .fx-row button.grow', { hasText: 'Chevalier' }).first().click();
+  await p.waitForTimeout(300);
+  await p.screenshot({ path: `${H.OUT}/fx_knight.png` });
+  await p.locator('.fx-grid .fx-row button.grow', { hasText: 'Chevalier' }).first().click();
   check(`${oneshots.length} effets ponctuels visibles`, okOne === oneshots.length, bad.join(', '));
   // ambiance + voix
   await p.waitForTimeout(3500);
-  for (const e of EFFECTS.filter((x) => x.kind !== 'oneshot')) await p.locator('.fx-box .chips').nth(e.kind === 'ambient' ? 0 : 1).locator('button', { hasText: e.name }).click();
+  for (const e of EFFECTS.filter((x) => x.kind === 'ambient' || x.kind === 'voice')) await p.locator('.fx-box .chips').nth(e.kind === 'ambient' ? 0 : 1).locator('button', { hasText: e.name }).click();
   const talk = p.locator('.dlg-body button', { hasText: 'Maintenir pour parler' });
   const bx = await talk.boundingBox();
   await p.mouse.move(bx.x + 5, bx.y + 5); await p.mouse.down();

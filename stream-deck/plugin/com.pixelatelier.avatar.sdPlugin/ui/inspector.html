@@ -31,7 +31,7 @@
   const LABELS = { expression: 'Expression', effect: 'Effet', background: 'Fond', profile: 'Profil', talk: '' };
   const HINTS = {
     expression: '« Temporaire » : l\'expression dure tant que la touche est appuyée, puis l\'avatar revient à la précédente.',
-    effect: 'Les effets ponctuels (confettis, cœurs…) partent à chaque appui. Les ambiances (neige, pluie…) s\'allument puis s\'éteignent à l\'appui suivant ; la touche s\'éclaire tant qu\'elles sont actives.',
+    effect: 'Les effets ponctuels (confettis, cœurs…) partent à chaque appui. Les ambiances (neige, pluie…) et les transformations (démon, chevalier…) s\'allument puis s\'éteignent à l\'appui suivant ; la touche s\'éclaire tant qu\'elles sont actives.',
     background: 'La touche s\'éclaire quand ce fond est affiché.',
     profile: 'Change de tenue ou de personnage (profils créés dans l\'onglet Expressions de Pixel Atelier).',
     talk: '« Maintenir » : l\'avatar parle tant que la touche est appuyée (pratique sans micro).',
@@ -60,7 +60,7 @@
     if (k === 'profile') { option(sel, '', '(profil par défaut)'); list = c.profiles || []; }
     if (k === 'background') list = c.backgrounds || [];
     if (k === 'effect') {
-      const groups = { oneshot: 'Effets ponctuels', ambient: 'Ambiances (allumer / éteindre)' };
+      const groups = { oneshot: 'Effets ponctuels', ambient: 'Ambiances (allumer / éteindre)', transform: 'Transformations et tenues (allumer / éteindre)' };
       for (const [g, label] of Object.entries(groups)) {
         const og = document.createElement('optgroup');
         og.label = label;

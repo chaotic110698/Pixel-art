@@ -200,11 +200,11 @@ export function openPngtuber(app) {
   }
   function editExprFx(e) {
     const cur = new Set(effectsConfig(doc).byExpr[e.id] || []);
-    const box = h('div', { class: 'fx-pick' }, [...fxOf('oneshot'), ...fxOf('ambient')].map((x) => h('label', { class: 'chk' },
+    const box = h('div', { class: 'fx-pick' }, [...fxOf('oneshot'), ...fxOf('ambient'), ...fxOf('transform')].map((x) => h('label', { class: 'chk' },
       h('input', { type: 'checkbox', checked: cur.has(x.id), onchange: (ev) => { if (ev.target.checked) cur.add(x.id); else cur.delete(x.id); } }), x.name)));
     openDialog({
       title: `Effets de « ${e.name} »`,
-      body: [h('p', { class: 'hint' }, 'Les effets ponctuels se déclenchent quand l\'expression commence ; les effets d\'ambiance durent tant qu\'elle est affichée.'), box],
+      body: [h('p', { class: 'hint' }, 'Les effets ponctuels se déclenchent quand l\'expression commence ; les effets d\'ambiance et les transformations durent tant qu\'elle est affichée.'), box],
       buttons: [{ label: 'Annuler', value: null }, { label: 'Valider', primary: true, value: true, action: () => { const by = { ...effectsConfig(doc).byExpr, [e.id]: [...cur] }; if (!cur.size) delete by[e.id]; setFx({ byExpr: by }); } }],
     });
   }
@@ -227,6 +227,15 @@ export function openPngtuber(app) {
         h('button', { class: 'btn small fx-key', title: 'Associer une touche ou une combinaison (ex. Ctrl+Maj+C ; Retour arrière : retirer, Échap : annuler)', 'aria-label': `Touche pour ${x.name}`, onclick: (ev) => captureKey('fx', x.id, ev.currentTarget, (k) => setFxKey(x.id, k)) }, c.keys[x.id] ? h('kbd', {}, formatCombo(c.keys[x.id])) : 'Touche…')))),
       h('div', { class: 'fx-sub' }, prof ? h('span', {}, 'Ambiance en continu · profil ', h('b', { translate: 'no' }, prof.name)) : 'Ambiance en continu'),
       chipsOf(fxOf('ambient'), c.ambient, (id) => setAmbient(toggleIn(c.ambient, id))),
+      h('div', { class: 'fx-sub' }, 'Transformations et tenues (le temps de l\'activation)'),
+      h('div', { class: 'fx-grid' }, fxOf('transform').map((x) => {
+        const on = fx.ambientOn().includes(x.id);
+        return h('div', { class: 'fx-row' },
+          h('button', { class: 'btn small grow' + (on ? ' primary' : ''), 'aria-pressed': String(on), onclick: () => { fx.trigger(x.id); renderFx(); } }, on ? '■ ' : '▶ ', x.name),
+          h('button', { class: 'btn small fx-key', title: 'Associer une touche ou une combinaison (ex. Ctrl+Maj+C ; Retour arrière : retirer, Échap : annuler)', 'aria-label': `Touche pour ${x.name}`, onclick: (ev) => captureKey('fx', x.id, ev.currentTarget, (k) => setFxKey(x.id, k)) }, c.keys[x.id] ? h('kbd', {}, formatCombo(c.keys[x.id])) : 'Touche…'));
+      })),
+      h('div', { class: 'row' }, h('span', { class: 'small' }, 'Durée'),
+        h('div', { class: 'seg' }, [[0, 'Jusqu\'au prochain appui'], [5, '5 s'], [10, '10 s'], [30, '30 s']].map(([v, l]) => h('button', { class: (c.transformDuration || 0) === v ? 'on' : '', onclick: () => setFx({ transformDuration: v }) }, l)))),
       h('div', { class: 'fx-sub' }, 'Liés à la voix'),
       chipsOf(fxOf('voice'), c.voice, (id) => setFx({ voice: toggleIn(c.voice, id) })),
       h('div', { class: 'fx-sub' }, 'Quand je crie'),

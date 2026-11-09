@@ -88,6 +88,7 @@ export function effectsConfig(doc, profileId = null) {
     byExpr,
     shout: e.shout || [],
     intensity: e.intensity || 1,
+    transformDuration: e.transformDuration || 0, // transformations : 0 = jusqu'au prochain appui
   };
 }
 

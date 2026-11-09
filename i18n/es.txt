@@ -1242,6 +1242,26 @@ Descargar el plugin de Stream Deck
 El plugin de Stream Deck «Pixel Atelier» controla el avatar (expresiones, efectos, fondos, perfiles, hablar) incluso cuando un juego está en primer plano
 Plugin para el software de Stream Deck (Windows, Mac): haz doble clic en el archivo para instalarlo
 Instala el plugin (doble clic en el archivo), marca «Plugin de Stream Deck» y arrastra las acciones de Pixel Atelier (Expresión, Efecto, Fondo, Perfil, Hablar) a tus teclas. La ventana de captura y el avatar OBS (.html) también se conectan al plugin: las teclas funcionan aunque el juego esté en primer plano.
+Demonio
+Ángel
+Fantasma
+Estatua de piedra
+Congelado
+Dorado legendario
+Zombi
+Sombra
+Glitch
+Retro 4 colores
+Caballero
+Paladín con escudo
+Soldado
+Piloto de avión
+Piloto de nave espacial
+Obrero de la construcción
+Transformaciones y atuendos (mientras están activos)
+Duración
+Hasta la siguiente pulsación
+Los efectos puntuales se lanzan cuando empieza la expresión; los ambientes y las transformaciones duran mientras se muestra.
 #P
 Deshecho: {T1}
 Rehecho: {T1}

@@ -13,7 +13,7 @@ const ws = require('./ws.js');
 
 const ROOT = path.join(__dirname, '..');
 const AVATAR_PORT = Number(process.env.PIXEL_ATELIER_PORT) || 39217;
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 
 // ---------- arguments donnés par le logiciel Stream Deck ----------
 const args = {};
@@ -25,6 +25,10 @@ const EFFECTS = [
   ['stars', 'Étoiles filantes', 'oneshot'], ['impact', 'Impact', 'oneshot'], ['bang', 'Point d\'exclamation', 'oneshot'], ['quest', 'Point d\'interrogation', 'oneshot'],
   ['sweat', 'Goutte de gêne', 'oneshot'], ['vein', 'Veine de colère', 'oneshot'], ['tears', 'Larmes', 'oneshot'], ['lines', 'Lignes de choc', 'oneshot'], ['zzz', 'Zzz', 'oneshot'],
   ['snow', 'Neige', 'ambient'], ['rain', 'Pluie', 'ambient'], ['petals', 'Pétales', 'ambient'], ['fireflies', 'Lucioles', 'ambient'], ['bubbles', 'Bulles', 'ambient'], ['flames', 'Flammes', 'ambient'],
+  ['demon', 'Démon', 'transform'], ['angel', 'Ange', 'transform'], ['ghost', 'Fantôme', 'transform'], ['statue', 'Statue de pierre', 'transform'], ['frozen', 'Gelé', 'transform'],
+  ['golden', 'Doré légendaire', 'transform'], ['zombie', 'Zombie', 'transform'], ['shadow', 'Ombre', 'transform'], ['glitch', 'Glitch', 'transform'], ['retro', 'Rétro 4 couleurs', 'transform'],
+  ['knight', 'Chevalier', 'transform'], ['paladin', 'Paladin au bouclier', 'transform'], ['soldier', 'Soldat', 'transform'], ['pilot', 'Pilote d\'avion', 'transform'],
+  ['astronaut', 'Pilote de vaisseau', 'transform'], ['worker', 'Ouvrier du bâtiment', 'transform'],
 ].map(([id, name, kind]) => ({ id, name, kind }));
 const BACKGROUNDS = [
   ['transparent', 'Transparent'], ['green', 'Vert'], ['blue', 'Bleu'], ['magenta', 'Magenta'], ['black', 'Noir'], ['white', 'Blanc'],

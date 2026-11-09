@@ -87,6 +87,12 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   sd('keyDown', 'kSnow', { action: A('effect'), payload: {} });
   check('Second appui : ambiance éteinte', await until(() => (lastFor('kSnow', 'setState') || {}).payload?.state === 0));
 
+  sd('willAppear', 'kDemon', { action: A('effect'), payload: { settings: { id: 'demon' } } });
+  sd('keyDown', 'kDemon', { action: A('effect'), payload: {} });
+  const demonOn = await until(() => (lastFor('kDemon', 'setState') || {}).payload?.state === 1);
+  sd('keyDown', 'kDemon', { action: A('effect'), payload: {} });
+  const demonOff = await until(() => (lastFor('kDemon', 'setState') || {}).payload?.state === 0);
+  check('Transformation (Démon) allumée puis éteinte depuis le Stream Deck', demonOn && demonOff && /^data:image\/png/.test(lastFor('kDemon', 'setImage')?.payload?.image || ''));
   sd('keyDown', 'kBg', { action: A('background'), payload: {} });
   check('Touche Fond : décor « nuit étoilée » affiché', await until(async () => (await st()).bg === 'night'));
 

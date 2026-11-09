@@ -109,6 +109,8 @@ export function createAvatar(o) {
     const canvas = o.canvas;
     const blink = now < st.blinkUntil;
     const img = o.getImage(st.profile, st.expression, st.mouth, blink);
+    // transformation / tenue en cours (effets) : image recolorée, transparence, flottement
+    const look = o.fx && o.fx.look ? o.fx.look(now) : null;
     const r = o.stage.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     const maxW = Math.max(1, r.width * dpr), maxH = Math.max(1, r.height * dpr);
@@ -129,7 +131,7 @@ export function createAvatar(o) {
     // position de repos (sans rebond, respiration ni secousse) : sert d'ancrage fixe au fond et aux effets
     const by = H - o.height * s - s * 2;
     st.geom = { x: Math.round(x), y: Math.round(y), bx: Math.round((W - o.width * s) / 2), by: Math.round(by), s, tilt, img };
-    const key = [st.profile, st.expression, st.mouth, blink, s, bounce, breath, tilt.toFixed(3), dx, dy, squash, maxW, maxH, img ? 1 : 0].join('|');
+    const key = [st.profile, st.expression, st.mouth, blink, s, bounce, breath, tilt.toFixed(3), dx, dy, squash, maxW, maxH, img ? 1 : 0, look ? look.key : ''].join('|');
     if (key === st.lastKey) return;
     st.lastKey = key;
     if (canvas.width !== W || canvas.height !== H) {
@@ -149,7 +151,9 @@ export function createAvatar(o) {
       g.rotate(tilt);
       g.translate(-W / 2, -(y + o.height * s));
     }
-    g.drawImage(img, Math.round(x) - squash, Math.round(y) + squash, o.width * s + squash * 2, o.height * s - squash);
+    g.globalAlpha = look && look.alpha ? look.alpha : 1;
+    g.drawImage(look ? look.img(img) : img, Math.round(x) - squash, Math.round(y) + squash + (look ? look.dy * s : 0), o.width * s + squash * 2, o.height * s - squash);
+    g.globalAlpha = 1;
   }
 
   function loop() {

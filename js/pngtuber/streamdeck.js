@@ -6,6 +6,8 @@ import { EFFECTS, SCENE_NAMES, createEffects } from './effects.js';
 import { encodePNG } from '../export/png.js';
 import { makeZip } from '../export/zip.js';
 import { slugify } from '../util/dom.js';
+import { buildCharacter, DEFAULT_CHARACTER } from '../library/character.js';
+import { composeToCanvas } from '../render/compose.js';
 
 const slug = (s) => slugify(String(s).replace(/œ/g, 'oe').replace(/Œ/g, 'Oe').replace(/æ/g, 'ae'));
 
@@ -18,7 +20,7 @@ const PAL = {
   v: '#b48cff', s: '#f5a26e', S: '#d17255', m: '#743931', h: '#542a2c',
 };
 // fond de touche par famille d'effets
-const BG = { oneshot: ['#2a1d46', '#3d2a66'], ambient: ['#132a3a', '#1d4258'], voice: ['#3a1638', '#5a2357'] };
+const BG = { oneshot: ['#2a1d46', '#3d2a66'], ambient: ['#132a3a', '#1d4258'], voice: ['#3a1638', '#5a2357'], transform: ['#2a1420', '#4a2238'] };
 
 function grid() {
   const c = document.createElement('canvas');
@@ -108,9 +110,25 @@ function finish(art, family, scale) {
   return c;
 }
 
-/** Icône 144×144 d'un effet. */
+let sample = null;
+/** Personnage d'exemple (64×64) pour les icônes des transformations et tenues. */
+function sampleAvatar() {
+  if (sample) return sample;
+  const doc = buildCharacter({ colors: { skin: '#f5c6a5', hair: '#6b3e26', eyes: '#3b7dd8', clothes: '#4a7bd0', accent: '#f2c94c' }, sel: DEFAULT_CHARACTER });
+  sample = document.createElement('canvas');
+  sample.width = doc.width; sample.height = doc.height;
+  sample.getContext('2d').drawImage(composeToCanvas(doc, {}), 0, 0);
+  return sample;
+}
+
+/** Icône 144×144 d'un effet (transformation : le personnage d'exemple transformé). */
 export function effectIcon(id) {
   const e = EFFECTS.find((x) => x.id === id);
+  if (e?.kind === 'transform') {
+    const img = sampleAvatar();
+    const fx = createEffects({ stage: document.body, back: document.createElement('canvas'), front: document.createElement('canvas'), width: img.width, height: img.height, cfg: () => ({}) });
+    return finish(fx.transformImage(img, id), 'transform', Math.floor(ICON_SIZE / Math.max(img.width, img.height)));
+  }
   const t = grid();
   (DRAW[id] || (() => {}))(t);
   return finish(t.c, e?.kind || 'oneshot', ICON_SIZE / N);

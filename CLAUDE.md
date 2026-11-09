@@ -60,7 +60,7 @@ js/library/
   parts/3q/*.js       vue de 3/4 « portrait » tournée à droite, grilles 32×32 doublées (common : g32, art, x2, hash ; bodies BODY3Q + torso/neck ; heads + headMask ; face : yeux/sourcils/nez/bouches/barbes ; hair ; tops ; accessories)
 js/pngtuber/
   engine.js           moteur d'avatar AUTONOME (copié par toString dans l'avatar .html : aucune dépendance)
-  effects.js          effets (confettis, émotes, ambiances, voix) et décors animés : createEffects AUTONOME aussi ; grille de pixels alignée sur l'avatar ; réglages doc.pngtuber.effects (effectsConfig dans assets.js), ambiance propre au profil (profile.fxAmbient)
+  effects.js          effets (confettis, émotes, ambiances, voix, transformations/tenues TF : recoloration pixel par pixel + éléments calés sur la tête et les épaules détectées par info(), exposées au moteur par fx.look()) et décors animés : createEffects AUTONOME aussi ; grille de pixels alignée sur l'avatar ; réglages doc.pngtuber.effects (effectsConfig dans assets.js), ambiance propre au profil (profile.fxAmbient)
   assets.js           overrides (expression, bouche closed/half/open, clignement), images, réglages
   formats.js          formats de scène (FORMATS : 1080p, vertical…), ANCHORS, layoutScene/applyAnchor (éditeur et capture)
   decklink.js         liaison avec le plugin Stream Deck : createDeckLink AUTONOME (WebSocket ws://127.0.0.1:39217, catalogue + état, commandes -> engine.command) ; active si doc.pngtuber.deck (ou ?deck=1)

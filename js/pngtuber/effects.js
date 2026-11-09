@@ -38,7 +38,7 @@ export function createEffects(o) {
   };
   const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const P = [];
-  const st = { t: 0, last: 0, flash: 0, zoom: 0, shake: 0, lines: 0, emote: null, expr: undefined, shoutCd: 0, talkTime: 0, dirty: true, U: 1, GW: 64, GH: 48, ox: 0, oy: 0, head: null, sx: 0, sy: 0, manualAmb: new Set() };
+  const st = { t: 0, last: 0, flash: 0, zoom: 0, shake: 0, lines: 0, emote: null, expr: undefined, shoutCd: 0, talkTime: 0, dirty: true, U: 1, GW: 64, GH: 48, ox: 0, oy: 0, head: null, sx: 0, sy: 0, manualAmb: new Set(), transId: null, transUntil: Infinity, linkedTrans: null };
   const bctx = o.back.getContext('2d');
   const fctx = o.front.getContext('2d');
   const unit = Math.max(1, Math.round(Math.min(o.width, o.height) / 40)); // pixels du dessin par pixel d'effet
@@ -112,13 +112,23 @@ export function createEffects(o) {
   // ---------- effets ponctuels ----------
   const FX = {
     confetti() {
-      // une gerbe éclate au-dessus de la tête, puis les confettis retombent en voletant sur l'avatar
+      // canons des deux côtés : les confettis montent au-dessus de la tête, puis retombent
+      // en voletant jusqu'à sortir de l'écran par le bas
       const h = H(), b = h.body, w = Math.max(6, (b.r - b.l) / 2);
-      const n = Math.round(90 * mult());
-      const top = Math.max(1, h.top - st.GH * 0.28);
+      const n = Math.round(110 * mult());
+      const g = st.GH * 1.25;
       for (let i = 0; i < n; i++) {
-        if (i % 3 === 0) add({ kind: 'conf', x: h.x + rnd(-w * 1.4, w * 1.4), y: -rnd(1, st.GH * 0.25), vx: rnd(-3, 3), vy: rnd(6, 14), g: st.GH * 0.12, drag: 0.99, sway: rnd(0, 6), life: rnd(3.5, 5), color: pick(CONF), flip: rnd(0, 6) });
-        else add({ kind: 'conf', x: h.x + rnd(-2, 2), y: top, vx: rnd(-1, 1) * w * 1.6, vy: -rnd(0.12, 0.42) * st.GH, g: st.GH * 0.55, drag: 0.965, sway: rnd(0, 6), life: rnd(3, 4.5), color: pick(CONF), flip: rnd(0, 6) });
+        setTimeout(() => {
+          const left = i % 2 === 0;
+          const x0 = left ? -rnd(0, 2) : st.GW + rnd(0, 2);
+          const y0 = st.GH * rnd(0.6, 0.98);
+          const xa = h.x + rnd(-w * 1.7, w * 1.7); // sommet de la trajectoire : au-dessus de l'avatar
+          const ya = Math.max(-st.GH * 0.04, h.top - rnd(3, st.GH * 0.22));
+          const vy = -Math.sqrt(2 * g * Math.max(4, y0 - ya));
+          const ta = -vy / g;
+          const term = rnd(6, 12); // vitesse de chute limitée : les confettis voltigent
+          add({ kind: 'conf', x: x0, y: y0, vx: (xa - x0) / ta, vy, g, term, life: ta + (st.GH + 10 - ya) / term + 1, sway: rnd(0, 6), color: pick(CONF), flip: rnd(0, 6) });
+        }, Math.floor(i / Math.max(1, n / 3)) * 160 + (i % 7) * 12);
       }
     },
     hearts() {
@@ -163,6 +173,310 @@ export function createEffects(o) {
     },
     notes(dt, s) { if (st.talkTime > 1.2 && s.talking && Math.random() < dt * 3) { const h = H(); add({ kind: 'spr', spr: 'note', x: h.r + 1, y: h.cy, vx: rnd(4, 8), vy: -rnd(6, 9), sway: rnd(0, 6), life: 2, fade: true, layer: 2, color: pick(['#ffe9a8', '#ff9ccf', '#bff4ff']) }); } },
   };
+
+  // ---------- transformations et tenues : l'avatar change d'apparence le temps de l'activation ----------
+  // Chaque transformation recolore l'image de l'avatar pixel par pixel (en gardant ses ombres)
+  // et peut y ajouter des éléments (cornes, casque, bouclier…) calés sur la tête et les épaules
+  // détectées dans l'image : elle marche donc avec n'importe quel personnage.
+  const hex = (c) => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
+  const lum = (r, g, b) => (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  /** Couleur d'une rampe (du plus sombre au plus clair) selon la luminosité t (0..1). */
+  const ramp = (cols) => { const rgb = cols.map(hex); return (t) => rgb[Math.max(0, Math.min(rgb.length - 1, Math.floor(t * rgb.length)))]; };
+  const noise = (x, y) => { let n = (x * 374761393 + y * 668265263) | 0; n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967296; };
+  /** Repères de l'image : boîte, tête (largeur, bas), début du torse (épaules). */
+  function info(d, w, h) {
+    const rows = [];
+    let x0 = w, x1 = -1, y0 = h, y1 = -1;
+    for (let y = 0; y < h; y++) {
+      let l = w, r = -1;
+      for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 20) { if (x < l) l = x; r = x; }
+      rows.push([l, r]);
+      if (r >= 0) { if (y < y0) y0 = y; y1 = y; if (l < x0) x0 = l; if (r > x1) x1 = r; }
+    }
+    if (y1 < 0) return null;
+    const span = y1 - y0 + 1;
+    const band = Math.max(4, Math.round(span * 0.45));
+    let hx0 = w, hx1 = -1;
+    for (let y = y0; y < y0 + band; y++) if (rows[y][1] >= 0) { hx0 = Math.min(hx0, rows[y][0]); hx1 = Math.max(hx1, rows[y][1]); }
+    const headW = hx1 - hx0 + 1;
+    // bas de la tête : la silhouette se resserre (menton, cou) ; épaules : elle s'élargit
+    // nettement par rapport au cou le plus étroit
+    let headB = -1, bodyY = -1, minW = Infinity;
+    for (let y = y0 + Math.round(span * 0.3); y <= y1; y++) {
+      if (rows[y][1] < 0) continue;
+      const rw = rows[y][1] - rows[y][0] + 1;
+      if (headB < 0 && rw < headW * 0.8) headB = y;
+      if (headB >= 0) {
+        if (rw < minW) minW = rw;
+        else if (rw >= minW * 1.6 && rw >= minW + 6) { bodyY = y; break; }
+      } else if (rw > headW * 1.15) { bodyY = y; break; }
+    }
+    if (headB < 0) headB = y0 + band;
+    if (bodyY < 0) bodyY = Math.min(y1, y0 + Math.round(span * 0.62));
+    if (headB > bodyY) headB = bodyY;
+    return { w, h, x0, x1, y0, y1, rows, hx0, hx1, headW, hcx: (hx0 + hx1) / 2, headB, headH: headB - y0, bodyY };
+  }
+  /** Outils de dessin en pixels de l'avatar. */
+  function pen(g) {
+    const px = (x, y, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), 1, 1); };
+    const rect = (x, y, w, hh, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(hh)); };
+    const art = (rows, x, y, pal) => rows.forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.' && pal[ch]) px(x + i, y + j, pal[ch]); }));
+    /** Calotte (casque) : moitié haute d'une ellipse, ombrée, avec contour. */
+    const dome = (cx, base, rx, ry, cols, outline) => {
+      for (let y = Math.floor(base - ry); y <= base; y++) {
+        const k = 1 - ((base - y) / ry) ** 2;
+        if (k < 0) continue;
+        const hw = Math.round(rx * Math.sqrt(k));
+        for (let x = Math.round(cx - hw); x <= Math.round(cx + hw); x++) {
+          const edge = x === Math.round(cx - hw) || x === Math.round(cx + hw) || y === Math.floor(base - ry) || (y > base - ry && Math.round(rx * Math.sqrt(Math.max(0, 1 - ((base - y + 1) / ry) ** 2))) < Math.abs(x - cx));
+          const sh = (x - cx) / rx;
+          px(x, y, edge ? outline : sh < -0.45 && y < base - ry * 0.4 ? cols[2] : sh > 0.4 ? cols[0] : cols[1]);
+        }
+      }
+    };
+    const ring = (cx, cy, rx, ry, c) => { for (let a = 0; a < Math.PI * 2; a += 0.02) px(cx + Math.cos(a) * rx, cy + Math.sin(a) * ry, c); };
+    return { g, px, rect, art, dome, ring };
+  }
+  /** Torse : seuls les pixels sous les épaules (le cou et le visage restent). */
+  const body = (I, y) => y >= I.bodyY;
+  const TF = {
+    demon: {
+      map: (r, g, b, a, x, y) => { const t = lum(r, g, b); return [...ramp(['#120306', '#3a070d', '#6e0f17', '#a81c22', '#dd3a2a', '#ff8a4a'])(t), a]; },
+      deco(p, I) {
+        // cornes recourbées au sommet du crâne
+        // la pointe part vers l'extérieur ; la base est posée sur le crâne
+        const horn = ['....k', '...kH', '..kHk', '..kHk', '.kHhk', '.kHhk', 'kHhhk', 'khhhk'];
+        const pal = { k: '#1a0507', H: '#f2e2c8', h: '#a88a6a' };
+        const base = I.y0 + 2, off = Math.max(2, Math.round(I.headW * 0.2));
+        p.art(horn, Math.round(I.hcx + off), base - horn.length + 1, pal);
+        p.art(horn.map((r) => [...r].reverse().join('')), Math.round(I.hcx - off) - 5, base - horn.length + 1, pal);
+      },
+      aura: '#ff2a2a', tick: (dt) => { const b = H().body; if (Math.random() < dt * 9 * mult()) add({ kind: 'flame', x: rnd(b.l - 2, b.r + 2), y: b.bottom - rnd(0, 2), vx: rnd(-3, 3), vy: -rnd(18, 34), sz: 2, life: rnd(0.6, 1.1), layer: 0 }); if (Math.random() < dt * 4) add({ kind: 'px', x: rnd(b.l, b.r), y: b.bottom, vy: -rnd(8, 16), sway: rnd(0, 6), life: 2, color: pick(['#ff6a3a', '#ffb43a', '#ff2a2a']), layer: 2 }); },
+      poof: '#ff3a2a',
+    },
+    angel: {
+      map: (r, g, b, a) => [Math.min(255, r * 0.75 + 70), Math.min(255, g * 0.75 + 66), Math.min(255, b * 0.7 + 52), a],
+      deco(p, I) { p.ring(I.hcx, I.y0 - 3, Math.max(3, I.headW * 0.3), 1.2, '#ffe680'); p.ring(I.hcx, I.y0 - 3, Math.max(2, I.headW * 0.3 - 1), 0.6, '#fff6c4'); },
+      behind(p, I) {
+        // ailes de part et d'autre du torse (dessinées derrière l'avatar)
+        // aile : bord d'attaque qui monte vers l'extérieur, plumes en festons dessous
+        const y = I.bodyY + 1, L = Math.round(I.headW * 0.8);
+        for (const dir of [-1, 1]) {
+          const x0 = dir < 0 ? I.rows[Math.min(I.y1, y)][0] + 3 : I.rows[Math.min(I.y1, y)][1] - 3;
+          for (let i = 0; i <= L; i++) {
+            const k = i / L, top = Math.round(y - k * L * 0.75 - Math.sin(k * Math.PI) * 2), bot = Math.round(y + 7 - k * 9 + (i % 4 < 2 ? 1 : 0));
+            const x = x0 + dir * i;
+            for (let yy = top; yy <= bot; yy++) p.px(x, yy, yy === top || yy === bot ? '#9aa6d8' : (yy - top) % 4 === 3 ? '#d6dcff' : '#ffffff');
+          }
+        }
+      },
+      aura: '#fff1a8', tick: (dt) => { if (Math.random() < dt * 3) { const h = H(); add({ kind: 'twinkle', x: rnd(h.l - 6, h.r + 6), y: rnd(h.top - 4, h.body.bottom - 4), life: rnd(0.6, 1) }); } },
+      poof: '#ffffff',
+    },
+    ghost: {
+      map: (r, g, b, a, x, y, I) => { const t = lum(r, g, b); const c = ramp(['#3a4a7a', '#7d8fd0', '#b8c6ff', '#e6ecff', '#ffffff'])(t); return [c[0], c[1], c[2], y > I.y1 - 3 && noise(x, 9) > 0.45 ? 0 : a]; },
+      alpha: 0.62, float: 2, poof: '#dfe6ff',
+      tick: (dt) => { if (Math.random() < dt * 2) { const b = H().body; add({ kind: 'px', x: rnd(b.l, b.r), y: b.bottom - 1, vy: -rnd(4, 9), sway: rnd(0, 6), life: 1.6, fade: true, color: '#e6ecff', layer: 0 }); } },
+    },
+    statue: {
+      map: (r, g, b, a, x, y) => { const t = lum(r, g, b) + (noise(x, y) - 0.5) * 0.12; return [...ramp(['#2e2c33', '#55525c', '#7d7a84', '#a8a5ad', '#cfccd2'])(t), a]; },
+      poof: '#a8a5ad',
+    },
+    frozen: {
+      map: (r, g, b, a, x, y) => { const t = lum(r, g, b); return [...ramp(['#173a66', '#2f6fb0', '#5fb0e8', '#a8e2ff', '#e8faff'])(t * 0.85 + (noise(x, y) > 0.985 ? 0.3 : 0)), a]; },
+      post(p, I) {
+        // givre : neige sur les surfaces tournées vers le haut
+        const g = p.g, d = g.getImageData(0, 0, I.w, I.h), D = d.data, w = I.w;
+        const op = (x, y) => y >= 0 && D[(y * w + x) * 4 + 3] > 20;
+        for (let y = I.h - 1; y >= 0; y--) for (let x = 0; x < w; x++) {
+          if (!op(x, y) || op(x, y - 1)) continue;
+          const i = (y * w + x) * 4;
+          D[i] = 255; D[i + 1] = 255; D[i + 2] = 255;
+          if (op(x, y + 1) && noise(x, y) > 0.4) { const j = ((y + 1) * w + x) * 4; D[j] = 214; D[j + 1] = 244; D[j + 2] = 255; }
+        }
+        g.putImageData(d, 0, 0);
+      },
+      aura: '#bff4ff', poof: '#e8faff',
+      tick: (dt) => { if (Math.random() < dt * 4) { const h = H(); add({ kind: 'twinkle', x: rnd(h.l - 4, h.r + 4), y: rnd(h.top, h.body.bottom), life: rnd(0.5, 0.9) }); } },
+    },
+    golden: {
+      map: (r, g, b, a) => { const t = lum(r, g, b); return [...ramp(['#4a2a06', '#8a5a10', '#c8901c', '#f2c43a', '#ffe680', '#fff8d0'])(t), a]; },
+      aura: '#ffd84a', poof: '#fff3b0',
+      tick: (dt) => { const b = H().body; if (Math.random() < dt * 10 * mult()) add({ kind: 'px', x: rnd(b.l - 3, b.r + 3), y: b.bottom - rnd(0, 6), vy: -rnd(16, 30), life: rnd(0.8, 1.5), fade: true, color: pick(['#ffe680', '#fff8d0', '#ffd84a']), layer: 0 }); },
+    },
+    zombie: {
+      map: (r, g, b, a) => { const t = lum(r, g, b); return [Math.round(r * 0.45 + 40 * t), Math.round(g * 0.55 + 70 * t + 20), Math.round(b * 0.4 + 20 * t), a]; },
+      deco(p, I) { for (let k = 0; k < 4; k++) { const x = Math.round(I.hx0 + 2 + noise(k, 5) * (I.headW - 4)); p.px(x, I.y0 + Math.round(I.headH * (0.3 + noise(k, 8) * 0.4)), '#3a5a20'); } },
+      poof: '#8fbf5a',
+      tick: (dt) => { if (Math.random() < dt * 1.5) { const h = H(); add({ kind: 'fly', x: rnd(h.l - 5, h.r + 5), y: rnd(h.top - 3, h.cy), vx: rnd(-4, 4), vy: rnd(-3, 3), life: 3, seed: rnd(0, 6), layer: 2 }); } },
+    },
+    shadow: {
+      map: (r, g, b, a) => [18, 10, 30, a],
+      aura: '#b04aff', poof: '#3a1a5a',
+    },
+    glitch: {
+      anim: 90, frames: 4, poof: '#59c2ff',
+      post(p, I, f) {
+        // décalage des couches rouge / bleue et bandes horizontales déplacées
+        const g = p.g, w = I.w, hh = I.h;
+        const src = g.getImageData(0, 0, w, hh), out = g.createImageData(w, hh);
+        const sh = [1, -1, 2, 0][f], cut = I.y0 + Math.round(((f * 37) % 100) / 100 * (I.y1 - I.y0)), cutH = 2 + (f % 3), off = [3, -2, 4, -3][f];
+        for (let y = 0; y < hh; y++) for (let x = 0; x < w; x++) {
+          const sx = y >= cut && y < cut + cutH ? x - off : x;
+          const at = (xx) => (xx >= 0 && xx < w ? (y * w + xx) * 4 : -1);
+          const o4 = (y * w + x) * 4, c = at(sx), rr = at(sx - sh), bb = at(sx + sh);
+          out.data[o4] = rr >= 0 ? src.data[rr] : 0;
+          out.data[o4 + 1] = c >= 0 ? src.data[c + 1] : 0;
+          out.data[o4 + 2] = bb >= 0 ? src.data[bb + 2] : 0;
+          out.data[o4 + 3] = Math.max(c >= 0 ? src.data[c + 3] : 0, rr >= 0 ? src.data[rr + 3] : 0, bb >= 0 ? src.data[bb + 3] : 0);
+        }
+        g.putImageData(out, 0, 0);
+      },
+    },
+    retro: {
+      map: (r, g, b, a) => [...ramp(['#0f380f', '#306230', '#8bac0f', '#9bbc0f'])(lum(r, g, b)), a],
+      poof: '#9bbc0f',
+    },
+    // ---------- tenues ----------
+    knight: {
+      map: (r, g, b, a, x, y, I) => (body(I, y) ? [...ramp(['#2a2d36', '#4f5564', '#7c8496', '#b4bccb', '#e6ecf5'])(lum(r, g, b) * 0.8 + ((y - I.bodyY) % 4 === 1 ? 0.2 : 0)), a] : null),
+      deco(p, I) {
+        const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.42);
+        p.dome(cx, base, I.headW / 2 + 1, Math.round(I.headH * 0.42) + 1, ['#5a6070', '#8a92a4', '#cfd6e2'], '#1c1e26');
+        p.rect(cx - I.headW / 2 - 1, base, I.headW + 2, 1, '#3a3f4c');
+        p.rect(cx - 0.5, base, 1, Math.max(2, Math.round(I.headH * 0.22)), '#5a6070'); // nasal
+        p.art(['..rr', '.rRr', 'rRr.', 'rRr.', '.rr.', '.r..'], cx - 2, I.y0 - 7, { r: '#c8282c', R: '#ff6a4a' }); // plumet
+        // épaulières
+        for (const dir of [-1, 1]) { const x = dir < 0 ? I.rows[I.bodyY + 2][0] : I.rows[I.bodyY + 2][1] - 4; p.dome(x + 2, I.bodyY + 3, 3, 3, ['#5a6070', '#8a92a4', '#cfd6e2'], '#1c1e26'); }
+      },
+      poof: '#cfd6e2',
+    },
+    paladin: {
+      map: (r, g, b, a, x, y, I) => (body(I, y) ? [...ramp(['#5a5040', '#a89a7a', '#e8e2d2', '#ffffff'])(lum(r, g, b)), a] : null),
+      deco(p, I) {
+        const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.38);
+        p.dome(cx, base, I.headW / 2 + 1, Math.round(I.headH * 0.38) + 1, ['#b8b0a0', '#e8e2d2', '#ffffff'], '#3a3020');
+        p.rect(cx - I.headW / 2 - 1, base, I.headW + 2, 1, '#d8a828');
+        // croix dorée sur la poitrine
+        const y = I.bodyY + 3;
+        p.rect(cx - 0.5, y, 1, 5, '#d8a828'); p.rect(cx - 2, y + 1, 5, 1, '#d8a828');
+        // bouclier devant, en bas à gauche du torse
+        const bx = I.rows[Math.min(I.y1, I.bodyY + 4)][0] + 1, by = I.bodyY + 1, sw = Math.max(7, Math.round(I.headW * 0.42)), sh = Math.round(sw * 1.3);
+        for (let yy = 0; yy < sh; yy++) {
+          const k = yy < sh * 0.55 ? 1 : 1 - (yy - sh * 0.55) / (sh * 0.45);
+          const hw = Math.round((sw / 2) * k);
+          for (let xx = -hw; xx <= hw; xx++) p.px(bx + sw / 2 + xx, by + yy, Math.abs(xx) === hw || yy === 0 ? '#d8a828' : xx < 0 ? '#2a5ab8' : '#1f4590');
+        }
+        p.rect(bx + sw / 2 - 0.5, by + 2, 1, sh - 5, '#ffe680'); p.rect(bx + sw / 2 - 2, by + Math.round(sh * 0.35), 5, 1, '#ffe680');
+      },
+      aura: '#fff1a8', poof: '#ffe680',
+    },
+    soldier: {
+      map: (r, g, b, a, x, y, I) => { if (!body(I, y)) return null; const n = noise(x >> 1, y >> 1); const t = lum(r, g, b); const c = n < 0.33 ? '#4a5a2a' : n < 0.66 ? '#6b7a3a' : '#3a3020'; const k = hex(c); return [Math.round(k[0] * (0.6 + t * 0.6)), Math.round(k[1] * (0.6 + t * 0.6)), Math.round(k[2] * (0.6 + t * 0.6)), a]; },
+      deco(p, I) {
+        const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.36);
+        p.dome(cx, base, I.headW / 2 + 2, Math.round(I.headH * 0.36) + 1, ['#3a4a22', '#566a30', '#7a8c48'], '#1a2010');
+        p.rect(cx - I.headW / 2 - 2, base, I.headW + 4, 1, '#2a3418');
+        for (let x = Math.round(cx - I.headW / 2); x < cx + I.headW / 2; x += 3) p.px(x, base - 2 - (x % 2), '#2a3418'); // filet
+      },
+      poof: '#8a8a6a',
+    },
+    pilot: {
+      map: (r, g, b, a, x, y, I) => (body(I, y) ? (y < I.bodyY + 2 ? [...ramp(['#c8b89a', '#efe6d2', '#ffffff'])(lum(r, g, b)), a] : [...ramp(['#2a160c', '#4a2a16', '#6e4024', '#8e5a32'])(lum(r, g, b)), a]) : null),
+      deco(p, I) {
+        const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.45);
+        p.dome(cx, base, I.headW / 2 + 1, Math.round(I.headH * 0.45) + 1, ['#4a2a16', '#6e4024', '#9a6a3c'], '#1e0e06');
+        for (const dir of [-1, 1]) p.rect(dir < 0 ? cx - I.headW / 2 - 1 : cx + I.headW / 2 - 2, base, 3, Math.round(I.headH * 0.3), '#5a321a'); // rabats
+        // lunettes sur le front
+        const gy = base - Math.round(I.headH * 0.16), r0 = Math.max(2, Math.round(I.headW * 0.12));
+        p.rect(cx - I.headW / 2, gy, I.headW, 1, '#2a1a10');
+        for (const dx of [-r0 - 1, r0 + 1]) { p.ring(cx + dx, gy, r0, r0 * 0.8, '#c8c8d0'); p.px(cx + dx, gy, '#8fd8ff'); p.px(cx + dx - 1, gy - 1, '#ffffff'); }
+      },
+      poof: '#efe6d2',
+    },
+    astronaut: {
+      map: (r, g, b, a, x, y, I) => (body(I, y) ? [...ramp(['#7a8496', '#b4bccb', '#e6ecf5', '#ffffff'])(lum(r, g, b) * 0.6 + 0.45), a] : null),
+      deco(p, I) {
+        // bulle de verre autour de la tête
+        const cx = I.hcx, cy = I.y0 + I.headH * 0.5, rx = I.headW / 2 + 3, ry = I.headH / 2 + 3;
+        p.g.globalAlpha = 0.22;
+        for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) if (((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2 <= 1) p.px(x, y, '#8fd8ff');
+        p.g.globalAlpha = 1;
+        p.ring(cx, cy, rx, ry, '#e6ecf5');
+        for (let a = -2.4; a < -1.6; a += 0.08) p.px(cx + Math.cos(a) * (rx - 2), cy + Math.sin(a) * (ry - 2), '#ffffff'); // reflet
+        p.rect(cx - rx, I.bodyY - 1, rx * 2, 2, '#b4bccb'); // col
+        // panneau de commande sur la poitrine
+        const py = I.bodyY + 3;
+        p.rect(cx - 3, py, 6, 3, '#3a4a6a'); p.px(cx - 2, py + 1, '#ff3b6b'); p.px(cx, py + 1, '#b6ff6a'); p.px(cx + 2, py + 1, '#59c2ff');
+      },
+      poof: '#e6ecf5',
+    },
+    worker: {
+      map: (r, g, b, a, x, y, I) => {
+        if (!body(I, y)) return null;
+        const t = lum(r, g, b), dy = y - I.bodyY;
+        if (dy === 4 || dy === 5 || dy === 9 || dy === 10) return [...ramp(['#9aa0aa', '#d8dce4', '#ffffff'])(t), a]; // bandes réfléchissantes
+        return [...ramp(['#a83a06', '#e85a10', '#ff7a1a', '#ff9a3a'])(t), a];
+      },
+      deco(p, I) {
+        const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.36);
+        p.dome(cx, base, I.headW / 2 + 1, Math.round(I.headH * 0.38) + 1, ['#c89a10', '#ffd21a', '#fff07a'], '#5a4206');
+        p.rect(cx - I.headW / 2 - 3, base, I.headW + 6, 2, '#e8b810'); // visière
+        p.rect(cx - I.headW / 2 - 3, base + 1, I.headW + 6, 1, '#8a6a08');
+        p.rect(cx - 0.5, base - Math.round(I.headH * 0.36), 1, Math.round(I.headH * 0.36), '#fff07a'); // arête
+      },
+      poof: '#ffd21a',
+    },
+  };
+  const lookCache = new WeakMap();
+  /** Image de l'avatar transformée (mise en cache par image, transformation et image d'animation). */
+  function transformed(img, id, f = 0) {
+    let m = lookCache.get(img);
+    if (!m) { m = {}; lookCache.set(img, m); }
+    const key = id + ':' + f;
+    if (m[key]) return m[key];
+    const def = TF[id], w = o.width, hh = o.height;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = hh;
+    const g = c.getContext('2d');
+    g.imageSmoothingEnabled = false;
+    g.drawImage(img, 0, 0, w, hh);
+    let data;
+    try { data = g.getImageData(0, 0, w, hh); } catch (e) { return img; }
+    const I = info(data.data, w, hh);
+    if (!I) return img;
+    if (def.map) {
+      const d = data.data;
+      for (let y = 0; y < hh; y++) for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        if (!d[i + 3]) continue;
+        const res = def.map(d[i], d[i + 1], d[i + 2], d[i + 3], x, y, I);
+        if (res) { d[i] = res[0]; d[i + 1] = res[1]; d[i + 2] = res[2]; d[i + 3] = res[3]; }
+      }
+      g.putImageData(data, 0, 0);
+    }
+    const p = pen(g);
+    if (def.deco) def.deco(p, I, f);
+    if (def.behind) { g.globalCompositeOperation = 'destination-over'; def.behind(p, I, f); g.globalCompositeOperation = 'source-over'; }
+    if (def.post) def.post(p, I, f);
+    m[key] = c;
+    return c;
+  }
+  /** Transformation affichée : celle activée à la main, sinon celle liée à l'expression. */
+  const currentTransform = () => st.transId || st.linkedTrans || null;
+  function toggleTransform(id, on) {
+    const next = on === undefined ? st.transId !== id : !!on;
+    st.transId = next ? id : st.transId === id ? null : st.transId;
+    if (next) {
+      const dur = +(cfg().transformDuration || 0);
+      st.transUntil = dur > 0 ? st.t + dur : Infinity;
+      // petit nuage magique au moment de la transformation
+      const h = H(), col = TF[id].poof || '#ffffff';
+      for (let k = 0; k < Math.round(22 * mult()); k++) { const a = rnd(0, Math.PI * 2), v = rnd(6, 16); add({ kind: 'px', x: h.x + Math.cos(a) * (h.r - h.l) * 0.5, y: h.cy + Math.sin(a) * (h.r - h.l) * 0.6, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 0.94, life: rnd(0.4, 0.8), fade: true, color: col, layer: 2 }); }
+    }
+    st.dirty = true;
+    return next;
+  }
 
   // ---------- sprites ----------
   const sprCache = {};
@@ -443,6 +757,10 @@ export function createEffects(o) {
       if (!first) for (const id of (c.byExpr || {})[s.expression || ''] || []) if (ONESHOT.includes(id)) trigger(id, false);
     }
     const linked = ((c.byExpr || {})[s.expression || ''] || []).filter((id) => AMB[id]);
+    st.linkedTrans = ((c.byExpr || {})[s.expression || ''] || []).find((id) => TF[id]) || null;
+    if (st.transId && st.t > st.transUntil) { st.transId = null; st.dirty = true; }
+    const tr = currentTransform();
+    if (tr && TF[tr].tick) TF[tr].tick(dt, s);
     const amb = new Set([...(c.ambient || []), ...linked, ...st.manualAmb]);
     const voice = new Set(c.voice || []);
     if (voice.has('notes')) amb.add('notes');
@@ -461,6 +779,11 @@ export function createEffects(o) {
       if (p.age > p.life || p.y > st.GH + 8 || p.x < -30 || p.x > st.GW + 40) { P.splice(i, 1); continue; }
       if (p.drag) { p.vx *= p.drag; p.vy *= p.drag; }
       p.vy += p.g * dt;
+      if (p.term) {
+        // freinage de l'air une fois la chute commencée (confettis)
+        if (p.vy > 0) p.vx *= Math.pow(0.05, dt);
+        if (p.vy > p.term) p.vy = p.term;
+      }
       p.x += (p.vx + (p.sway !== undefined ? Math.sin(st.t * 3 + p.sway) * 6 : 0)) * dt;
       p.y += p.vy * dt;
       if (p.kind === 'rocket' && p.y <= p.top) {
@@ -481,7 +804,8 @@ export function createEffects(o) {
       const tr = z !== 1 || dx || dy ? `translate(${dx}px, ${dy}px) scale(${z.toFixed(3)})` : '';
       if (o.scene.style.transform !== tr) o.scene.style.transform = tr;
     }
-    const active = P.length || st.flash || st.lines || st.emote || voice.has('aura') || voice.has('rainbow');
+    const trAura = tr && TF[tr].aura;
+    const active = P.length || st.flash || st.lines || st.emote || voice.has('aura') || voice.has('rainbow') || trAura;
     if (!active && !wasActive && !st.dirty) return;
     wasActive = !!active;
     st.dirty = false;
@@ -494,6 +818,7 @@ export function createEffects(o) {
       if (s.level > 0.45) silhouette(bctx, `hsl(${hue + 30}, 100%, 75%)`, Math.min(1, (s.level - 0.3) * 0.9), unit);
     }
     if (voice.has('rainbow') && s.geom) silhouette(bctx, `hsl(${(st.t * (s.talking ? 360 : 90)) % 360}, 100%, 60%)`, 1, 0);
+    if (trAura && s.geom) { silhouette(bctx, TF[tr].aura, 0.55 + Math.sin(st.t * 6) * 0.25, 0); silhouette(bctx, TF[tr].aura, 0.25, unit); }
     for (const p of P) if (p.layer === 0) particle(bctx, p);
     if (st.lines > 0) {
       const h = H(), R = Math.max(st.GW, st.GH);
@@ -514,6 +839,11 @@ export function createEffects(o) {
   }
 
   function trigger(id, manual = true) {
+    if (TF[id]) {
+      toggleTransform(id);
+      if (manual && o.onTrigger) o.onTrigger(id);
+      return true;
+    }
     if (!FX[id]) return false;
     FX[id]();
     st.dirty = true;
@@ -534,9 +864,23 @@ export function createEffects(o) {
     frame,
     trigger,
     toggleAmbient,
-    /** Ambiances allumées à la demande. */
-    ambientOn: () => [...st.manualAmb],
-    clear() { P.length = 0; st.emote = null; st.flash = st.zoom = st.shake = st.lines = 0; st.dirty = true; },
+    /** Ambiances (et transformation) allumées à la demande. */
+    ambientOn: () => [...st.manualAmb, ...(st.transId ? [st.transId] : [])],
+    clear() { P.length = 0; st.emote = null; st.flash = st.zoom = st.shake = st.lines = 0; st.transId = null; st.dirty = true; },
+    /**
+     * Apparence de l'avatar (transformation en cours) pour le moteur : { key, alpha, dy, img(img) }
+     * ou null. Appelée à chaque image avant le dessin de l'avatar.
+     */
+    look(now) {
+      const id = currentTransform();
+      if (!id) return null;
+      const def = TF[id];
+      const f = def.anim ? Math.floor(now / def.anim) % (def.frames || 4) : 0;
+      const dy = def.float ? Math.round(Math.sin(now / 600) * def.float) : 0;
+      return { key: id + ':' + f + ':' + dy, alpha: def.alpha || 1, dy, img: (img) => transformed(img, id, f) };
+    },
+    /** Image transformée (icônes Stream Deck, aperçus). */
+    transformImage: (img, id) => (TF[id] ? transformed(img, id, 0) : img),
     /** Vignette d'un décor (w×h pixels d'art, instant t en secondes) : icônes Stream Deck. */
     sceneThumb(id, w, h, t = 2) {
       if (!SCENES[id]) return null;
@@ -584,6 +928,22 @@ export const EFFECTS = [
   { id: 'fireflies', name: 'Lucioles', kind: 'ambient' },
   { id: 'bubbles', name: 'Bulles', kind: 'ambient' },
   { id: 'flames', name: 'Flammes', kind: 'ambient' },
+  { id: 'demon', name: 'Démon', kind: 'transform' },
+  { id: 'angel', name: 'Ange', kind: 'transform' },
+  { id: 'ghost', name: 'Fantôme', kind: 'transform' },
+  { id: 'statue', name: 'Statue de pierre', kind: 'transform' },
+  { id: 'frozen', name: 'Gelé', kind: 'transform' },
+  { id: 'golden', name: 'Doré légendaire', kind: 'transform' },
+  { id: 'zombie', name: 'Zombie', kind: 'transform' },
+  { id: 'shadow', name: 'Ombre', kind: 'transform' },
+  { id: 'glitch', name: 'Glitch', kind: 'transform' },
+  { id: 'retro', name: 'Rétro 4 couleurs', kind: 'transform' },
+  { id: 'knight', name: 'Chevalier', kind: 'transform' },
+  { id: 'paladin', name: 'Paladin au bouclier', kind: 'transform' },
+  { id: 'soldier', name: 'Soldat', kind: 'transform' },
+  { id: 'pilot', name: 'Pilote d\'avion', kind: 'transform' },
+  { id: 'astronaut', name: 'Pilote de vaisseau', kind: 'transform' },
+  { id: 'worker', name: 'Ouvrier du bâtiment', kind: 'transform' },
   { id: 'aura', name: 'Aura de voix', kind: 'voice' },
   { id: 'rainbow', name: 'Contour arc-en-ciel', kind: 'voice' },
   { id: 'notes', name: 'Notes de musique', kind: 'voice' },
