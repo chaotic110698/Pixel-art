@@ -212,14 +212,21 @@ export function createEffects(o) {
       } else if (rw > headW * 1.15) { bodyY = y; break; }
     }
     if (headB < 0) headB = y0 + band;
-    if (bodyY < 0) bodyY = Math.min(y1, y0 + Math.round(span * 0.62));
+    if (bodyY < 0) {
+      // pas d'élargissement net (cheveux longs, capuche…) : buste si le bas de l'image est large,
+      // sinon tête seule (les tenues ne recolorent alors pas de torse)
+      const bw = rows[y1][1] - rows[y1][0] + 1;
+      bodyY = bw >= headW * 0.9 ? Math.min(y1, y0 + Math.round(span * 0.62)) : h;
+    }
     if (headB > bodyY) headB = bodyY;
     return { w, h, x0, x1, y0, y1, rows, hx0, hx1, headW, hcx: (hx0 + hx1) / 2, headB, headH: headB - y0, bodyY };
   }
   /** Outils de dessin en pixels de l'avatar. */
-  function pen(g) {
-    const px = (x, y, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), 1, 1); };
-    const rect = (x, y, w, hh, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(hh)); };
+  // k : taille d'un pixel du dessin (2 pour un gabarit détaillé ×2…) ; les coordonnées des
+  // fonctions de dessin sont alors en « pixels du dessin » (voir scaled()).
+  function pen(g, k = 1) {
+    const px = (x, y, c) => { g.fillStyle = c; g.fillRect(Math.round(x) * k, Math.round(y) * k, k, k); };
+    const rect = (x, y, w, hh, c) => { g.fillStyle = c; g.fillRect(Math.round(x) * k, Math.round(y) * k, Math.round(w) * k, Math.round(hh) * k); };
     const art = (rows, x, y, pal) => rows.forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.' && pal[ch]) px(x + i, y + j, pal[ch]); }));
     /** Calotte (casque) : moitié haute d'une ellipse, ombrée, avec contour. */
     const dome = (cx, base, rx, ry, cols, outline) => {
@@ -236,6 +243,14 @@ export function createEffects(o) {
     };
     const ring = (cx, cy, rx, ry, c) => { for (let a = 0; a < Math.PI * 2; a += 0.02) px(cx + Math.cos(a) * rx, cy + Math.sin(a) * ry, c); };
     return { g, px, rect, art, dome, ring };
+  }
+  /** Repères ramenés à l'échelle des pixels du dessin (k pixels de l'image par pixel du dessin). */
+  function scaled(I, k) {
+    if (k === 1) return I;
+    const d = (v) => Math.floor(v / k);
+    const rows = [];
+    for (let y = 0; y < Math.ceil(I.h / k); y++) { const r = I.rows[Math.min(I.h - 1, y * k)]; rows.push(r[1] >= 0 ? [d(r[0]), d(r[1])] : r); }
+    return { ...I, w: Math.ceil(I.w / k), h: Math.ceil(I.h / k), x0: d(I.x0), x1: d(I.x1), y0: d(I.y0), y1: d(I.y1), rows, hx0: d(I.hx0), hx1: d(I.hx1), headW: Math.round(I.headW / k), hcx: I.hcx / k, headB: d(I.headB), headH: Math.round(I.headH / k), bodyY: d(I.bodyY) };
   }
   /** Torse : seuls les pixels sous les épaules (le cou et le visage restent). */
   const body = (I, y) => y >= I.bodyY;
@@ -339,7 +354,7 @@ export function createEffects(o) {
     },
     // ---------- tenues ----------
     knight: {
-      map: (r, g, b, a, x, y, I) => (body(I, y) ? [...ramp(['#2a2d36', '#4f5564', '#7c8496', '#b4bccb', '#e6ecf5'])(lum(r, g, b) * 0.8 + ((y - I.bodyY) % 4 === 1 ? 0.2 : 0)), a] : null),
+      map: (r, g, b, a, x, y, I) => (body(I, y) ? [...ramp(['#2a2d36', '#4f5564', '#7c8496', '#b4bccb', '#e6ecf5'])(lum(r, g, b) * 0.8 + (Math.floor((y - I.bodyY) / I.k) % 4 === 1 ? 0.2 : 0)), a] : null),
       deco(p, I) {
         const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.42);
         p.dome(cx, base, I.headW / 2 + 1, Math.round(I.headH * 0.42) + 1, ['#5a6070', '#8a92a4', '#cfd6e2'], '#1c1e26');
@@ -347,7 +362,7 @@ export function createEffects(o) {
         p.rect(cx - 0.5, base, 1, Math.max(2, Math.round(I.headH * 0.22)), '#5a6070'); // nasal
         p.art(['..rr', '.rRr', 'rRr.', 'rRr.', '.rr.', '.r..'], cx - 2, I.y0 - 7, { r: '#c8282c', R: '#ff6a4a' }); // plumet
         // épaulières
-        for (const dir of [-1, 1]) { const x = dir < 0 ? I.rows[I.bodyY + 2][0] : I.rows[I.bodyY + 2][1] - 4; p.dome(x + 2, I.bodyY + 3, 3, 3, ['#5a6070', '#8a92a4', '#cfd6e2'], '#1c1e26'); }
+        if (I.bodyY + 2 <= I.y1) for (const dir of [-1, 1]) { const x = dir < 0 ? I.rows[I.bodyY + 2][0] : I.rows[I.bodyY + 2][1] - 4; p.dome(x + 2, I.bodyY + 3, 3, 3, ['#5a6070', '#8a92a4', '#cfd6e2'], '#1c1e26'); }
       },
       poof: '#cfd6e2',
     },
@@ -357,6 +372,7 @@ export function createEffects(o) {
         const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.38);
         p.dome(cx, base, I.headW / 2 + 1, Math.round(I.headH * 0.38) + 1, ['#b8b0a0', '#e8e2d2', '#ffffff'], '#3a3020');
         p.rect(cx - I.headW / 2 - 1, base, I.headW + 2, 1, '#d8a828');
+        if (I.bodyY + 4 > I.y1) return; // pas de torse : casque seulement
         // croix dorée sur la poitrine
         const y = I.bodyY + 3;
         p.rect(cx - 0.5, y, 1, 5, '#d8a828'); p.rect(cx - 2, y + 1, 5, 1, '#d8a828');
@@ -372,7 +388,7 @@ export function createEffects(o) {
       aura: '#fff1a8', poof: '#ffe680',
     },
     soldier: {
-      map: (r, g, b, a, x, y, I) => { if (!body(I, y)) return null; const n = noise(x >> 1, y >> 1); const t = lum(r, g, b); const c = n < 0.33 ? '#4a5a2a' : n < 0.66 ? '#6b7a3a' : '#3a3020'; const k = hex(c); return [Math.round(k[0] * (0.6 + t * 0.6)), Math.round(k[1] * (0.6 + t * 0.6)), Math.round(k[2] * (0.6 + t * 0.6)), a]; },
+      map: (r, g, b, a, x, y, I) => { if (!body(I, y)) return null; const n = noise(Math.floor(x / I.k / 2), Math.floor(y / I.k / 2)); const t = lum(r, g, b); const c = n < 0.33 ? '#4a5a2a' : n < 0.66 ? '#6b7a3a' : '#3a3020'; const k = hex(c); return [Math.round(k[0] * (0.6 + t * 0.6)), Math.round(k[1] * (0.6 + t * 0.6)), Math.round(k[2] * (0.6 + t * 0.6)), a]; },
       deco(p, I) {
         const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.36);
         p.dome(cx, base, I.headW / 2 + 2, Math.round(I.headH * 0.36) + 1, ['#3a4a22', '#566a30', '#7a8c48'], '#1a2010');
@@ -382,7 +398,7 @@ export function createEffects(o) {
       poof: '#8a8a6a',
     },
     pilot: {
-      map: (r, g, b, a, x, y, I) => (body(I, y) ? (y < I.bodyY + 2 ? [...ramp(['#c8b89a', '#efe6d2', '#ffffff'])(lum(r, g, b)), a] : [...ramp(['#2a160c', '#4a2a16', '#6e4024', '#8e5a32'])(lum(r, g, b)), a]) : null),
+      map: (r, g, b, a, x, y, I) => (body(I, y) ? (y < I.bodyY + 2 * I.k ? [...ramp(['#c8b89a', '#efe6d2', '#ffffff'])(lum(r, g, b)), a] : [...ramp(['#2a160c', '#4a2a16', '#6e4024', '#8e5a32'])(lum(r, g, b)), a]) : null),
       deco(p, I) {
         const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.45);
         p.dome(cx, base, I.headW / 2 + 1, Math.round(I.headH * 0.45) + 1, ['#4a2a16', '#6e4024', '#9a6a3c'], '#1e0e06');
@@ -404,6 +420,7 @@ export function createEffects(o) {
         p.g.globalAlpha = 1;
         p.ring(cx, cy, rx, ry, '#e6ecf5');
         for (let a = -2.4; a < -1.6; a += 0.08) p.px(cx + Math.cos(a) * (rx - 2), cy + Math.sin(a) * (ry - 2), '#ffffff'); // reflet
+        if (I.bodyY + 4 > I.y1) return;
         p.rect(cx - rx, I.bodyY - 1, rx * 2, 2, '#b4bccb'); // col
         // panneau de commande sur la poitrine
         const py = I.bodyY + 3;
@@ -414,7 +431,7 @@ export function createEffects(o) {
     worker: {
       map: (r, g, b, a, x, y, I) => {
         if (!body(I, y)) return null;
-        const t = lum(r, g, b), dy = y - I.bodyY;
+        const t = lum(r, g, b), dy = Math.floor((y - I.bodyY) / I.k);
         if (dy === 4 || dy === 5 || dy === 9 || dy === 10) return [...ramp(['#9aa0aa', '#d8dce4', '#ffffff'])(t), a]; // bandes réfléchissantes
         return [...ramp(['#a83a06', '#e85a10', '#ff7a1a', '#ff9a3a'])(t), a];
       },
@@ -445,6 +462,8 @@ export function createEffects(o) {
     try { data = g.getImageData(0, 0, w, hh); } catch (e) { return img; }
     const I = info(data.data, w, hh);
     if (!I) return img;
+    I.k = Math.max(1, Math.round(I.headW / 24)); // taille d'un pixel du dessin
+    const Ik = scaled(I, I.k);
     if (def.map) {
       const d = data.data;
       for (let y = 0; y < hh; y++) for (let x = 0; x < w; x++) {
@@ -455,10 +474,10 @@ export function createEffects(o) {
       }
       g.putImageData(data, 0, 0);
     }
-    const p = pen(g);
-    if (def.deco) def.deco(p, I, f);
-    if (def.behind) { g.globalCompositeOperation = 'destination-over'; def.behind(p, I, f); g.globalCompositeOperation = 'source-over'; }
-    if (def.post) def.post(p, I, f);
+    const p = pen(g, I.k);
+    if (def.deco) def.deco(p, Ik, f);
+    if (def.behind) { g.globalCompositeOperation = 'destination-over'; def.behind(p, Ik, f); g.globalCompositeOperation = 'source-over'; }
+    if (def.post) def.post(pen(g), I, f);
     m[key] = c;
     return c;
   }
