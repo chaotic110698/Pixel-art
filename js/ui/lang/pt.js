@@ -1264,6 +1264,10 @@ export const DICT = {
   "Durée": "Transformações e trajes (enquanto ativos)",
   "Jusqu'au prochain appui": "Duração",
   "Les effets ponctuels se déclenchent quand l'expression commence ; les effets d'ambiance et les transformations durent tant qu'elle est affichée.": "Até o próximo toque",
+  "Autre durée, en secondes (0 : jusqu'au prochain appui)": "Efeitos pontuais disparam quando a expressão começa; ambientes e transformações duram enquanto ela é exibida.",
+  "Durée en secondes": "Outra duração, em segundos (0: até o próximo toque)",
+  "Sur le Stream Deck, chaque touche peut avoir sa propre durée (ex. Démon pendant 15 s) ou rester active tant qu'elle est enfoncée.": "Duração em segundos",
+  "Une nouvelle version du plugin est disponible : téléchargez-la et double-cliquez sur le fichier pour l'installer par-dessus (vos touches sont conservées). Ensuite, le plugin proposera lui-même ses mises à jour.": "No Stream Deck, cada tecla pode ter sua própria duração (ex.: Demônio por 15 s) ou ficar ativa enquanto estiver pressionada.",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

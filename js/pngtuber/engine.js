@@ -314,12 +314,20 @@ export function createAvatar(o) {
       } else if (a === 'profile') {
         if (down) setProfile(id);
       } else if (a === 'effect') {
-        if (!down || !o.fx) return;
-        if (o.fx.trigger(id, false)) return; // effet ponctuel
-        if (o.fx.toggleAmbient) { // ambiance : allumer / éteindre
-          o.fx.toggleAmbient(id);
+        if (!o.fx) return;
+        // effet qui dure (ambiance, transformation, tenue) : mode de la touche
+        //   toggle : allumer / éteindre ; timed : allumer pour c.duration secondes (un nouvel appui
+        //   l'éteint) ; hold : allumé tant que la touche est enfoncée
+        const mode = c.mode || 'toggle';
+        if (o.fx.isPersistent && o.fx.isPersistent(id)) {
+          if (mode === 'hold') o.fx.setPersistent(id, down, 0);
+          else if (!down) return;
+          else if (mode === 'timed') o.fx.setPersistent(id, !o.fx.ambientOn().includes(id), Math.max(1, +c.duration || 10));
+          else o.fx.setPersistent(id, undefined);
           if (o.onChange) o.onChange(st);
+          return;
         }
+        if (down) o.fx.trigger(id, false); // effet ponctuel
       } else if (a === 'background') {
         if (down && o.onBackground) o.onBackground(id || 'transparent');
       } else if (a === 'talk') {
@@ -335,6 +343,7 @@ export function createAvatar(o) {
         background: o.background ? o.background() : null,
         talking: !!st.manual,
         ambient: o.fx && o.fx.ambientOn ? o.fx.ambientOn() : [],
+        timers: o.fx && o.fx.timers ? o.fx.timers() : {}, // secondes restantes des effets minutés
       };
     },
     refresh() {

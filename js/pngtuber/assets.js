@@ -5,6 +5,7 @@
 import { composeToCanvas, composePixels } from '../render/compose.js';
 import { encodePNG } from '../export/png.js';
 import { bytesToBase64 } from '../util/dom.js';
+import { docFacing } from '../library/library.js';
 
 export const MOUTHS = ['closed', 'half', 'open'];
 
@@ -89,6 +90,7 @@ export function effectsConfig(doc, profileId = null) {
     shout: e.shout || [],
     intensity: e.intensity || 1,
     transformDuration: e.transformDuration || 0, // transformations : 0 = jusqu'au prochain appui
+    facing: docFacing(doc), // sens du personnage de profil (chapeaux des tenues) : 'left', 'right' ou null (face)
   };
 }
 

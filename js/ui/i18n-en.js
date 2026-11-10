@@ -1235,4 +1235,8 @@ export const EN = {
   'Durée': 'Duration',
   'Jusqu\'au prochain appui': 'Until the next press',
   'Les effets ponctuels se déclenchent quand l\'expression commence ; les effets d\'ambiance et les transformations durent tant qu\'elle est affichée.': 'One-shot effects play when the expression starts; ambience effects and transformations last as long as it is shown.',
+  'Autre durée, en secondes (0 : jusqu\'au prochain appui)': 'Custom duration, in seconds (0: until the next press)',
+  'Durée en secondes': 'Duration in seconds',
+  'Sur le Stream Deck, chaque touche peut avoir sa propre durée (ex. Démon pendant 15 s) ou rester active tant qu\'elle est enfoncée.': 'On the Stream Deck, each key can have its own duration (e.g. Demon for 15 s) or stay active while it is held down.',
+  'Une nouvelle version du plugin est disponible : téléchargez-la et double-cliquez sur le fichier pour l\'installer par-dessus (vos touches sont conservées). Ensuite, le plugin proposera lui-même ses mises à jour.': 'A new version of the plugin is available: download it and double-click the file to install it over the old one (your keys are kept). From then on, the plugin will offer its own updates.',
 };

@@ -1264,6 +1264,10 @@ export const DICT = {
   "Durée": "变身和服装（激活期间）",
   "Jusqu'au prochain appui": "时长",
   "Les effets ponctuels se déclenchent quand l'expression commence ; les effets d'ambiance et les transformations durent tant qu'elle est affichée.": "直到下次按下",
+  "Autre durée, en secondes (0 : jusqu'au prochain appui)": "单次特效在表情开始时触发；氛围和变身在表情显示期间持续。",
+  "Durée en secondes": "自定义时长（秒）（0：直到下次按下）",
+  "Sur le Stream Deck, chaque touche peut avoir sa propre durée (ex. Démon pendant 15 s) ou rester active tant qu'elle est enfoncée.": "时长（秒）",
+  "Une nouvelle version du plugin est disponible : téléchargez-la et double-cliquez sur le fichier pour l'installer par-dessus (vos touches sont conservées). Ensuite, le plugin proposera lui-même ses mises à jour.": "在 Stream Deck 上，每个按键可以设置自己的时长（例如恶魔 15 秒），或在按住时保持生效。",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

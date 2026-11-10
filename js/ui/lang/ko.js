@@ -1264,6 +1264,10 @@ export const DICT = {
   "Durée": "변신과 의상 (켜져 있는 동안)",
   "Jusqu'au prochain appui": "지속 시간",
   "Les effets ponctuels se déclenchent quand l'expression commence ; les effets d'ambiance et les transformations durent tant qu'elle est affichée.": "다음에 누를 때까지",
+  "Autre durée, en secondes (0 : jusqu'au prochain appui)": "한 번만 나오는 효과는 표정이 시작될 때 나오고, 분위기와 변신은 표정이 보이는 동안 계속됩니다.",
+  "Durée en secondes": "직접 입력한 시간(초) (0: 다음에 누를 때까지)",
+  "Sur le Stream Deck, chaque touche peut avoir sa propre durée (ex. Démon pendant 15 s) ou rester active tant qu'elle est enfoncée.": "시간(초)",
+  "Une nouvelle version du plugin est disponible : téléchargez-la et double-cliquez sur le fichier pour l'installer par-dessus (vos touches sont conservées). Ensuite, le plugin proposera lui-même ses mises à jour.": "Stream Deck에서는 키마다 시간을 따로 정하거나(예: 악마 15초) 누르고 있는 동안만 켜지게 할 수 있습니다.",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

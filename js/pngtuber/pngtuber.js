@@ -235,7 +235,9 @@ export function openPngtuber(app) {
           h('button', { class: 'btn small fx-key', title: 'Associer une touche ou une combinaison (ex. Ctrl+Maj+C ; Retour arrière : retirer, Échap : annuler)', 'aria-label': `Touche pour ${x.name}`, onclick: (ev) => captureKey('fx', x.id, ev.currentTarget, (k) => setFxKey(x.id, k)) }, c.keys[x.id] ? h('kbd', {}, formatCombo(c.keys[x.id])) : 'Touche…'));
       })),
       h('div', { class: 'row' }, h('span', { class: 'small' }, 'Durée'),
-        h('div', { class: 'seg' }, [[0, 'Jusqu\'au prochain appui'], [5, '5 s'], [10, '10 s'], [30, '30 s']].map(([v, l]) => h('button', { class: (c.transformDuration || 0) === v ? 'on' : '', onclick: () => setFx({ transformDuration: v }) }, l)))),
+        h('div', { class: 'seg' }, [[0, 'Jusqu\'au prochain appui'], [5, '5 s'], [10, '10 s'], [30, '30 s']].map(([v, l]) => h('button', { class: (c.transformDuration || 0) === v ? 'on' : '', onclick: () => setFx({ transformDuration: v }) }, l))),
+        h('input', { type: 'number', class: 'input num', min: 0, max: 3600, step: 1, value: c.transformDuration || 0, title: 'Autre durée, en secondes (0 : jusqu\'au prochain appui)', 'aria-label': 'Durée en secondes', onchange: (ev) => setFx({ transformDuration: Math.max(0, Math.min(3600, Math.round(+ev.target.value || 0))) }) })),
+      h('p', { class: 'hint' }, 'Sur le Stream Deck, chaque touche peut avoir sa propre durée (ex. Démon pendant 15 s) ou rester active tant qu\'elle est enfoncée.'),
       h('div', { class: 'fx-sub' }, 'Liés à la voix'),
       chipsOf(fxOf('voice'), c.voice, (id) => setFx({ voice: toggleIn(c.voice, id) })),
       h('div', { class: 'fx-sub' }, 'Quand je crie'),
@@ -393,6 +395,16 @@ export function openPngtuber(app) {
   // ---------- plugin Stream Deck (pilotage même quand un jeu est au premier plan) ----------
   let deck = null;
   let deckStatus = null;
+  let deckUpdate = null;
+  let deckLatest = null; // version du plugin publiée avec le site (stream-deck/version.json)
+  /** Version a plus ancienne que b (« 1.1.0 » < « 1.2.0 »). */
+  const olderThan = (a, b) => { const pa = a.split('.').map(Number), pb = b.split('.').map(Number); for (let i = 0; i < 3; i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) < (pb[i] || 0); return false; };
+  function showDeckStatus() {
+    if (deckStatus) deckStatus.textContent = deckText();
+    // plugin connecté plus ancien que celui du site (la 1.1 n'annonce pas sa version)
+    const old = !!(deck?.connected && deckLatest && olderThan(deck.plugin?.version || '1.1.0', deckLatest));
+    if (deckUpdate) deckUpdate.hidden = !old;
+  }
   const deckText = () => (!cfg.deck ? '' : deck?.connected ? 'Plugin connecté' : 'En attente du plugin (logiciel Stream Deck lancé ?)');
   function syncDeck() {
     if (cfg.deck && !deck) {
@@ -401,21 +413,26 @@ export function openPngtuber(app) {
         catalog: () => deckCatalog({ expressions: avatarExpressions(doc), profiles: avatarProfiles(doc), effects: EFFECTS.filter((e) => e.kind !== 'voice'), scenes: SCENE_NAMES }),
         state: () => engine.snapshot(),
         onCommand: (c) => engine.command(c),
-        onStatus: () => { if (deckStatus) deckStatus.textContent = deckText(); },
+        onStatus: () => setTimeout(showDeckStatus, 300), // laisse le temps au plugin d'annoncer sa version
+        onPlugin: showDeckStatus,
       });
+      if (!deckLatest) fetch('stream-deck/version.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((v) => { deckLatest = v?.version || null; showDeckStatus(); }).catch(() => {});
     } else if (!cfg.deck && deck) {
       deck.close();
       deck = null;
     }
-    if (deckStatus) deckStatus.textContent = deckText();
+    showDeckStatus();
   }
   function deckUI() {
     deckStatus = h('span', { class: 'small muted' }, deckText());
+    deckUpdate = h('p', { class: 'hint warn-text', hidden: true }, 'Une nouvelle version du plugin est disponible : téléchargez-la et double-cliquez sur le fichier pour l\'installer par-dessus (vos touches sont conservées). Ensuite, le plugin proposera lui-même ses mises à jour.');
+    queueMicrotask(showDeckStatus);
     return h('div', { class: 'deck-box' },
       h('div', { class: 'row' },
         h('label', { class: 'chk', title: 'Le plugin Stream Deck « Pixel Atelier » pilote l\'avatar (expressions, effets, fonds, profils, parler) même quand un jeu est au premier plan' },
           h('input', { type: 'checkbox', checked: !!cfg.deck, onchange: (e) => { cfg.deck = e.target.checked; syncDeck(); } }), 'Plugin Stream Deck'),
         deckStatus),
+      deckUpdate,
       h('div', { class: 'row' },
         h('a', { class: 'btn', href: 'stream-deck/com.pixelatelier.avatar.streamDeckPlugin', download: 'com.pixelatelier.avatar.streamDeckPlugin', title: 'Plugin pour le logiciel Stream Deck (Windows, Mac) : double-cliquez sur le fichier pour l\'installer' }, icon('download'), 'Télécharger le plugin Stream Deck')),
       h('p', { class: 'hint' }, 'Installez le plugin (double-clic sur le fichier), cochez « Plugin Stream Deck », puis glissez les actions Pixel Atelier (Expression, Effet, Fond, Profil, Parler) sur vos touches. La fenêtre de capture et l\'avatar OBS (.html) se connectent aussi au plugin : les touches marchent même quand le jeu est au premier plan.'));

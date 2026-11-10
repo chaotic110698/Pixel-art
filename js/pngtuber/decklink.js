@@ -13,6 +13,7 @@
 //   state(),             // { expression, profile, background, talking, ambient[] }
 //   onCommand(cmd),      // { action, id, down, hold, toggle }
 //   onStatus(connected), // facultatif
+//   onPlugin(info),      // facultatif : { version } du plugin (1.2 et plus)
 // }
 export function createDeckLink(o) {
   const url = o.url || 'ws://127.0.0.1:39217';
@@ -22,6 +23,7 @@ export function createDeckLink(o) {
   let delay = 2000;
   let lastState = '';
   let connected = false;
+  let plugin = null; // { version } annoncée par le plugin
 
   function send(msg) {
     if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg));
@@ -64,9 +66,11 @@ export function createDeckLink(o) {
         o.onCommand(m);
         setTimeout(update, 0);
       } else if (m.type === 'catalog?') hello();
+      else if (m.type === 'plugin') { plugin = { version: String(m.version || '') }; if (o.onPlugin) o.onPlugin(plugin); }
     };
     ws.onclose = () => {
       ws = null;
+      plugin = null;
       setConnected(false);
       schedule();
     };
@@ -86,6 +90,8 @@ export function createDeckLink(o) {
     /** Le catalogue a changé (projet enregistré, nouvelle expression…). */
     refresh: hello,
     get connected() { return connected; },
+    /** Plugin connecté : { version }, ou null (aucun, ou version 1.1 qui ne l'annonce pas). */
+    get plugin() { return plugin; },
     close() {
       closed = true;
       clearTimeout(timer);

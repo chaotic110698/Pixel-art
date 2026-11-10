@@ -1264,6 +1264,10 @@ export const DICT = {
   "Durée": "Verwandlungen und Outfits (solange aktiv)",
   "Jusqu'au prochain appui": "Dauer",
   "Les effets ponctuels se déclenchent quand l'expression commence ; les effets d'ambiance et les transformations durent tant qu'elle est affichée.": "Bis zum nächsten Drücken",
+  "Autre durée, en secondes (0 : jusqu'au prochain appui)": "Einmalige Effekte starten, wenn der Ausdruck beginnt; Atmosphären und Verwandlungen dauern, solange er angezeigt wird.",
+  "Durée en secondes": "Andere Dauer in Sekunden (0: bis zum nächsten Drücken)",
+  "Sur le Stream Deck, chaque touche peut avoir sa propre durée (ex. Démon pendant 15 s) ou rester active tant qu'elle est enfoncée.": "Dauer in Sekunden",
+  "Une nouvelle version du plugin est disponible : téléchargez-la et double-cliquez sur le fichier pour l'installer par-dessus (vos touches sont conservées). Ensuite, le plugin proposera lui-même ses mises à jour.": "Auf dem Stream Deck kann jede Taste ihre eigene Dauer haben (z. B. Dämon für 15 s) oder aktiv bleiben, solange sie gedrückt wird.",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

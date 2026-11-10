@@ -1,0 +1,5 @@
+{
+  "version": "1.2.0",
+  "url": "stream-deck/com.pixelatelier.avatar.streamDeckPlugin",
+  "notes": "effets pendant un nombre de secondes ou tant que la touche est enfoncée, compte à rebours sur la touche, mises à jour en un clic"
+}

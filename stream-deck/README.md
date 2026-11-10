@@ -14,7 +14,9 @@ contrairement aux raccourcis clavier.
 3. Ouvrez l'avatar : la **fenêtre de capture**, ou l'**avatar OBS (.html)** exporté après avoir coché la case.
 4. Dans le logiciel Stream Deck, catégorie **Pixel Atelier**, glissez les actions sur vos touches :
    - **Expression** : bascule, ou temporaire (tant que la touche est appuyée) ;
-   - **Effet** : confettis, cœurs… ; les ambiances (neige, pluie…) s'allument puis s'éteignent ;
+   - **Effet** : confettis, cœurs… ; pour les ambiances (neige, pluie…), transformations (démon…) et tenues,
+     **Mode** au choix : **Bascule** (allumer / éteindre), **Pendant… secondes** (ex. Démon pendant 15 s,
+     compte à rebours sur la touche) ou **Maintenir** (actif tant que la touche est enfoncée) ;
    - **Fond** : couleur unie ou décor animé ;
    - **Profil** : tenue ou personnage ;
    - **Parler** : l'avatar parle tant que la touche est appuyée (ou bascule).
@@ -23,6 +25,17 @@ contrairement aux raccourcis clavier.
 
 La touche de l'état en cours s'éclaire. Un point d'exclamation sur une touche signifie qu'aucun avatar
 n'est connecté (avatar fermé, ou case « Plugin Stream Deck » décochée).
+
+### Mises à jour
+
+- **Rien à réinstaller pour vos nouveautés** : nouvelles expressions, nouveaux profils, nouveaux effets et
+  fonds de Pixel Atelier apparaissent tout seuls dans les listes (l'avatar envoie son catalogue au plugin).
+- **Nouvelle version du plugin** (nouveaux modes, icônes) : à partir de la 1.2, le plugin lit
+  `stream-deck/version.json` sur le site (au lancement puis toutes les 6 heures, sans rien envoyer).
+  L'inspecteur d'une touche affiche alors **« Installer la mise à jour »** : le plugin télécharge le paquet
+  et l'ouvre, le logiciel Stream Deck remplace le plugin en **gardant vos touches et leurs réglages**.
+- Depuis la 1.1 : téléchargez la nouvelle version et double-cliquez dessus une dernière fois (le mode
+  PNGtuber signale un plugin trop ancien sous la case « Plugin Stream Deck »).
 
 ### Fonctionnement
 
@@ -37,7 +50,9 @@ Installation manuelle (si le double-clic ne marche pas) : copiez le dossier
 `~/Library/Application Support/com.elgato.StreamDeck/Plugins/` (Mac), puis redémarrez le logiciel Stream Deck.
 
 Pour régénérer les images et le paquet après une modification du plugin :
-`node scripts/make-streamdeck-plugin.js` (site servi sur le port 8123). Test : `scripts/audit/run.sh deck`.
+`node scripts/make-streamdeck-plugin.js` (site servi sur le port 8123) ; il écrit aussi `version.json`
+(augmentez `VERSION` dans `bin/plugin.js` et `Version` dans `manifest.json`, et décrivez les nouveautés
+dans `NOTES` du script). Test : `scripts/audit/run.sh deck`.
 
 ## Icônes seules
 

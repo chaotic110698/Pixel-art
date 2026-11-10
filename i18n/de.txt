@@ -1262,6 +1262,10 @@ Verwandlungen und Outfits (solange aktiv)
 Dauer
 Bis zum nächsten Drücken
 Einmalige Effekte starten, wenn der Ausdruck beginnt; Atmosphären und Verwandlungen dauern, solange er angezeigt wird.
+Andere Dauer in Sekunden (0: bis zum nächsten Drücken)
+Dauer in Sekunden
+Auf dem Stream Deck kann jede Taste ihre eigene Dauer haben (z. B. Dämon für 15 s) oder aktiv bleiben, solange sie gedrückt wird.
+Eine neue Version des Plugins ist verfügbar: Laden Sie sie herunter und doppelklicken Sie auf die Datei, um sie darüber zu installieren (Ihre Tasten bleiben erhalten). Danach bietet das Plugin seine Updates selbst an.
 #P
 Rückgängig: {T1}
 Wiederholt: {T1}

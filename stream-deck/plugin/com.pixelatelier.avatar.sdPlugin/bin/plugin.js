@@ -8,12 +8,17 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { execFile } = require('child_process');
 const ws = require('./ws.js');
 
 const ROOT = path.join(__dirname, '..');
 const AVATAR_PORT = Number(process.env.PIXEL_ATELIER_PORT) || 39217;
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
+// mises à jour : fichier de version publié avec le site (aucune donnée envoyée)
+const SITE = process.env.PIXEL_ATELIER_SITE || 'https://chaotic110698.github.io/Pixel-art/';
+const UPDATE_EVERY = 6 * 3600 * 1000;
 
 // ---------- arguments donnés par le logiciel Stream Deck ----------
 const args = {};
@@ -42,7 +47,9 @@ let sd = null; // connexion au logiciel Stream Deck
 const avatars = new Set(); // avatars connectés
 let catalog = null; // catalogue du dernier avatar connecté
 let avatarName = '';
-let avState = null; // { expression, profile, background, talking, ambient[] }
+let avState = null; // { expression, profile, background, talking, ambient[], timers{} }
+let update = null; // { version, url, notes } : version plus récente publiée
+let installing = false;
 const contexts = new Map(); // touche -> { uuid, kind, settings, title, image, state }
 
 const log = (...a) => console.log('[Pixel Atelier]', ...a);
@@ -67,6 +74,9 @@ function titleFor(c) {
   if (c.kind === 'expression') return s.id ? (find(cat().expressions, s.id) || {}).name || s.name || '?' : 'Normal';
   if (c.kind === 'profile') return s.id ? (find(cat().profiles, s.id) || {}).name || s.name || '?' : 'Défaut';
   if (c.kind === 'talk') return s.mode === 'toggle' ? 'Parler\n(bascule)' : 'Parler';
+  // effet minuté en cours : compte à rebours sur la touche
+  const left = c.kind === 'effect' && s.id && avState && avState.timers ? avState.timers[s.id] : undefined;
+  if (left !== undefined) return `${left} s`;
   return ''; // effets et fonds : l'icône suffit
 }
 function imageFor(c) {
@@ -115,7 +125,7 @@ const renderAll = () => { for (const k of contexts.keys()) render(k); };
 function toInspector(context) {
   const c = contexts.get(context);
   if (!c) return;
-  sdSend({ event: 'sendToPropertyInspector', action: c.uuid, context, payload: { type: 'catalog', connected: avatars.size > 0, name: avatarName, catalog: cat(), port: AVATAR_PORT, version: VERSION } });
+  sdSend({ event: 'sendToPropertyInspector', action: c.uuid, context, payload: { type: 'catalog', connected: avatars.size > 0, name: avatarName, catalog: cat(), port: AVATAR_PORT, version: VERSION, update, installing } });
 }
 const toAllInspectors = () => { for (const k of contexts.keys()) toInspector(k); };
 
@@ -133,9 +143,15 @@ function press(context, down) {
     const toggle = s.mode === 'toggle';
     if (!down && toggle) return;
     cmd = { action: 'talk', down, toggle };
+  } else if (c.kind === 'effect') {
+    // effets qui durent : bascule, pendant N secondes, ou tant que la touche est enfoncée
+    const mode = s.mode === 'timed' || s.mode === 'hold' ? s.mode : 'toggle';
+    if (!down && mode !== 'hold') return;
+    if (!s.id) { if (down) sdSend({ event: 'showAlert', context }); return; }
+    cmd = { action: 'effect', id: s.id, down, mode };
+    if (mode === 'timed') cmd.duration = Math.max(1, Math.min(3600, Number(s.duration) || 10));
   } else {
     if (!down) return;
-    if (c.kind === 'effect' && !s.id) { sdSend({ event: 'showAlert', context }); return; }
     cmd = { action: c.kind, id: s.id || (c.kind === 'background' ? 'green' : null), down: true };
   }
   if (!avatars.size) {
@@ -177,6 +193,10 @@ function onStreamDeck(text) {
       if (payload.type === 'catalog?') {
         if (avatars.size) toAvatars({ type: 'catalog?' });
         toInspector(ctx);
+      } else if (payload.type === 'update?') {
+        checkUpdate().then(() => toInspector(ctx));
+      } else if (payload.type === 'install') {
+        installUpdate(ctx);
       }
       break;
     default:
@@ -214,6 +234,7 @@ function startAvatarServer() {
   }, (conn) => {
     avatars.add(conn);
     log('avatar connecté', conn.origin || '(fichier local)');
+    conn.send(JSON.stringify({ type: 'plugin', version: VERSION }));
     conn.on('message', (text) => {
       let m;
       try { m = JSON.parse(text); } catch (e) { return; }
@@ -242,5 +263,60 @@ function startAvatarServer() {
   server.on('listening', () => log('en attente des avatars sur ws://127.0.0.1:' + AVATAR_PORT));
 }
 
+// ---------- mises à jour ----------
+/** Compare deux versions « 1.2.0 » : > 0 si a est plus récente. */
+function newer(a, b) {
+  const pa = String(a).split('.').map(Number), pb = String(b).split('.').map(Number);
+  for (let i = 0; i < 3; i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) - (pb[i] || 0);
+  return 0;
+}
+/** Lit le fichier de version du site ; garde la mise à jour proposée si elle est plus récente. */
+async function checkUpdate() {
+  if (typeof fetch !== 'function') return;
+  try {
+    const r = await fetch(new URL('stream-deck/version.json', SITE), { cache: 'no-store' });
+    if (!r.ok) return;
+    const v = await r.json();
+    const found = v && v.version && newer(v.version, VERSION) > 0 ? { version: String(v.version), url: new URL(v.url || 'stream-deck/com.pixelatelier.avatar.streamDeckPlugin', SITE).href, notes: String(v.notes || '') } : null;
+    if (JSON.stringify(found) !== JSON.stringify(update)) {
+      update = found;
+      if (update) log('mise à jour disponible :', update.version);
+      toAllInspectors();
+    }
+  } catch (e) { /* hors ligne : on réessaiera plus tard */ }
+}
+/**
+ * Télécharge le nouveau paquet et l'ouvre : le logiciel Stream Deck propose alors de remplacer
+ * le plugin (les touches et leurs réglages sont conservés).
+ */
+async function installUpdate(context) {
+  if (!update || installing) return;
+  const site = new URL(SITE);
+  const url = new URL(update.url);
+  if (url.origin !== site.origin) return; // uniquement depuis le site de Pixel Atelier
+  installing = true;
+  toAllInspectors();
+  try {
+    const r = await fetch(url, { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const buf = Buffer.from(await r.arrayBuffer());
+    if (buf.length < 100 || buf[0] !== 0x50 || buf[1] !== 0x4b) throw new Error('paquet invalide');
+    const file = path.join(os.tmpdir(), `PixelAtelier-${update.version.replace(/[^0-9.]/g, '')}.streamDeckPlugin`);
+    fs.writeFileSync(file, buf);
+    const done = (err) => { if (err) log('ouverture du paquet impossible :', err.message); };
+    if (process.platform === 'win32') execFile('cmd', ['/c', 'start', '', file], { windowsHide: true }, done);
+    else execFile('open', [file], done);
+    log('paquet ouvert :', file);
+    if (context) sdSend({ event: 'showOk', context });
+  } catch (e) {
+    log('mise à jour impossible :', e.message);
+    if (context) sdSend({ event: 'showAlert', context });
+  }
+  installing = false;
+  toAllInspectors();
+}
+
 startAvatarServer();
 connectStreamDeck();
+setTimeout(checkUpdate, 5000);
+setInterval(checkUpdate, UPDATE_EVERY);

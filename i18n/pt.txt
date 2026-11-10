@@ -1262,6 +1262,10 @@ Transformações e trajes (enquanto ativos)
 Duração
 Até o próximo toque
 Efeitos pontuais disparam quando a expressão começa; ambientes e transformações duram enquanto ela é exibida.
+Outra duração, em segundos (0: até o próximo toque)
+Duração em segundos
+No Stream Deck, cada tecla pode ter sua própria duração (ex.: Demônio por 15 s) ou ficar ativa enquanto estiver pressionada.
+Há uma nova versão do plugin: baixe-a e dê um clique duplo no arquivo para instalá-la por cima (suas teclas são mantidas). Depois, o próprio plugin vai oferecer as atualizações.
 #P
 Desfeito: {T1}
 Refeito: {T1}

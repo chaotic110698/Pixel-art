@@ -1,6 +1,6 @@
 {
   "Name": "Pixel Atelier",
-  "Version": "1.1.0.0",
+  "Version": "1.2.0.0",
   "Author": "Pixel Atelier",
   "Description": "Pilote l'avatar PNGtuber de Pixel Atelier (expressions, effets, fonds, profils, parler), même quand un jeu est au premier plan.",
   "URL": "https://chaotic110698.github.io/Pixel-art/",
@@ -9,12 +9,23 @@
   "Category": "Pixel Atelier",
   "CategoryIcon": "imgs/category",
   "CodePath": "bin/plugin.js",
-  "Nodejs": { "Version": "20", "Debug": "disabled" },
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "disabled"
+  },
   "SDKVersion": 2,
-  "Software": { "MinimumVersion": "6.4" },
+  "Software": {
+    "MinimumVersion": "6.4"
+  },
   "OS": [
-    { "Platform": "windows", "MinimumVersion": "10" },
-    { "Platform": "mac", "MinimumVersion": "12" }
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    },
+    {
+      "Platform": "mac",
+      "MinimumVersion": "12"
+    }
   ],
   "Actions": [
     {
@@ -23,24 +34,44 @@
       "Tooltip": "Change l'expression de l'avatar (bascule, ou temporaire tant que la touche est appuyée)",
       "Icon": "imgs/actions/expression",
       "PropertyInspectorPath": "ui/inspector.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "SupportedInMultiActions": true,
       "States": [
-        { "Image": "imgs/keys/expression", "TitleAlignment": "bottom", "FontSize": "10" },
-        { "Image": "imgs/keys/expression_on", "TitleAlignment": "bottom", "FontSize": "10" }
+        {
+          "Image": "imgs/keys/expression",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        },
+        {
+          "Image": "imgs/keys/expression_on",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        }
       ]
     },
     {
       "UUID": "com.pixelatelier.avatar.effect",
       "Name": "Effet",
-      "Tooltip": "Lance un effet (confettis, cœurs…) ou allume / éteint une ambiance (neige, pluie…)",
+      "Tooltip": "Lance un effet (confettis, cœurs…) ou allume une ambiance, une transformation ou une tenue (bascule, pendant N secondes ou tant que la touche est enfoncée)",
       "Icon": "imgs/actions/effect",
       "PropertyInspectorPath": "ui/inspector.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "SupportedInMultiActions": true,
       "States": [
-        { "Image": "imgs/keys/effect", "TitleAlignment": "bottom", "FontSize": "10" },
-        { "Image": "imgs/keys/effect_on", "TitleAlignment": "bottom", "FontSize": "10" }
+        {
+          "Image": "imgs/keys/effect",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        },
+        {
+          "Image": "imgs/keys/effect_on",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        }
       ]
     },
     {
@@ -49,11 +80,21 @@
       "Tooltip": "Change le fond de l'avatar (couleur unie ou décor animé)",
       "Icon": "imgs/actions/background",
       "PropertyInspectorPath": "ui/inspector.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "SupportedInMultiActions": true,
       "States": [
-        { "Image": "imgs/keys/background", "TitleAlignment": "bottom", "FontSize": "10" },
-        { "Image": "imgs/keys/background_on", "TitleAlignment": "bottom", "FontSize": "10" }
+        {
+          "Image": "imgs/keys/background",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        },
+        {
+          "Image": "imgs/keys/background_on",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        }
       ]
     },
     {
@@ -62,11 +103,21 @@
       "Tooltip": "Change de tenue ou de personnage",
       "Icon": "imgs/actions/profile",
       "PropertyInspectorPath": "ui/inspector.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "SupportedInMultiActions": true,
       "States": [
-        { "Image": "imgs/keys/profile", "TitleAlignment": "bottom", "FontSize": "10" },
-        { "Image": "imgs/keys/profile_on", "TitleAlignment": "bottom", "FontSize": "10" }
+        {
+          "Image": "imgs/keys/profile",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        },
+        {
+          "Image": "imgs/keys/profile_on",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        }
       ]
     },
     {
@@ -75,11 +126,21 @@
       "Tooltip": "Fait parler l'avatar tant que la touche est appuyée (ou bascule)",
       "Icon": "imgs/actions/talk",
       "PropertyInspectorPath": "ui/inspector.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "SupportedInMultiActions": false,
       "States": [
-        { "Image": "imgs/keys/talk", "TitleAlignment": "bottom", "FontSize": "10" },
-        { "Image": "imgs/keys/talk_on", "TitleAlignment": "bottom", "FontSize": "10" }
+        {
+          "Image": "imgs/keys/talk",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        },
+        {
+          "Image": "imgs/keys/talk_on",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        }
       ]
     }
   ]

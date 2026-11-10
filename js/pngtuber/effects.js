@@ -38,7 +38,7 @@ export function createEffects(o) {
   };
   const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const P = [];
-  const st = { t: 0, last: 0, flash: 0, zoom: 0, shake: 0, lines: 0, emote: null, expr: undefined, shoutCd: 0, talkTime: 0, dirty: true, U: 1, GW: 64, GH: 48, ox: 0, oy: 0, head: null, sx: 0, sy: 0, manualAmb: new Set(), transId: null, transUntil: Infinity, linkedTrans: null };
+  const st = { t: 0, last: 0, flash: 0, zoom: 0, shake: 0, lines: 0, emote: null, expr: undefined, shoutCd: 0, talkTime: 0, dirty: true, U: 1, GW: 64, GH: 48, ox: 0, oy: 0, head: null, sx: 0, sy: 0, manualAmb: new Set(), transId: null, transUntil: Infinity, linkedTrans: null, ambUntil: {} };
   const bctx = o.back.getContext('2d');
   const fctx = o.front.getContext('2d');
   const unit = Math.max(1, Math.round(Math.min(o.width, o.height) / 40)); // pixels du dessin par pixel d'effet
@@ -224,9 +224,11 @@ export function createEffects(o) {
   /** Outils de dessin en pixels de l'avatar. */
   // k : taille d'un pixel du dessin (2 pour un gabarit détaillé ×2…) ; les coordonnées des
   // fonctions de dessin sont alors en « pixels du dessin » (voir scaled()).
-  function pen(g, k = 1) {
-    const px = (x, y, c) => { g.fillStyle = c; g.fillRect(Math.round(x) * k, Math.round(y) * k, k, k); };
-    const rect = (x, y, w, hh, c) => { g.fillStyle = c; g.fillRect(Math.round(x) * k, Math.round(y) * k, Math.round(w) * k, Math.round(hh) * k); };
+  // (ox, oy : décalage de la grille du dessin dans l'image, pour rester calé sur ses gros pixels)
+  function pen(g, k = 1, ox = 0, oy = 0) {
+    const px = (x, y, c) => { g.fillStyle = c; g.fillRect(ox + Math.round(x) * k, oy + Math.round(y) * k, k, k); };
+    const rect = (x, y, w, hh, c) => { g.fillStyle = c; g.fillRect(ox + Math.round(x) * k, oy + Math.round(y) * k, Math.round(w) * k, Math.round(hh) * k); };
+    const clear = (x, y) => g.clearRect(ox + Math.round(x) * k, oy + Math.round(y) * k, k, k);
     const art = (rows, x, y, pal) => rows.forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.' && pal[ch]) px(x + i, y + j, pal[ch]); }));
     /** Calotte (casque) : moitié haute d'une ellipse, ombrée, avec contour. */
     const dome = (cx, base, rx, ry, cols, outline) => {
@@ -242,15 +244,77 @@ export function createEffects(o) {
       }
     };
     const ring = (cx, cy, rx, ry, c) => { for (let a = 0; a < Math.PI * 2; a += 0.02) px(cx + Math.cos(a) * rx, cy + Math.sin(a) * ry, c); };
-    return { g, px, rect, art, dome, ring };
+    return { g, px, rect, art, dome, ring, clear };
   }
   /** Repères ramenés à l'échelle des pixels du dessin (k pixels de l'image par pixel du dessin). */
-  function scaled(I, k) {
+  function scaled(I, k, ox = 0, oy = 0) {
     if (k === 1) return I;
-    const d = (v) => Math.floor(v / k);
+    const dx = (v) => Math.floor((v - ox) / k), dy = (v) => Math.floor((v - oy) / k);
     const rows = [];
-    for (let y = 0; y < Math.ceil(I.h / k); y++) { const r = I.rows[Math.min(I.h - 1, y * k)]; rows.push(r[1] >= 0 ? [d(r[0]), d(r[1])] : r); }
-    return { ...I, w: Math.ceil(I.w / k), h: Math.ceil(I.h / k), x0: d(I.x0), x1: d(I.x1), y0: d(I.y0), y1: d(I.y1), rows, hx0: d(I.hx0), hx1: d(I.hx1), headW: Math.round(I.headW / k), hcx: I.hcx / k, headB: d(I.headB), headH: Math.round(I.headH / k), bodyY: d(I.bodyY) };
+    for (let y = 0; y < Math.ceil((I.h - oy) / k); y++) { const r = I.rows[Math.min(I.h - 1, oy + y * k)]; rows.push(r[1] >= 0 ? [dx(r[0]), dx(r[1])] : r); }
+    return { ...I, w: Math.ceil((I.w - ox) / k), h: Math.ceil((I.h - oy) / k), x0: dx(I.x0), x1: dx(I.x1), y0: dy(I.y0), y1: dy(I.y1), rows, hx0: dx(I.hx0), hx1: dx(I.hx1), headW: Math.round(I.headW / k), hcx: (I.hcx - ox) / k, headB: dy(I.headB), headH: Math.round(I.headH / k), bodyY: dy(I.bodyY) };
+  }
+  /** Taille des gros pixels de l'image (dessin 32×32 doublé…) : { k, ox, oy } ou null. */
+  function blockSize(d, w, h, I) {
+    const u = new Uint32Array(d.buffer, d.byteOffset, w * h);
+    for (const k of [4, 3, 2]) {
+      for (let oy = 0; oy < k; oy++) for (let ox = 0; ox < k; ox++) {
+        let bad = 0, n = 0;
+        const lim = (I.x1 - I.x0 + 1) * (I.y1 - I.y0 + 1) * 0.004;
+        for (let y = I.y0; y <= I.y1 && bad <= lim; y++) {
+          const by = oy + Math.floor((y - oy) / k) * k;
+          if (by < 0) continue;
+          for (let x = I.x0; x <= I.x1; x++) {
+            const bx = ox + Math.floor((x - ox) / k) * k;
+            if (bx < 0) continue;
+            n++;
+            if (u[y * w + x] !== u[by * w + bx] && ++bad > lim) break;
+          }
+        }
+        if (bad <= lim && n) return { k, ox, oy };
+      }
+    }
+    return null;
+  }
+  /** Sens du personnage : -1 tourné à gauche, 1 à droite, 0 de face. */
+  const side = (I) => (I.facing === 'left' ? -1 : I.facing === 'right' ? 1 : 0);
+  /**
+   * Crâne à la hauteur du front (fraction frac de la tête) : bords réels de la silhouette à
+   * cette ligne (et non la largeur maximale, qui compte le chignon, le nez ou le volume des
+   * cheveux), sommet du crâne au-dessus de son centre, côté visage et côté nuque.
+   */
+  function skull(I, frac) {
+    const L = Math.max(I.y0 + 2, Math.min(I.headB, Math.round(I.y0 + I.headH * frac)));
+    let [l, r] = I.rows[L];
+    if (r < 0) { l = I.hx0; r = I.hx1; }
+    const w = r - l + 1, cx = (l + r) / 2, f = side(I);
+    let top = I.y0;
+    while (top < L && !(I.rows[top][1] >= 0 && I.rows[top][0] <= cx && I.rows[top][1] >= cx)) top++;
+    return { L, l, r, w, cx, top, f, face: f < 0 ? l + w * 0.28 : f > 0 ? r - w * 0.28 : cx, back: f < 0 ? r - w * 0.22 : f > 0 ? l + w * 0.22 : cx };
+  }
+  /**
+   * Couvre-chef ajusté au crâne : efface ce qui dépasse au-dessus (mèches, chignon), puis
+   * dessine la calotte. grow : pixels de plus de chaque côté. Renvoie les repères du crâne.
+   */
+  function cap(p, I, frac, cols, outline, grow = 0) {
+    const S = skull(I, frac);
+    // calotte assez haute pour être bombée (un crâne aplati par le dessin donnerait un « chapeau champignon »)
+    const rx = S.w / 2 + 0.5 + grow, ry = Math.max(S.L - S.top + 1.5, rx * 0.8) + grow * 0.5;
+    for (let y = I.y0; y < S.L; y++) {
+      const [l, r] = I.rows[y] || [0, -1];
+      for (let x = l; x <= r; x++) if (((x - S.cx) / (rx + 0.5)) ** 2 + ((S.L - y) / (ry + 0.5)) ** 2 > 1) p.clear(x, y);
+    }
+    p.dome(S.cx, S.L, rx, ry, cols, outline);
+    S.rx = rx; S.ry = ry;
+    return S;
+  }
+  /** Motif retourné (pour les éléments orientés : plumet, visière). */
+  const mirror = (rows) => rows.map((r) => [...r].reverse().join(''));
+  /** Contour de la tête seule (du sommet au menton) : centre et demi-largeur. */
+  function headBox(I, bot = I.headB) {
+    let l = Infinity, r = -1;
+    for (let y = I.y0; y <= bot; y++) if (I.rows[y][1] >= 0) { l = Math.min(l, I.rows[y][0]); r = Math.max(r, I.rows[y][1]); }
+    return r < 0 ? { cx: I.hcx, hw: I.headW / 2 } : { cx: (l + r) / 2, hw: (r - l + 1) / 2 };
   }
   /** Torse : seuls les pixels sous les épaules (le cou et le visage restent). */
   const body = (I, y) => y >= I.bodyY;
@@ -356,11 +420,14 @@ export function createEffects(o) {
     knight: {
       map: (r, g, b, a, x, y, I) => (body(I, y) ? [...ramp(['#2a2d36', '#4f5564', '#7c8496', '#b4bccb', '#e6ecf5'])(lum(r, g, b) * 0.8 + (Math.floor((y - I.bodyY) / I.k) % 4 === 1 ? 0.2 : 0)), a] : null),
       deco(p, I) {
-        const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.42);
-        p.dome(cx, base, I.headW / 2 + 1, Math.round(I.headH * 0.42) + 1, ['#5a6070', '#8a92a4', '#cfd6e2'], '#1c1e26');
-        p.rect(cx - I.headW / 2 - 1, base, I.headW + 2, 1, '#3a3f4c');
-        p.rect(cx - 0.5, base, 1, Math.max(2, Math.round(I.headH * 0.22)), '#5a6070'); // nasal
-        p.art(['..rr', '.rRr', 'rRr.', 'rRr.', '.rr.', '.r..'], cx - 2, I.y0 - 7, { r: '#c8282c', R: '#ff6a4a' }); // plumet
+        const S = cap(p, I, 0.42, ['#5a6070', '#8a92a4', '#cfd6e2'], '#1c1e26');
+        p.rect(S.cx - S.rx, S.L, S.rx * 2 + 1, 1, '#3a3f4c');
+        p.rect(S.face - 0.5, S.L, 1, Math.max(2, Math.round(I.headH * 0.22)), '#5a6070'); // nasal, côté visage
+        p.px(S.face, S.L + Math.max(2, Math.round(I.headH * 0.22)), '#1c1e26');
+        // plumet sur le sommet, qui flotte vers l'arrière
+        const plume = ['..rr', '.rRr', 'rRr.', 'rRr.', '.rr.', '.r..'];
+        const px = S.f ? S.cx + (S.back - S.cx) * 0.5 : S.cx;
+        p.art(S.f > 0 ? mirror(plume) : plume, Math.round(px) - 2, S.top - 6, { r: '#c8282c', R: '#ff6a4a' });
         // épaulières
         if (I.bodyY + 2 <= I.y1) for (const dir of [-1, 1]) { const x = dir < 0 ? I.rows[I.bodyY + 2][0] : I.rows[I.bodyY + 2][1] - 4; p.dome(x + 2, I.bodyY + 3, 3, 3, ['#5a6070', '#8a92a4', '#cfd6e2'], '#1c1e26'); }
       },
@@ -369,10 +436,11 @@ export function createEffects(o) {
     paladin: {
       map: (r, g, b, a, x, y, I) => (body(I, y) ? [...ramp(['#5a5040', '#a89a7a', '#e8e2d2', '#ffffff'])(lum(r, g, b)), a] : null),
       deco(p, I) {
-        const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.38);
-        p.dome(cx, base, I.headW / 2 + 1, Math.round(I.headH * 0.38) + 1, ['#b8b0a0', '#e8e2d2', '#ffffff'], '#3a3020');
-        p.rect(cx - I.headW / 2 - 1, base, I.headW + 2, 1, '#d8a828');
+        const S = cap(p, I, 0.38, ['#b8b0a0', '#e8e2d2', '#ffffff'], '#3a3020');
+        p.rect(S.cx - S.rx, S.L, S.rx * 2 + 1, 1, '#d8a828');
+        p.rect(S.cx - 0.5, S.top - 1, 1, S.L - S.top + 1, '#d8a828'); // crête dorée
         if (I.bodyY + 4 > I.y1) return; // pas de torse : casque seulement
+        const cx = I.hcx;
         // croix dorée sur la poitrine
         const y = I.bodyY + 3;
         p.rect(cx - 0.5, y, 1, 5, '#d8a828'); p.rect(cx - 2, y + 1, 5, 1, '#d8a828');
@@ -390,41 +458,55 @@ export function createEffects(o) {
     soldier: {
       map: (r, g, b, a, x, y, I) => { if (!body(I, y)) return null; const n = noise(Math.floor(x / I.k / 2), Math.floor(y / I.k / 2)); const t = lum(r, g, b); const c = n < 0.33 ? '#4a5a2a' : n < 0.66 ? '#6b7a3a' : '#3a3020'; const k = hex(c); return [Math.round(k[0] * (0.6 + t * 0.6)), Math.round(k[1] * (0.6 + t * 0.6)), Math.round(k[2] * (0.6 + t * 0.6)), a]; },
       deco(p, I) {
-        const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.36);
-        p.dome(cx, base, I.headW / 2 + 2, Math.round(I.headH * 0.36) + 1, ['#3a4a22', '#566a30', '#7a8c48'], '#1a2010');
-        p.rect(cx - I.headW / 2 - 2, base, I.headW + 4, 1, '#2a3418');
-        for (let x = Math.round(cx - I.headW / 2); x < cx + I.headW / 2; x += 3) p.px(x, base - 2 - (x % 2), '#2a3418'); // filet
+        const S = cap(p, I, 0.38, ['#3a4a22', '#566a30', '#7a8c48'], '#1a2010', 1);
+        p.rect(S.cx - S.rx - 1, S.L, S.rx * 2 + 3, 1, '#2a3418'); // bord du casque
+        for (let x = Math.round(S.cx - S.rx) + 2; x < S.cx + S.rx - 1; x += 3) p.px(x, S.L - 2 - (x % 2), '#2a3418'); // filet
+        // jugulaire
+        const jx = S.f ? S.back + S.f * S.w * 0.08 : null;
+        if (jx !== null) p.rect(jx, S.L + 1, 1, Math.max(2, Math.round(I.headH * 0.35)), '#2a3418');
       },
       poof: '#8a8a6a',
     },
     pilot: {
       map: (r, g, b, a, x, y, I) => (body(I, y) ? (y < I.bodyY + 2 * I.k ? [...ramp(['#c8b89a', '#efe6d2', '#ffffff'])(lum(r, g, b)), a] : [...ramp(['#2a160c', '#4a2a16', '#6e4024', '#8e5a32'])(lum(r, g, b)), a]) : null),
       deco(p, I) {
-        const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.45);
-        p.dome(cx, base, I.headW / 2 + 1, Math.round(I.headH * 0.45) + 1, ['#4a2a16', '#6e4024', '#9a6a3c'], '#1e0e06');
-        for (const dir of [-1, 1]) p.rect(dir < 0 ? cx - I.headW / 2 - 1 : cx + I.headW / 2 - 2, base, 3, Math.round(I.headH * 0.3), '#5a321a'); // rabats
-        // lunettes sur le front
-        const gy = base - Math.round(I.headH * 0.16), r0 = Math.max(2, Math.round(I.headW * 0.12));
-        p.rect(cx - I.headW / 2, gy, I.headW, 1, '#2a1a10');
-        for (const dx of [-r0 - 1, r0 + 1]) { p.ring(cx + dx, gy, r0, r0 * 0.8, '#c8c8d0'); p.px(cx + dx, gy, '#8fd8ff'); p.px(cx + dx - 1, gy - 1, '#ffffff'); }
+        const S = cap(p, I, 0.45, ['#4a2a16', '#6e4024', '#9a6a3c'], '#1e0e06');
+        const fh = Math.round(I.headH * 0.3);
+        // rabats : les deux de face, celui de l'oreille (côté nuque) de profil
+        if (S.f) p.rect(Math.round(S.back - 1), S.L, 3, fh, '#5a321a');
+        else for (const dir of [-1, 1]) p.rect(dir < 0 ? S.l - 1 : S.r - 1, S.L, 3, fh, '#5a321a');
+        // lunettes relevées sur le front
+        const gy = S.L - Math.max(2, Math.round((S.L - S.top) * 0.45)), r0 = Math.max(2, Math.round(S.w * 0.12));
+        p.rect(S.cx - S.rx + 1, gy, S.rx * 2 - 1, 1, '#2a1a10'); // sangle
+        const lens = S.f ? [S.face - S.f * 0.5] : [S.cx - r0 - 1, S.cx + r0 + 1];
+        for (const x of lens) {
+          const rr = S.f ? r0 + 0.5 : r0;
+          for (let yy = -rr; yy <= rr; yy++) for (let xx = -rr; xx <= rr; xx++) if ((xx / (rr + 0.5)) ** 2 + (yy / (rr * 0.8 + 0.5)) ** 2 <= 1) p.px(x + xx, gy + yy, '#8fd8ff');
+          p.ring(x, gy, rr, rr * 0.8, '#c8c8d0');
+          p.px(x - 1, gy - 1, '#ffffff');
+        }
       },
       poof: '#efe6d2',
     },
     astronaut: {
       map: (r, g, b, a, x, y, I) => (body(I, y) ? [...ramp(['#7a8496', '#b4bccb', '#e6ecf5', '#ffffff'])(lum(r, g, b) * 0.6 + 0.45), a] : null),
       deco(p, I) {
-        // bulle de verre autour de la tête
-        const cx = I.hcx, cy = I.y0 + I.headH * 0.5, rx = I.headW / 2 + 3, ry = I.headH / 2 + 3;
+        // bulle de verre autour de la tête (tête seule : sans les épaules)
+        const bot = I.bodyY < I.h ? Math.min(I.bodyY - 1, I.y1) : Math.min(I.y1, I.headB + Math.round(I.headH * 0.3)), B = headBox(I, bot);
+        const cx = B.cx, cy = (I.y0 + bot) / 2, rx = B.hw + 2, ry = (bot - I.y0) / 2 + 2;
+        const inside = (x, y) => ((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2 <= 1;
         p.g.globalAlpha = 0.22;
-        for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) if (((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2 <= 1) p.px(x, y, '#8fd8ff');
+        for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) if (inside(x, y)) p.px(x, y, '#8fd8ff');
         p.g.globalAlpha = 1;
-        p.ring(cx, cy, rx, ry, '#e6ecf5');
-        for (let a = -2.4; a < -1.6; a += 0.08) p.px(cx + Math.cos(a) * (rx - 2), cy + Math.sin(a) * (ry - 2), '#ffffff'); // reflet
+        // contour : pixels du bord de la bulle (sans pixels isolés qui dépassent)
+        for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) if (inside(x, y) && !(inside(x - 1, y) && inside(x + 1, y) && inside(x, y - 1) && inside(x, y + 1))) p.px(x, y, '#e6ecf5');
+        const f = side(I), a0 = f > 0 ? -1.4 : -2.4;
+        for (let a = a0; a < a0 + 0.8; a += 0.08) p.px(cx + Math.cos(a) * (rx - 2), cy + Math.sin(a) * (ry - 2), '#ffffff'); // reflet
         if (I.bodyY + 4 > I.y1) return;
         p.rect(cx - rx, I.bodyY - 1, rx * 2, 2, '#b4bccb'); // col
         // panneau de commande sur la poitrine
-        const py = I.bodyY + 3;
-        p.rect(cx - 3, py, 6, 3, '#3a4a6a'); p.px(cx - 2, py + 1, '#ff3b6b'); p.px(cx, py + 1, '#b6ff6a'); p.px(cx + 2, py + 1, '#59c2ff');
+        const px = I.hcx + f * I.headW * 0.15, py = I.bodyY + 3;
+        p.rect(px - 3, py, 6, 3, '#3a4a6a'); p.px(px - 2, py + 1, '#ff3b6b'); p.px(px, py + 1, '#b6ff6a'); p.px(px + 2, py + 1, '#59c2ff');
       },
       poof: '#e6ecf5',
     },
@@ -436,11 +518,12 @@ export function createEffects(o) {
         return [...ramp(['#a83a06', '#e85a10', '#ff7a1a', '#ff9a3a'])(t), a];
       },
       deco(p, I) {
-        const cx = I.hcx, base = I.y0 + Math.round(I.headH * 0.36);
-        p.dome(cx, base, I.headW / 2 + 1, Math.round(I.headH * 0.38) + 1, ['#c89a10', '#ffd21a', '#fff07a'], '#5a4206');
-        p.rect(cx - I.headW / 2 - 3, base, I.headW + 6, 2, '#e8b810'); // visière
-        p.rect(cx - I.headW / 2 - 3, base + 1, I.headW + 6, 1, '#8a6a08');
-        p.rect(cx - 0.5, base - Math.round(I.headH * 0.36), 1, Math.round(I.headH * 0.36), '#fff07a'); // arête
+        const S = cap(p, I, 0.38, ['#c89a10', '#ffd21a', '#fff07a'], '#5a4206');
+        // visière : tout autour de face, prolongée côté visage de profil
+        const x0 = S.f < 0 ? S.cx - S.rx - 3 : S.cx - S.rx - (S.f ? 1 : 2), x1 = S.f > 0 ? S.cx + S.rx + 3 : S.cx + S.rx + (S.f ? 1 : 2);
+        p.rect(x0, S.L, x1 - x0 + 1, 1, '#e8b810');
+        p.rect(x0, S.L + 1, x1 - x0 + 1, 1, '#8a6a08');
+        p.rect(S.cx - 0.5, S.top - 1, 1, S.L - S.top + 1, '#fff07a'); // arête
       },
       poof: '#ffd21a',
     },
@@ -450,7 +533,8 @@ export function createEffects(o) {
   function transformed(img, id, f = 0) {
     let m = lookCache.get(img);
     if (!m) { m = {}; lookCache.set(img, m); }
-    const key = id + ':' + f;
+    const facing = cfg().facing || '';
+    const key = id + ':' + f + ':' + facing;
     if (m[key]) return m[key];
     const def = TF[id], w = o.width, hh = o.height;
     const c = document.createElement('canvas');
@@ -462,8 +546,10 @@ export function createEffects(o) {
     try { data = g.getImageData(0, 0, w, hh); } catch (e) { return img; }
     const I = info(data.data, w, hh);
     if (!I) return img;
-    I.k = Math.max(1, Math.round(I.headW / 24)); // taille d'un pixel du dessin
-    const Ik = scaled(I, I.k);
+    // taille d'un pixel du dessin : gros pixels de l'image (dessin doublé…), sinon d'après la tête
+    const B = blockSize(data.data, w, hh, I) || { k: Math.max(1, Math.round(I.headW / 24)), ox: 0, oy: 0 };
+    I.k = B.k; I.ox = B.ox; I.oy = B.oy; I.facing = facing;
+    const Ik = scaled(I, I.k, B.ox, B.oy);
     if (def.map) {
       const d = data.data;
       for (let y = 0; y < hh; y++) for (let x = 0; x < w; x++) {
@@ -474,7 +560,7 @@ export function createEffects(o) {
       }
       g.putImageData(data, 0, 0);
     }
-    const p = pen(g, I.k);
+    const p = pen(g, I.k, I.ox, I.oy);
     if (def.deco) def.deco(p, Ik, f);
     if (def.behind) { g.globalCompositeOperation = 'destination-over'; def.behind(p, Ik, f); g.globalCompositeOperation = 'source-over'; }
     if (def.post) def.post(pen(g), I, f);
@@ -483,11 +569,12 @@ export function createEffects(o) {
   }
   /** Transformation affichée : celle activée à la main, sinon celle liée à l'expression. */
   const currentTransform = () => st.transId || st.linkedTrans || null;
-  function toggleTransform(id, on) {
+  // seconds : durée de cette activation (0 = jusqu'au prochain appui) ; sinon durée des réglages
+  function toggleTransform(id, on, seconds) {
     const next = on === undefined ? st.transId !== id : !!on;
     st.transId = next ? id : st.transId === id ? null : st.transId;
     if (next) {
-      const dur = +(cfg().transformDuration || 0);
+      const dur = seconds !== undefined && seconds !== null ? +seconds || 0 : +(cfg().transformDuration || 0);
       st.transUntil = dur > 0 ? st.t + dur : Infinity;
       // petit nuage magique au moment de la transformation
       const h = H(), col = TF[id].poof || '#ffffff';
@@ -778,6 +865,7 @@ export function createEffects(o) {
     const linked = ((c.byExpr || {})[s.expression || ''] || []).filter((id) => AMB[id]);
     st.linkedTrans = ((c.byExpr || {})[s.expression || ''] || []).find((id) => TF[id]) || null;
     if (st.transId && st.t > st.transUntil) { st.transId = null; st.dirty = true; }
+    for (const id in st.ambUntil) if (st.t > st.ambUntil[id]) { delete st.ambUntil[id]; st.manualAmb.delete(id); st.dirty = true; }
     const tr = currentTransform();
     if (tr && TF[tr].tick) TF[tr].tick(dt, s);
     const amb = new Set([...(c.ambient || []), ...linked, ...st.manualAmb]);
@@ -870,19 +958,45 @@ export function createEffects(o) {
     return true;
   }
 
-  /** Ambiance allumée / éteinte à la demande (Stream Deck). on : true, false ou indéfini (bascule). */
-  function toggleAmbient(id, on) {
+  /**
+   * Ambiance allumée / éteinte à la demande (Stream Deck). on : true, false ou indéfini (bascule) ;
+   * seconds : extinction automatique au bout de ce temps.
+   */
+  function toggleAmbient(id, on, seconds) {
     if (!AMB[id]) return false;
     const next = on === undefined ? !st.manualAmb.has(id) : !!on;
     if (next) st.manualAmb.add(id); else st.manualAmb.delete(id);
+    if (next && +seconds > 0) st.ambUntil[id] = st.t + +seconds; else delete st.ambUntil[id];
     st.dirty = true;
     return next;
+  }
+  /**
+   * Effet qui dure (transformation, tenue ou ambiance) : allumer (on true), éteindre (false) ou
+   * basculer (indéfini), éventuellement pour seconds secondes. null si l'effet est ponctuel.
+   */
+  function setPersistent(id, on, seconds) {
+    if (TF[id]) {
+      return toggleTransform(id, on, seconds);
+    }
+    if (AMB[id]) return toggleAmbient(id, on, seconds);
+    return null;
+  }
+  /** Secondes restantes des effets à durée limitée : { id: secondes (arrondies au-dessus) }. */
+  function timers() {
+    const r = {};
+    if (st.transId && st.transUntil < Infinity) r[st.transId] = Math.max(0, Math.ceil(st.transUntil - st.t));
+    for (const id in st.ambUntil) r[id] = Math.max(0, Math.ceil(st.ambUntil[id] - st.t));
+    return r;
   }
 
   return {
     frame,
     trigger,
     toggleAmbient,
+    setPersistent,
+    timers,
+    /** Effet qui dure (ambiance, transformation, tenue), par opposition aux effets ponctuels. */
+    isPersistent: (id) => !!(TF[id] || AMB[id]),
     /** Ambiances (et transformation) allumées à la demande. */
     ambientOn: () => [...st.manualAmb, ...(st.transId ? [st.transId] : [])],
     clear() { P.length = 0; st.emote = null; st.flash = st.zoom = st.shake = st.lines = 0; st.transId = null; st.dirty = true; },

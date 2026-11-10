@@ -1262,6 +1262,10 @@ Trasformazioni e costumi (finché attivi)
 Durata
 Fino alla pressione successiva
 Gli effetti singoli partono quando inizia l'espressione; atmosfere e trasformazioni durano finché è mostrata.
+Altra durata, in secondi (0: fino alla pressione successiva)
+Durata in secondi
+Sullo Stream Deck ogni tasto può avere una durata propria (es. Demone per 15 s) o restare attivo finché è premuto.
+È disponibile una nuova versione del plugin: scaricala e fai doppio clic sul file per installarla sopra la precedente (i tuoi tasti vengono mantenuti). In seguito sarà il plugin a proporre gli aggiornamenti.
 #P
 Annullato: {T1}
 Ripetuto: {T1}

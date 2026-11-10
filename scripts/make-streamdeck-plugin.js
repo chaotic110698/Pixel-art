@@ -1,6 +1,7 @@
 // Fabrique le plugin Stream Deck : images (touches, actions, effets, fonds) dans
 // stream-deck/plugin/com.pixelatelier.avatar.sdPlugin/imgs, puis le paquet installable
-// stream-deck/com.pixelatelier.avatar.streamDeckPlugin (archive ZIP du dossier .sdPlugin).
+// stream-deck/com.pixelatelier.avatar.streamDeckPlugin (archive ZIP du dossier .sdPlugin) et
+// stream-deck/version.json (version publiée, lue par les plugins installés pour se mettre à jour).
 // Usage : node scripts/make-streamdeck-plugin.js   (site servi sur le port 8123)
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -9,6 +10,8 @@ const { execFileSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const PLUGIN = path.join(ROOT, 'stream-deck', 'plugin', 'com.pixelatelier.avatar.sdPlugin');
+// nouveautés de la version (affichées dans l'inspecteur du plugin à mettre à jour)
+const NOTES = 'effets pendant un nombre de secondes ou tant que la touche est enfoncée, compte à rebours sur la touche, mises à jour en un clic';
 
 (async () => {
   const b = await chromium.launch();
@@ -118,5 +121,8 @@ with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
             p = os.path.join(d, f)
             z.write(p, os.path.relpath(p, base).replace(os.sep, '/'))
 `, PLUGIN, pkg]);
+  // fichier de version lu par le plugin installé (proposition de mise à jour)
+  const version = /const VERSION = '([^']+)'/.exec(fs.readFileSync(path.join(PLUGIN, 'bin', 'plugin.js'), 'utf8'))[1];
+  fs.writeFileSync(path.join(ROOT, 'stream-deck', 'version.json'), JSON.stringify({ version, url: 'stream-deck/com.pixelatelier.avatar.streamDeckPlugin', notes: NOTES }, null, 2) + '\n');
   console.log(`${files.length} images écrites ; paquet : ${path.relative(ROOT, pkg)} (${fs.statSync(pkg).size} octets)`);
 })();

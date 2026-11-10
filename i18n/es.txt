@@ -1262,6 +1262,10 @@ Transformaciones y atuendos (mientras están activos)
 Duración
 Hasta la siguiente pulsación
 Los efectos puntuales se lanzan cuando empieza la expresión; los ambientes y las transformaciones duran mientras se muestra.
+Otra duración, en segundos (0: hasta la siguiente pulsación)
+Duración en segundos
+En el Stream Deck, cada tecla puede tener su propia duración (p. ej., Demonio durante 15 s) o permanecer activa mientras se mantiene pulsada.
+Hay una nueva versión del plugin: descárgala y haz doble clic en el archivo para instalarla encima (tus teclas se conservan). Después, el propio plugin propondrá sus actualizaciones.
 #P
 Deshecho: {T1}
 Rehecho: {T1}

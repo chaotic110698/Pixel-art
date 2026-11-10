@@ -1264,6 +1264,10 @@ export const DICT = {
   "Durée": "変身と衣装（有効な間）",
   "Jusqu'au prochain appui": "長さ",
   "Les effets ponctuels se déclenchent quand l'expression commence ; les effets d'ambiance et les transformations durent tant qu'elle est affichée.": "次に押すまで",
+  "Autre durée, en secondes (0 : jusqu'au prochain appui)": "単発のエフェクトは表情の開始時に出て、雰囲気と変身は表情が表示されている間続きます。",
+  "Durée en secondes": "任意の時間（秒）（0：次に押すまで）",
+  "Sur le Stream Deck, chaque touche peut avoir sa propre durée (ex. Démon pendant 15 s) ou rester active tant qu'elle est enfoncée.": "時間（秒）",
+  "Une nouvelle version du plugin est disponible : téléchargez-la et double-cliquez sur le fichier pour l'installer par-dessus (vos touches sont conservées). Ensuite, le plugin proposera lui-même ses mises à jour.": "Stream Deck では、キーごとに時間を設定（例：悪魔を 15 秒）したり、押している間だけ有効にしたりできます。",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)
