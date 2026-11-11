@@ -43,6 +43,8 @@ export function openMainMenu(app, anchor) {
     { heading: 'Affichage' },
     { label: 'Ajuster à l\'écran', icon: 'fit', hint: '0', action: () => app.viewport.fit() },
     { label: 'Taille réelle (100 %)', icon: 'one', hint: '1', action: () => app.viewport.actualSize() },
+    { label: 'Vérifier les valeurs (niveaux de gris)', icon: 'eye', checked: st.checkView === 'gray', action: () => app.toggleCheckView('gray') },
+    { label: 'Vérifier la silhouette', icon: 'eye', checked: st.checkView === 'silhouette', action: () => app.toggleCheckView('silhouette') },
     { label: 'Paramètres (thème, couleurs, navigation…)', icon: 'settings', action: () => app.openSettings() },
     { label: 'Langue…', icon: 'help', hint: LANGS.find(([id]) => id === (st.lang || 'fr'))?.[1], action: () => app.openSettings('lang') },
     { heading: 'Aide' },

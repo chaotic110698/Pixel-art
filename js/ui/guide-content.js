@@ -318,6 +318,16 @@ export const GUIDE = [
           ),
         ],
       },
+      {
+        id: 'ramps', icon: 'palette', title: T('Rampes, palette liée et lisibilité', 'Ramps, linked palette and readability'),
+        body: [
+          list(
+            ['**Générer une rampe de couleurs** (menu ⋯ de la palette) : à partir d\'une couleur, 3 à 9 teintes de l\'ombre à la lumière. Les ombres glissent vers le bleu-violet, les lumières vers le jaune (« hue shifting ») : des couleurs vivantes plutôt que grisâtres. Réglez le nombre de teintes, le glissement et le contraste, puis ajoutez la rampe ou remplacez la palette.', '**Generate a color ramp** (palette ⋯ menu): from one color, 3 to 9 shades from shadow to light. Shadows drift toward blue-violet, lights toward yellow (hue shifting): lively colors instead of greyish ones. Set the number of shades, the drift and the contrast, then add the ramp or replace the palette.'],
+            ['**Palette liée** : **double-cliquez** une couleur de la palette (ou menu ⋯ > **Modifier la couleur A**). Avec « Recolorer le dessin », tous les pixels de cette couleur changent **en direct** pendant que vous choisissez ; Valider = une seule étape à annuler. Idéal pour essayer une autre couleur de cheveux ou de tenue.', '**Linked palette**: **double-click** a palette color (or ⋯ menu > **Edit color A**). With "Recolor the drawing", every pixel of that color changes **live** while you pick; Confirm = a single undo step. Ideal to try another hair or outfit color.'],
+            ['**Vérifier les valeurs** et **Vérifier la silhouette** (menu ☰ > Affichage) : le dessin s\'affiche en niveaux de gris (les formes se lisent-elles sans la couleur ?) ou en silhouette noire (la pose se reconnaît-elle ?). Rien n\'est modifié ; même entrée pour revenir aux couleurs.', '**Check values** and **Check silhouette** (☰ menu > Display): the drawing is shown in grayscale (do shapes read without color?) or as a black silhouette (is the pose recognizable?). Nothing is changed; same entry to go back to colors.'],
+          ),
+        ],
+      },
     ],
   },
   // ------------------------------------------------------------------

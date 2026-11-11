@@ -1314,6 +1314,32 @@ Primero selecciona el motivo del pincel
 La selección está vacía
 Pincel demasiado grande: 64 × 64 píxeles como máximo
 Pincel personalizado listo (Lápiz > ✿)
+Generar una rampa de colores…
+Modificar el color A (y el dibujo)…
+Comprobar valores (escala de grises)
+Comprobar la silueta
+Escala de grises: ¿se leen las formas sin color?
+Silueta: ¿se reconoce la pose?
+Colores normales
+Color base
+Generar una rampa de colores
+Una rampa va de la sombra a la luz. En pixel art, las sombras tiran al azul violeta y las luces al amarillo: los colores siguen vivos en vez de volverse grises.
+Número de tonos
+Desplazamiento de tono
+Contraste
+Reemplazar la paleta
+Rampa de colores
+Rampa añadida
+Código de color
+Nuevo color
+Modificar el color de la paleta
+Paleta vinculada: cambiar el color de la paleta cambia también todos los píxeles de ese color
+Recolorear el dibujo (todos los píxeles de este color)
+El dibujo se actualiza en directo; «Cancelar» lo deja todo como antes.
+Este color no se usa en el dibujo.
+Modificar un color de la paleta
+Color de la paleta modificado
+Recolorear el dibujo
 #P
 Deshecho: {T1}
 Rehecho: {T1}

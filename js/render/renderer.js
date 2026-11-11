@@ -1,6 +1,7 @@
 // Rendu de la vue : damier, composition (cache par calque, redessin partiel),
 // mosaïque (mode tuiles), onion skin, grilles, symétrie, sélection, curseur.
 
+import { checkImage } from '../ui/color-tools.js';
 import { celCanvas, markDirty, createCanvas } from './celcache.js';
 import { composeOnCtx } from './compose.js';
 import { pixelsToCanvas } from './compose.js';
@@ -245,10 +246,12 @@ export class Renderer {
       }
       ctx.globalAlpha = 1;
     }
+    // vérification de lisibilité : niveaux de gris ou silhouette
+    const shown = st.checkView ? (this.checkCanvas = checkImage(this.composite, st.checkView, this.checkCanvas)) : this.composite;
     for (const ty of tiles) {
       for (const tx of tiles) {
         ctx.globalAlpha = tx || ty ? st.tileDim : 1;
-        ctx.drawImage(this.composite, ox + tx * dw, oy + ty * dh, dw, dh);
+        ctx.drawImage(shown, ox + tx * dw, oy + ty * dh, dw, dh);
       }
     }
     ctx.globalAlpha = 1;

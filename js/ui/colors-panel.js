@@ -1,6 +1,7 @@
 // Panneau Couleurs : sélecteur HSV + alpha, hexadécimal, palette, récentes,
 // palettes prédéfinies, import/export, extraction depuis une image.
 
+import { openRampDialog, openPaletteColorDialog } from './color-tools.js';
 import { h, clear, pickFile, downloadBlob, loadImageFromFile, imageToRGBA, slugify } from '../util/dom.js';
 import { hexToU32, toRgba, rgba, u32ToHex, rgbToHsl, isValidHex, normHex } from '../util/color.js';
 import { PRESET_PALETTES, presetById, parsePalette, exportHex, exportGpl, extractPalette } from '../core/palettes.js';
@@ -160,6 +161,7 @@ export function initColorsPanel(app) {
         onPick: () => app.setColor('primary', hex),
         onAlt: () => app.setColor('secondary', hex),
       });
+      s.addEventListener('dblclick', () => openPaletteColorDialog(app, i, setPalette));
       if (normHex(hex) === prim) s.classList.add('sel');
       if (normHex(hex) === sec) s.classList.add('sel2');
       s.dataset.index = i;
@@ -223,6 +225,12 @@ export function initColorsPanel(app) {
     { label: 'Retirer la couleur A', icon: 'trash', action: removeCurrent },
     { label: 'Remplacer… (couleur A partout)', icon: 'swap', action: () => app.actions.replaceColorDialog() },
     { label: 'Trier par teinte', icon: 'sliders', action: sortPalette },
+    { label: 'Générer une rampe de couleurs…', icon: 'palette', action: () => openRampDialog(app, setPalette) },
+    { label: 'Modifier la couleur A (et le dessin)…', icon: 'swap', action: () => {
+      const i = app.doc.palette.map(normHex).indexOf(normHex(app.state.primary));
+      if (i < 0) return app.toast('La couleur A n\'est pas dans la palette');
+      openPaletteColorDialog(app, i, setPalette);
+    } },
     { label: 'Palette depuis le dessin', icon: 'palette', action: () => app.actions.paletteFromDrawing((c) => setPalette(c, 'Palette extraite du dessin')) },
     { sep: true },
     { label: 'Importer (.hex, .gpl, .json, .pal)', icon: 'upload', action: importPalette },

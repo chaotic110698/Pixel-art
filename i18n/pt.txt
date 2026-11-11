@@ -1314,6 +1314,32 @@ Selecione primeiro o padrão do pincel
 A seleção está vazia
 Pincel grande demais: no máximo 64 × 64 pixels
 Pincel personalizado pronto (Lápis > ✿)
+Gerar uma rampa de cores…
+Editar a cor A (e o desenho)…
+Verificar valores (tons de cinza)
+Verificar a silhueta
+Tons de cinza: as formas se leem sem cor?
+Silhueta: a pose é reconhecível?
+Cores normais
+Cor base
+Gerar uma rampa de cores
+Uma rampa vai da sombra à luz. Em pixel art, as sombras puxam para o azul-violeta e as luzes para o amarelo: as cores ficam vivas em vez de acinzentadas.
+Número de tons
+Deslocamento de matiz
+Contraste
+Substituir a paleta
+Rampa de cores
+Rampa adicionada
+Código de cor
+Nova cor
+Editar a cor da paleta
+Paleta vinculada: mudar a cor da paleta também muda todos os pixels dessa cor
+Recolorir o desenho (todos os pixels desta cor)
+O desenho é atualizado ao vivo; "Cancelar" deixa tudo como antes.
+Esta cor não é usada no desenho.
+Editar uma cor da paleta
+Cor da paleta alterada
+Recolorir o desenho
 #P
 Desfeito: {T1}
 Refeito: {T1}

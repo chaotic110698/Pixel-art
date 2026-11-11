@@ -36,6 +36,8 @@ export const DEFAULT_STATE = {
   textAlign: 'left',
   textOutline: false,
   lastText: '',
+  checkView: null, // vérification de lisibilité : 'gray' | 'silhouette'
+  paletteLinked: true, // modifier une couleur de la palette recolore le dessin
   dither: false,
   ditherPattern: 'checker',
   ditherSecond: 'transparent',

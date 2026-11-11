@@ -1314,6 +1314,32 @@ Wählen Sie zuerst das Pinselmuster aus
 Die Auswahl ist leer
 Pinsel zu groß: höchstens 64 × 64 Pixel
 Eigener Pinsel bereit (Stift > ✿)
+Farbverlauf (Rampe) erzeugen…
+Farbe A ändern (und die Zeichnung)…
+Tonwerte prüfen (Graustufen)
+Silhouette prüfen
+Graustufen: Sind die Formen ohne Farbe lesbar?
+Silhouette: Ist die Pose erkennbar?
+Normale Farben
+Grundfarbe
+Farbverlauf (Rampe) erzeugen
+Eine Rampe geht vom Schatten zum Licht. In Pixel Art wandern Schatten zu Blauviolett und Lichter zu Gelb: Die Farben bleiben lebendig statt grau zu werden.
+Anzahl der Töne
+Farbtonverschiebung
+Kontrast
+Palette ersetzen
+Farbrampe
+Rampe hinzugefügt
+Farbcode
+Neue Farbe
+Palettenfarbe ändern
+Verknüpfte Palette: Eine Palettenfarbe zu ändern ändert auch alle Pixel dieser Farbe
+Zeichnung umfärben (alle Pixel dieser Farbe)
+Die Zeichnung aktualisiert sich live; „Abbrechen“ stellt alles wieder her.
+Diese Farbe wird in der Zeichnung nicht verwendet.
+Palettenfarbe ändern
+Palettenfarbe geändert
+Zeichnung umfärben
 #P
 Rückgängig: {T1}
 Wiederholt: {T1}

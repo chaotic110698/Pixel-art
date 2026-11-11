@@ -1314,6 +1314,32 @@ Seleziona prima il motivo del pennello
 La selezione è vuota
 Pennello troppo grande: al massimo 64 × 64 pixel
 Pennello personalizzato pronto (Matita > ✿)
+Genera una scala di colori…
+Modifica il colore A (e il disegno)…
+Controlla i valori (scala di grigi)
+Controlla la silhouette
+Scala di grigi: le forme si leggono senza colore?
+Silhouette: la posa si riconosce?
+Colori normali
+Colore di base
+Genera una scala di colori
+Una scala va dall'ombra alla luce. Nel pixel art le ombre tendono al blu-viola e le luci al giallo: i colori restano vivi invece di ingrigire.
+Numero di tonalità
+Spostamento di tinta
+Contrasto
+Sostituisci la tavolozza
+Scala di colori
+Scala aggiunta
+Codice colore
+Nuovo colore
+Modifica il colore della tavolozza
+Tavolozza collegata: cambiare il colore della tavolozza cambia anche tutti i pixel di quel colore
+Ricolora il disegno (tutti i pixel di questo colore)
+Il disegno si aggiorna in diretta; «Annulla» rimette tutto com'era.
+Questo colore non è usato nel disegno.
+Modifica un colore della tavolozza
+Colore della tavolozza modificato
+Ricolora il disegno
 #P
 Annullato: {T1}
 Ripetuto: {T1}

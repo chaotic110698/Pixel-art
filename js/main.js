@@ -1,5 +1,6 @@
 // Point d'entrée : construit l'interface et relie les modules.
 
+import { checkImage } from './ui/color-tools.js';
 import { App } from './app.js';
 import { Doc } from './core/doc.js';
 import { h, $, debounce } from './util/dom.js';
@@ -212,7 +213,8 @@ function setupMinimap() {
     const g = c.getContext('2d');
     g.imageSmoothingEnabled = false;
     g.clearRect(0, 0, c.width, c.height);
-    g.drawImage(composeToCanvas(doc, { includeReference: false }), 0, 0, c.width, c.height);
+    const comp = composeToCanvas(doc, { includeReference: false });
+    g.drawImage(app.state.checkView ? checkImage(comp, app.state.checkView) : comp, 0, 0, c.width, c.height);
     box.title = k === 1 ? 'Aperçu taille réelle (clic : ajuster)' : `Aperçu ×${k} (clic : ajuster)`;
   }, 150);
   app.on('pixels', draw);
@@ -247,6 +249,14 @@ function setupVariantBar() {
 }
 
 function setupGlobalToggles() {
+  app.state.checkView = null; // jamais conservée d'une session à l'autre
+  /** Vérification de lisibilité (affichage seulement : le dessin n'est pas modifié). */
+  app.toggleCheckView = (mode) => {
+    const next = app.state.checkView === mode ? null : mode;
+    app.setState({ checkView: next });
+    app.renderer.invalidateAll();
+    app.toast(next === 'gray' ? 'Niveaux de gris : les formes se lisent-elles sans la couleur ?' : next === 'silhouette' ? 'Silhouette : la pose se reconnaît-elle ?' : 'Couleurs normales', 1800);
+  };
   app.toggleGrid = () => {
     const g = app.doc.grid;
     app.history.transact(g.visible ? 'Masquer la grille' : 'Afficher la grille', () => {
