@@ -57,6 +57,7 @@ export class PencilTool extends Tool {
       return;
     }
     this.painter = new Painter(app, this.token.cel, { ...paintOptions(app, { erase: this.erase, secondary: p.button === 2 }), before: this.token.before, ...extra });
+    this.pressure(p);
     this.last = [p.ix, p.iy];
     this.trail = [[p.ix, p.iy]];
     this.lineStart = p.shift && this.prevEnd ? this.prevEnd : null;
@@ -64,10 +65,17 @@ export class PencilTool extends Tool {
     else this.painter.dab(p.ix, p.iy);
     this.painter.flush();
   }
+  /** Pression du stylet : la taille varie de 1 à la taille choisie. */
+  pressure(p) {
+    const st = this.app.state;
+    if (!st.pressureSize || p.pointerType !== 'pen' || !(p.pressure > 0) || st.brushShape === 'stamp') return;
+    this.painter.setSize(Math.max(1, Math.round(st.brushSize * Math.min(1, p.pressure * 1.25))));
+  }
   move(p) {
     if (!this.painter) return;
     const [lx, ly] = this.last;
     if (lx === p.ix && ly === p.iy) return;
+    this.pressure(p);
     if (this.pixelPerfect()) {
       // pixel perfect : on retire le pixel du milieu des « coins en L »
       bresenham(lx, ly, p.ix, p.iy, (x, y) => {

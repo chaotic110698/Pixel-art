@@ -1,6 +1,7 @@
 // Opérations sur calques, groupes, variantes et expressions — toutes annulables.
 
 import { blendOver } from '../util/color.js';
+import { composeEntries, blendPixel } from './blend.js';
 import { uid } from './doc.js';
 import { tr } from '../ui/i18n.js';
 
@@ -237,9 +238,16 @@ export function mergeDown(app) {
       if (!ac || !a.visible) return out;
       for (let k = 0; k < out.length; k++) {
         const s = ac[k];
-        if (s >>> 24) {
+        if (!(s >>> 24)) continue;
+        if (a.clip) {
+          // calque écrêté : seulement sur les pixels du calque inférieur, dont l'alpha est conservé
+          const ba = out[k] >>> 24;
+          if (!ba) continue;
+          const r = blendPixel(out[k], s, a.opacity ?? 1, a.blend);
+          out[k] = ((r & 0x00ffffff) | (ba << 24)) >>> 0;
+        } else {
           // l'opacité du calque inférieur est conservée : on compense
-          out[k] = blendOver(out[k], s, a.opacity / (below.opacity || 1));
+          out[k] = blendPixel(out[k], s, a.opacity / (below.opacity || 1), a.blend);
         }
       }
       return out;
@@ -258,12 +266,7 @@ export function flattenGroup(app, id) {
     const layer = doc.createLayer(g.name);
     layer.cels = doc.frames.map((_, f) => {
       const out = doc.newCel();
-      for (const { layer: l, opacity } of doc.renderList({ root: g, frame: f })) {
-        const c = l.cels[f];
-        if (!c) continue;
-        for (let k = 0; k < out.length; k++) if (c[k] >>> 24) out[k] = blendOver(out[k], c[k], opacity / (g.opacity || 1));
-      }
-      return out;
+      return composeEntries(doc.renderList({ root: g, frame: f }), out.length, f, out, g.opacity || 1);
     });
     layer.opacity = g.opacity;
     layer.visible = g.visible;
@@ -468,12 +471,7 @@ export function mergeNodes(app, ids) {
     const merged = doc.createLayer(uniqueName(doc, 'Fusion'));
     merged.cels = doc.frames.map((_, f) => {
       const out = doc.newCel();
-      for (const { layer, opacity } of layers) {
-        const c = layer.cels[f];
-        if (!c || !doc.get(layer.id).visible) continue;
-        for (let k = 0; k < out.length; k++) if (c[k] >>> 24) out[k] = blendOver(out[k], c[k], opacity);
-      }
-      return out;
+      return composeEntries(layers.filter((e) => doc.get(e.layer.id).visible), out.length, f, out);
     });
     doc.insert(merged, parent.id, parent.children.indexOf(top.id) + 1);
     for (const id of list) doc.remove(id);

@@ -1266,6 +1266,28 @@ Outra duração, em segundos (0: até o próximo toque)
 Duração em segundos
 No Stream Deck, cada tecla pode ter sua própria duração (ex.: Demônio por 15 s) ou ficar ativa enquanto estiver pressionada.
 Há uma nova versão do plugin: baixe-a e dê um clique duplo no arquivo para instalá-la por cima (suas teclas são mantidas). Depois, o próprio plugin vai oferecer as atualizações.
+Multiplicação
+Tela
+Sobrepor
+Luz suave
+Luz dura
+Escurecer
+Clarear
+Subexposição de cores
+Superexposição de cores
+Adição
+Diferença
+Modo de mesclagem
+Modo de mesclagem: como esta camada se mistura com as de baixo
+A camada só aparece sobre os pixels da camada logo abaixo (sombras, brilhos, padrões sem vazar)
+Recortar na camada de baixo
+Remover recorte
+Pinta-se só sobre os pixels já desenhados desta camada; a transparência é mantida
+Bloquear transparência
+Desbloquear transparência
+Recortada na camada de baixo
+Recortada
+Transparência bloqueada
 #P
 Desfeito: {T1}
 Refeito: {T1}

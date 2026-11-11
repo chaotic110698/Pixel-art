@@ -25,7 +25,20 @@ export class Painter {
     this.before = opts.before || null;
     this.onlyColor = opts.onlyColor ?? null; // ne peindre que sur cette couleur d'origine
     this.mapColor = opts.mapColor || null; // couleur finale = mapColor(couleur d'origine)
+    this.alphaLock = !!opts.alphaLock; // verrou de transparence : ne peindre que sur les pixels existants
+    // pinceau personnalisé (tampon) : { data, w, h, tint } ; tint = prendre la couleur active
+    this.stamp = opts.stamp || null;
+    this.cur = null; // couleur du pixel de tampon en cours
+    this.lastDab = null;
     this.dirty = null;
+    this.footprint = this._footprint();
+  }
+
+  /** Change la taille du pinceau en cours de trait (pression du stylet). */
+  setSize(n) {
+    n = Math.max(1, n | 0);
+    if (n === this.size) return;
+    this.size = n;
     this.footprint = this._footprint();
   }
 
@@ -71,12 +84,17 @@ export class Painter {
       c = this.mapColor(orig);
       if (c === null || c === undefined) return;
     } else if (this.dither) {
-      if (this.dither(x, y)) c = this.erase ? 0 : this.color;
+      if (this.dither(x, y)) c = this.erase ? 0 : this.cur ?? this.color;
       else {
         if (this.color2 === null) return;
         c = this.erase ? this.target[i] : this.color2;
       }
-    } else c = this.erase ? 0 : this.color;
+    } else c = this.erase ? 0 : this.cur ?? this.color;
+    if (this.alphaLock) {
+      const a0 = (this.before ? this.before[i] : this.target[i]) >>> 24;
+      if (!a0 || !(c >>> 24)) return; // pas de nouveau pixel, pas d'effacement
+      c = ((c & 0x00ffffff) | (a0 << 24)) >>> 0;
+    }
     if (this.target[i] === c) return;
     this.target[i] = c;
     this.touch(x, y);
@@ -116,11 +134,34 @@ export class Painter {
   }
 
   dab(x, y) {
+    if (this.stamp) {
+      // tampon centré sur le point, pixels d'origine ou teintés de la couleur active
+      const s = this.stamp, ox = x - Math.floor(s.w / 2), oy = y - Math.floor(s.h / 2);
+      for (let j = 0; j < s.h; j++) for (let i = 0; i < s.w; i++) {
+        const v = s.data[j * s.w + i];
+        if (!(v >>> 24)) continue;
+        this.cur = s.tint ? ((this.color & 0x00ffffff) | (v & 0xff000000)) >>> 0 : v;
+        this.plot(ox + i, oy + j);
+      }
+      this.cur = null;
+      this.lastDab = [x, y];
+      return;
+    }
     const fp = this.footprint;
     for (let k = 0; k < fp.length; k += 2) this.plot(x + fp[k], y + fp[k + 1]);
   }
 
   line(x0, y0, x1, y1) {
+    if (this.stamp) {
+      // tampon : un dépôt tous les ¾ de sa taille, sinon le motif se brouille
+      const sp = Math.max(1, Math.ceil(Math.max(this.stamp.w, this.stamp.h) * 0.75));
+      bresenham(x0, y0, x1, y1, (x, y) => {
+        const l = this.lastDab;
+        if (l && Math.max(Math.abs(x - l[0]), Math.abs(y - l[1])) < sp) return;
+        this.dab(x, y);
+      });
+      return;
+    }
     bresenham(x0, y0, x1, y1, (x, y) => this.dab(x, y));
   }
 
@@ -150,5 +191,29 @@ export function paintOptions(app, { erase = false, secondary = false, shapes = f
     symX: st.symX,
     symY: st.symY,
     wrap: st.tileMode && st.tileWrap,
+    alphaLock: !!app.doc.activeLayer?.alphaLock,
+    stamp: !shapes && st.brushShape === 'stamp' ? customBrush(st) : null,
   };
+}
+
+let brushCache = null;
+/** Pinceau personnalisé enregistré dans les préférences ({ w, h, b64, tint }) -> tampon. */
+export function customBrush(st) {
+  const b = st.customBrush;
+  if (!b || !b.b64) return null;
+  if (!brushCache || brushCache.b64 !== b.b64) {
+    const bin = atob(b.b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    brushCache = { b64: b.b64, data: new Uint32Array(bytes.buffer), w: b.w, h: b.h };
+  }
+  return { data: brushCache.data, w: brushCache.w, h: brushCache.h, tint: st.brushTint !== false };
+}
+
+/** Enregistre un tampon (Uint32Array w×h) comme pinceau personnalisé. */
+export function brushFromPixels(data, w, h) {
+  const bytes = new Uint8Array(data.buffer, data.byteOffset, w * h * 4);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return { w, h, b64: btoa(bin) };
 }

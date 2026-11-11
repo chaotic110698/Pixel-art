@@ -150,6 +150,23 @@ export class History {
     const w = this.doc.width;
     const hgt = this.doc.height;
     if (cel.length !== before.length) return false;
+    // verrou de transparence : les pixels vides restent vides, l'alpha d'origine est conservé
+    const lockL = this.doc.get(layerId);
+    if (lockL && lockL.alphaLock) {
+      let lx0 = w, ly0 = hgt, lx1 = -1, ly1 = -1;
+      for (let i = 0; i < cel.length; i++) {
+        const c = cel[i], b = before[i];
+        if (c === b) continue;
+        const ba = b >>> 24;
+        const fixed = !ba ? b : !(c >>> 24) ? b : ((c & 0x00ffffff) | (b & 0xff000000)) >>> 0;
+        if (fixed !== c) {
+          cel[i] = fixed;
+          const x = i % w, y = (i / w) | 0;
+          if (x < lx0) lx0 = x; if (x > lx1) lx1 = x; if (y < ly0) ly0 = y; if (y > ly1) ly1 = y;
+        }
+      }
+      if (lx1 >= 0) this.app.markLayerDirty(cel, lx0, ly0, lx1 + 1, ly1 + 1);
+    }
     let x0 = w, y0 = hgt, x1 = -1, y1 = -1;
     for (let y = 0; y < hgt; y++) {
       const row = y * w;

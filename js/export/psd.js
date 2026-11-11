@@ -73,7 +73,7 @@ function collectRecords(doc, frame) {
     if (node.type === 'layer') {
       if (node.reference) return;
       const visible = node.visible && (!parentVariant || parentGroup.active === node.id);
-      recs.push({ kind: 'layer', name: node.name, opacity: node.opacity, visible, pixels: node.cels[frame] || doc.newCel() });
+      recs.push({ kind: 'layer', name: node.name, opacity: node.opacity, visible, pixels: node.cels[frame] || doc.newCel(), blend: node.blend, clip: !!node.clip, alphaLock: !!node.alphaLock });
       return;
     }
     // groupe : séparateur de fin (en bas), enfants, puis l'en-tête du dossier (en haut)
@@ -85,6 +85,9 @@ function collectRecords(doc, frame) {
   for (const cid of doc.root.children) visit(doc.get(cid), false, doc.root);
   return recs;
 }
+
+/** Clés Photoshop des modes de fusion. */
+const PSD_BLEND = { multiply: 'mul ', screen: 'scrn', overlay: 'over', 'soft-light': 'sLit', 'hard-light': 'hLit', darken: 'dark', lighten: 'lite', 'color-dodge': 'div ', 'color-burn': 'idiv', add: 'lddg', difference: 'diff' };
 
 export function encodePSD(doc, { frame = doc.frame } = {}) {
   const W = doc.width, H = doc.height;
@@ -122,10 +125,10 @@ export function encodePSD(doc, { frame = doc.frame } = {}) {
     }
     channelData.push(planes);
     li.str('8BIM');
-    li.str('norm');
+    li.str(PSD_BLEND[r.blend] || 'norm');
     li.u8(Math.round((r.opacity ?? 1) * 255));
-    li.u8(0); // écrêtage
-    let flags = 0;
+    li.u8(r.clip ? 1 : 0); // écrêtage : 1 = calque écrêté sur celui du dessous
+    let flags = r.alphaLock ? 1 : 0; // bit 0 : transparence verrouillée
     if (r.visible === false) flags |= 2;
     if (r.kind === 'end') flags |= 2 | 16; // séparateur invisible
     li.u8(flags);

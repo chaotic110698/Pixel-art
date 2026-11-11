@@ -27,6 +27,9 @@ class Reader {
   string() { const n = this.word(); return new TextDecoder().decode(this.bytes(n)); }
 }
 
+/** Modes de fusion d'Aseprite -> modes de Pixel Atelier. */
+const ASE_BLEND = { 1: 'multiply', 2: 'screen', 3: 'overlay', 4: 'darken', 5: 'lighten', 6: 'color-dodge', 7: 'color-burn', 8: 'hard-light', 9: 'soft-light', 10: 'difference', 16: 'add' };
+
 export async function importAseprite(bytes, fallbackName = 'Aseprite') {
   const r = new Reader(bytes);
   r.dword(); // taille du fichier
@@ -73,11 +76,11 @@ export async function importAseprite(bytes, fallbackName = 'Aseprite') {
         const ltype = cr.word();
         const level = cr.word();
         cr.skip(4);
-        cr.word(); // mode de fusion (ignoré : normal)
+        const blend = cr.word(); // mode de fusion
         const opacity = cr.byte();
         cr.skip(3);
         const name = cr.string();
-        layers.push({ flags, type: ltype, level, opacity, name });
+        layers.push({ flags, type: ltype, level, opacity, name, blend });
       } else if (type === 0x2005) {
         // cel
         const layerIndex = cr.word();
@@ -156,6 +159,9 @@ export async function importAseprite(bytes, fallbackName = 'Aseprite') {
       node = doc.createGroup(L.name || 'Groupe', { ...common, collapsed: !!(L.flags & 32) });
     } else {
       node = doc.createLayer(L.name || 'Calque', { ...common, reference: !!(L.flags & 64) });
+      // modes de fusion d'Aseprite reconnus (les autres restent normaux)
+      const mode = ASE_BLEND[L.blend];
+      if (mode) node.blend = mode;
       node.cels = doc.frames.map(() => doc.newCel());
       if (L.type === 2) node.name += ' (tilemap non importée)';
     }

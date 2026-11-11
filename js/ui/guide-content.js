@@ -334,6 +334,18 @@ export const GUIDE = [
         ],
       },
       {
+        id: 'blend', icon: 'layers', title: T('Fusion, écrêtage et verrou de transparence', 'Blending, clipping and transparency lock'),
+        body: [
+          p('Dans les propriétés du calque actif (sous la liste) :', 'In the active layer\'s properties (below the list):'),
+          list(
+            ['**Fusion** : comment le calque se mélange à ce qui est dessous. **Produit** assombrit (ombres), **Écran** et **Addition** éclaircissent (lumières, lueurs), **Incrustation** et **Lumière tamisée** renforcent le contraste, **Différence** inverse… Normal par défaut.', '**Blend**: how the layer mixes with what is below. **Multiply** darkens (shadows), **Screen** and **Add** lighten (highlights, glows), **Overlay** and **Soft light** boost contrast, **Difference** inverts… Normal by default.'],
+            ['**Écrêter sur le calque du dessous** : le calque n\'apparaît que sur les pixels du calque juste en dessous (badge ↳). Idéal pour poser des ombres ou un motif sur un vêtement sans déborder, en gardant le dessin d\'origine intact. Le calque de base décide de la visibilité, de l\'opacité et du mode de l\'ensemble.', '**Clip to the layer below**: the layer only shows on the pixels of the layer just below (↳ badge). Ideal for shading or patterning a garment without spilling over, keeping the original drawing intact. The base layer sets the visibility, opacity and mode of the whole.'],
+            ['**Verrouiller la transparence** (badge ▦) : tous les outils ne peignent que sur les pixels déjà dessinés, sans changer leur transparence ; la gomme n\'efface plus. Parfait pour recolorer ou ombrer une forme.', '**Lock transparency** (▦ badge): every tool paints only over pixels already drawn, without changing their transparency; the eraser no longer erases. Perfect for recoloring or shading a shape.'],
+            ['Ces réglages s\'annulent, sont pris en compte par l\'export, la fusion de calques, l\'aplatissement et l\'export Photoshop (PSD) ; les modes de fusion des fichiers Aseprite sont repris à l\'import.', 'These settings can be undone and are honored by export, merging, flattening and Photoshop (PSD) export; Aseprite blend modes are kept on import.'],
+          ),
+        ],
+      },
+      {
         id: 'reference', icon: 'ref', title: T('Calque de référence', 'Reference layer'),
         body: [
           p('Menu ☰ > **Importer une image de référence** : l\'image s\'affiche nette, en pleine résolution et semi-transparente, pour décalquer ou s\'inspirer. Elle n\'est **jamais exportée**. Déplacez-la avec l\'outil Déplacer, réglez sa taille et son opacité dans le panneau Calques.',

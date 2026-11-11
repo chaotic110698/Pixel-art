@@ -232,28 +232,43 @@ export class Doc {
     // visibility : { nodeId: bool } (profils) remplace la visibilité enregistrée
     const vis = visibility || null;
     const out = [];
-    const visit = (n, opacity) => {
+    // entrée : { layer, opacity, blend (mode de fusion), clip (entrée de la base si le calque est écrêté) }
+    const visit = (n, opacity, base = null) => {
       const shown = vis && Object.prototype.hasOwnProperty.call(vis, n.id) ? vis[n.id] : n.visible;
-      if (!ignoreVisibility && !shown) return;
+      if (!ignoreVisibility && !shown) return null;
       const op = opacity * (n.opacity ?? 1);
       if (n.type === 'layer') {
-        if (n.reference && !includeReference) return;
-        out.push({ layer: n, opacity: op });
-        return;
+        if (n.reference && !includeReference) return null;
+        const e = { layer: n, opacity: op, blend: n.blend || 'normal', clip: base };
+        out.push(e);
+        return e;
       }
       if (n.variant) {
         const act = (ov && ov.has(n.id) ? ov.get(n.id) : n.active) || null;
         const c = act && this.get(act);
         if (c && c.parent === n.id) visit(c, op);
-        return;
+        return null;
       }
-      for (const cid of n.children) {
+      children(n.children, op);
+      return null;
+    };
+    // masque d'écrêtage : un calque « clip » s'appuie sur le calque normal juste en dessous
+    // (frère dans le même groupe) ; base masquée ou absente = calque écrêté masqué
+    const children = (ids, op) => {
+      let base = null;
+      for (const cid of ids) {
         const c = this.get(cid);
-        if (c) visit(c, op);
+        if (!c) continue;
+        if (c.type === 'layer' && c.clip && !c.reference) {
+          if (base) visit(c, op, base);
+          continue;
+        }
+        const e = visit(c, op);
+        base = e && !e.layer.reference ? e : null;
       }
     };
     if (root.type === 'layer') visit(root, 1);
-    else if (root === this.root) for (const cid of root.children) visit(this.get(cid), 1);
+    else if (root === this.root) children(root.children, 1);
     else visit(root, 1);
     return out;
   }

@@ -1266,6 +1266,28 @@ Andere Dauer in Sekunden (0: bis zum nächsten Drücken)
 Dauer in Sekunden
 Auf dem Stream Deck kann jede Taste ihre eigene Dauer haben (z. B. Dämon für 15 s) oder aktiv bleiben, solange sie gedrückt wird.
 Eine neue Version des Plugins ist verfügbar: Laden Sie sie herunter und doppelklicken Sie auf die Datei, um sie darüber zu installieren (Ihre Tasten bleiben erhalten). Danach bietet das Plugin seine Updates selbst an.
+Multiplizieren
+Negativ multiplizieren
+Ineinanderkopieren
+Weiches Licht
+Hartes Licht
+Abdunkeln
+Aufhellen
+Farbig abwedeln
+Farbig nachbelichten
+Addieren
+Differenz
+Mischmodus
+Mischmodus: wie diese Ebene sich mit den Ebenen darunter mischt
+Die Ebene erscheint nur auf den Pixeln der Ebene direkt darunter (Schatten, Lichter, Muster ohne Überlaufen)
+Auf die Ebene darunter beschneiden
+Schnittmaske lösen
+Nur auf bereits gezeichnete Pixel dieser Ebene malen; ihre Transparenz bleibt erhalten
+Transparenz fixieren
+Transparenz lösen
+Auf die Ebene darunter beschnitten
+Beschnitten
+Transparenz fixiert
 #P
 Rückgängig: {T1}
 Wiederholt: {T1}

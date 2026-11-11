@@ -1,6 +1,7 @@
 // Panneau Calques : arbre (groupes, groupes de variantes), propriétés,
 // glisser-déposer via poignée (souris + tactile), miniatures.
 
+import { BLEND_MODES } from '../core/blend.js';
 import { h, clear, debounce, keepScroll } from '../util/dom.js';
 import { icon } from './icons.js';
 import { popupMenu, promptDialog, confirmDialog } from './dialogs.js';
@@ -123,6 +124,9 @@ export function initLayersPanel(app) {
     if (node.variant) el.append(h('span', { class: 'badge icon-badge', title: 'Groupe de variantes : une seule visible à la fois', 'aria-label': 'Groupe de variantes' }, icon('variants')));
     if (node.reference) el.append(h('span', { class: 'badge ref', title: 'Calque de référence : non exporté' }, 'réf.'));
     if (node.opacity < 1) el.append(h('span', { class: 'small muted' }, Math.round(node.opacity * 100) + '%'));
+    if (node.clip) el.append(h('span', { class: 'badge', title: 'Écrêté sur le calque du dessous', 'aria-label': 'Écrêté' }, '↳'));
+    if (node.alphaLock) el.append(h('span', { class: 'badge', title: 'Transparence verrouillée', 'aria-label': 'Transparence verrouillée' }, '▦'));
+    if (node.blend && node.blend !== 'normal') el.append(h('span', { class: 'small muted', title: 'Mode de fusion' }, (BLEND_MODES.find((m) => m[0] === node.blend) || [, node.blend])[1]));
     el.append(h('button', {
       class: 'icon-btn small', title: node.locked ? 'Déverrouiller' : 'Verrouiller', 'aria-label': 'Verrou',
       style: { opacity: node.locked ? 1 : 0.35 },
@@ -236,6 +240,19 @@ export function initLayersPanel(app) {
         h('input', { type: 'checkbox', checked: a.variant, onchange: (e) => ops.setVariantGroup(app, a.id, e.target.checked) }),
         'Groupe de variantes (une seule visible)'));
       if (a.variant) props.append(h('p', { class: 'hint' }, 'Astuce : chaque enfant est une variante (ex. bouche fermée / ouverte). Utilisez le bouton rond pour choisir celle qui est visible, ou l\'onglet Expressions.'));
+    }
+    if (a.type === 'layer' && !a.reference) {
+      // mode de fusion, masque d'écrêtage, verrou de transparence
+      props.append(
+        h('div', { class: 'row nowrap', style: { marginTop: '6px' } }, h('span', { class: 'small muted' }, 'Fusion'),
+          h('select', { class: 'input grow', 'aria-label': 'Mode de fusion', title: 'Mode de fusion : comment ce calque se mélange aux calques du dessous', onchange: (e) => ops.setProp(app, a.id, 'blend', e.target.value === 'normal' ? undefined : e.target.value, 'Mode de fusion') },
+            BLEND_MODES.map(([id, name]) => h('option', { value: id, selected: (a.blend || 'normal') === id }, name)))),
+        h('label', { class: 'chk', title: 'Le calque n\'apparaît que sur les pixels du calque juste en dessous (ombres, reflets, motifs sans déborder)' },
+          h('input', { type: 'checkbox', checked: !!a.clip, onchange: (e) => ops.setProp(app, a.id, 'clip', e.target.checked || undefined, e.target.checked ? 'Écrêter sur le calque du dessous' : 'Annuler l\'écrêtage') }),
+          'Écrêter sur le calque du dessous'),
+        h('label', { class: 'chk', title: 'On ne peint que sur les pixels déjà dessinés de ce calque, leur transparence est conservée' },
+          h('input', { type: 'checkbox', checked: !!a.alphaLock, onchange: (e) => ops.setProp(app, a.id, 'alphaLock', e.target.checked || undefined, e.target.checked ? 'Verrouiller la transparence' : 'Déverrouiller la transparence') }),
+          'Verrouiller la transparence'));
     }
     if (a.type === 'layer') {
       props.append(h('label', { class: 'chk', title: 'Un calque de référence est semi-transparent à l\'écran et jamais exporté' },

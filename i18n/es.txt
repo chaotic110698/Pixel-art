@@ -1266,6 +1266,28 @@ Otra duración, en segundos (0: hasta la siguiente pulsación)
 Duración en segundos
 En el Stream Deck, cada tecla puede tener su propia duración (p. ej., Demonio durante 15 s) o permanecer activa mientras se mantiene pulsada.
 Hay una nueva versión del plugin: descárgala y haz doble clic en el archivo para instalarla encima (tus teclas se conservan). Después, el propio plugin propondrá sus actualizaciones.
+Multiplicar
+Trama
+Superponer
+Luz suave
+Luz fuerte
+Oscurecer
+Aclarar
+Sobreexponer color
+Subexponer color
+Suma
+Diferencia
+Modo de fusión
+Modo de fusión: cómo se mezcla esta capa con las de abajo
+La capa solo aparece sobre los píxeles de la capa inferior (sombras, brillos, motivos sin salirse)
+Recortar con la capa inferior
+Quitar recorte
+Solo se pinta sobre los píxeles ya dibujados de esta capa; se conserva su transparencia
+Bloquear transparencia
+Desbloquear transparencia
+Recortada con la capa inferior
+Recortada
+Transparencia bloqueada
 #P
 Deshecho: {T1}
 Rehecho: {T1}
