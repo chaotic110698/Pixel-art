@@ -1365,6 +1365,58 @@ Duración (ms)
 Ignorar celdas vacías
 Crear la animación
 Ninguna celda que importar
+Constante
+Acelera
+Frena
+Acelera y luego frena
+Rebote al llegar
+Desplazamiento (de A a B)
+Flotar (arriba / abajo)
+Respiración (la parte de arriba baja)
+Temblor
+Parpadeo
+Aparición (fundido tramado)
+Desaparición (fundido tramado)
+Hacia la derecha (px)
+Hacia abajo (px)
+Movimiento
+Ida y vuelta (bucle)
+Amplitud (px)
+Efecto
+Animar la capa
+Animar la capa…
+El contenido de la capa activa, en la imagen actual, se anima en las imágenes siguientes (añadidas si hace falta). Las demás capas no se mueven. Un solo paso para deshacer.
+Animar
+Animar la capa (desplazamiento, flotar, respiración, fundido…)
+Voltear horizontalmente las baldosas colocadas
+Voltear horizontalmente
+Voltear verticalmente las baldosas colocadas
+Voltear verticalmente
+Animar el mapa (imágenes de tu dibujo)
+Animar el mapa
+Mapa animado exportado en GIF
+Pantalones y calzado
+Parte de abajo
+Calzado
+Pantalón
+Vaquero con dobladillo
+Bermudas
+Falda
+Falda larga
+Peto (abajo)
+Zapatillas
+Botas
+Sandalias
+Buscar un comando…
+Buscar un comando
+Escribe un comando (p. ej. exportar, rampa, texto…)
+Comandos
+No se encontró ningún comando
+Panel Capas
+Panel Colores
+Panel Expresiones
+Panel Cuadrícula
+Panel Historial
 #P
 Deshecho: {T1}
 Rehecho: {T1}

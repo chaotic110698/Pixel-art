@@ -110,9 +110,10 @@ export function buildCharacter({ width = 64, height = 64, name = 'Mon personnage
   if (facing) doc.charTemplate.facing = facing;
   doc.palette = [...presetById('skin').colors];
   doc.charColors = { ...colors };
-  const order = ['body', 'top', 'head', 'nose', 'mouth', 'eyes', 'brows', 'hair', 'hands'];
+  const order = ['body', 'top', 'bottom', 'shoes', 'head', 'nose', 'mouth', 'eyes', 'brows', 'hair', 'hands'];
   for (const k of order) {
     const p = sel[k] && pieceById(sel[k]);
+    if (p && p.needsTall && !tall) continue; // bas et chaussures : corps entier seulement
     if (p) insertPiece(doc, p, { colors });
   }
   for (const id of sel.accessories || []) {

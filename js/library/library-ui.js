@@ -218,6 +218,11 @@ export function openLibrary(app, initialCat = null) {
     }
     let addedBase = false;
     const node = app.history.transact(`Ajouter « ${piece.name} »`, () => {
+      // bas et chaussures : il faut un corps entier (le buste est remplacé)
+      if (piece.needsTall && !BODY_TYPES[docBodyType(app.doc)]?.tall) {
+        const fullBody = pieceById('body-entier-moyen');
+        if (fullBody) { insertPiece(app.doc, fullBody, { colors, facing }); addedBase = true; }
+      }
       // sans tête ni corps, une coiffure ou des yeux « flottent » : on ajoute une base
       const has = (cat) => [...app.doc.nodes.values()].some((n) => n.part?.category === cat);
       const base = VIEW_BASE[viewOf(piece)];
@@ -399,14 +404,20 @@ export function openNewCharacter(app) {
   }
   const redraw = debounce(drawPreview, 60);
 
-  function picker(catId, label, { optional = false } = {}) {
+  // key : clé de sel (par défaut la catégorie) ; only : filtre supplémentaire (bas / chaussures)
+  function picker(catId, label, { optional = false, key = catId, only = null } = {}) {
     const c = CATEGORIES.find((x) => x.id === catId);
     const s = h('select', { class: 'input wide' },
       optional ? h('option', { value: '' }, '— Aucun —') : null,
-      c.pieces.filter(inView).map((p) => h('option', { value: p.id, selected: sel[catId] === p.id }, p.name)));
-    s.addEventListener('change', () => { sel[catId] = s.value || null; redraw(); });
+      c.pieces.filter(inView).filter((p) => !only || only(p)).map((p) => h('option', { value: p.id, selected: sel[key] === p.id }, p.name)));
+    s.addEventListener('change', () => {
+      sel[key] = s.value || null;
+      if (key === 'body') renderPickers(); // corps entier : bas et chaussures proposés
+      redraw();
+    });
     return h('label', { class: 'field' }, h('span', {}, label), s);
   }
+  const tallBody = () => !!pieceById(sel.body)?.tall;
 
   function renderPickers() {
     clear(pickers);
@@ -416,6 +427,8 @@ export function openNewCharacter(app) {
       picker('brows', 'Sourcils', { optional: true }),
       CATEGORIES.find((x) => x.id === 'nose').pieces.some(inView) ? picker('nose', 'Nez', { optional: true }) : null,
       picker('mouth', 'Bouche'), picker('top', 'Vêtement', { optional: true }),
+      tallBody() ? picker('bottom', 'Bas', { optional: true, key: 'bottom', only: (p) => p.exclusiveKey === 'bottom' }) : null,
+      tallBody() ? picker('bottom', 'Chaussures', { optional: true, key: 'shoes', only: (p) => p.exclusiveKey === 'shoes' }) : null,
       view === 'front' ? picker('hands', 'Mains', { optional: true }) : null),
     h('h3', {}, 'Accessoires'),
     h('div', { class: 'chips' }, acc.map((p) => h('button', {
@@ -444,6 +457,11 @@ export function openNewCharacter(app) {
   const randomize = () => {
     const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
     for (const k of ['body', 'head', 'hair', 'eyes', 'brows', 'nose', 'mouth', 'top']) sel[k] = rnd(CATEGORIES.find((c) => c.id === k).pieces.filter(inView))?.id || null;
+    // corps entier : bas et chaussures au hasard (ou aucun)
+    const lower = CATEGORIES.find((c) => c.id === 'bottom').pieces;
+    sel.bottom = tallBody() ? rnd([null, ...lower.filter((p) => p.exclusiveKey === 'bottom')])?.id || null : null;
+    sel.shoes = tallBody() ? rnd([null, ...lower.filter((p) => p.exclusiveKey === 'shoes')])?.id || null : null;
+    colors = { ...colors, accent: rnd(['#f2c94c', '#d04a6a', '#3f5fa8', '#2f8f5a', '#7a4a2a', '#2a2a3a']) };
     colors = { ...colors, skin: rnd(SKIN_TONES.slice(0, 7)), hair: rnd(HAIR_TONES), eyes: rnd(['#3b7dd8', '#4ab06a', '#8a5a2b', '#9a5cff', '#e04a5a', '#2a2a3a']), clothes: rnd(['#4a7bd0', '#e04a5a', '#3fcf8e', '#f2a03d', '#7a5cff', '#2a2a3a', '#f0f0f4']) };
     renderPickers();
     renderColors();

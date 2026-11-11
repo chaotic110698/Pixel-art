@@ -1365,6 +1365,58 @@ Dauer (ms)
 Leere Zellen überspringen
 Animation erstellen
 Keine Zelle zum Importieren
+Gleichmäßig
+Beschleunigt
+Bremst ab
+Beschleunigt, dann bremst ab
+Abprallen am Ziel
+Bewegung (von A nach B)
+Schweben (auf / ab)
+Atmen (der obere Teil senkt sich)
+Zittern
+Blinken
+Einblenden (gerastert)
+Ausblenden (gerastert)
+Nach rechts (px)
+Nach unten (px)
+Bewegung
+Hin und zurück (Schleife)
+Ausschlag (px)
+Effekt
+Ebene animieren
+Ebene animieren…
+Der Inhalt der aktiven Ebene im aktuellen Bild wird über die folgenden Bilder animiert (bei Bedarf hinzugefügt). Andere Ebenen bleiben unverändert. Ein einziger Rückgängig-Schritt.
+Animieren
+Ebene animieren (Bewegung, Schweben, Atmen, Blende…)
+Gesetzte Kacheln horizontal spiegeln
+Horizontal spiegeln
+Gesetzte Kacheln vertikal spiegeln
+Vertikal spiegeln
+Karte animieren (Bilder Ihrer Zeichnung)
+Karte animieren
+Animierte Karte als GIF exportiert
+Hosen und Schuhe
+Unterteil
+Schuhe
+Hose
+Jeans mit Umschlag
+Bermudashorts
+Rock
+Langer Rock
+Latzhose (unten)
+Turnschuhe
+Stiefel
+Sandalen
+Befehl suchen…
+Befehl suchen
+Befehl eingeben (z. B. exportieren, Rampe, Text…)
+Befehle
+Kein Befehl gefunden
+Bedienfeld Ebenen
+Bedienfeld Farben
+Bedienfeld Ausdrücke
+Bedienfeld Raster
+Bedienfeld Verlauf
 #P
 Rückgängig: {T1}
 Wiederholt: {T1}

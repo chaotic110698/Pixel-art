@@ -11,6 +11,7 @@ import mouths from './parts/mouths.js';
 import accessories from './parts/accessories.js';
 import tops from './parts/tops.js';
 import hands from './parts/hands.js';
+import bottoms from './parts/bottoms.js';
 import bodies3q from './parts/3q/bodies.js';
 import heads3q from './parts/3q/heads.js';
 import hair3q from './parts/3q/hair.js';
@@ -32,6 +33,7 @@ export const CATEGORIES = [
   { id: 'nose', name: 'Nez', pieces: [...noses, ...noses3q], exclusive: true },
   { id: 'mouth', name: 'Bouches', pieces: [...mouths, ...mouths3q, ...mouthsQD, ...mouthsQDMore], exclusive: true },
   { id: 'top', name: 'Vêtements', pieces: [...tops, ...tops3q, ...topsQD, ...topsQDMore], exclusive: true },
+  { id: 'bottom', name: 'Bas et chaussures', pieces: bottoms, exclusive: true },
   { id: 'accessory', name: 'Accessoires', pieces: [...accessories, ...beards3q, ...acc3q, ...beardsQD, ...accQD], exclusive: false },
   { id: 'hands', name: 'Mains', pieces: hands, exclusive: true },
 ];
@@ -182,7 +184,7 @@ export function nodesOfKind(doc, piece) {
 }
 
 /** Nom de calque « Catégorie (pièce) » traduit morceau par morceau (interface anglaise). */
-const LAYER_HEADS = { 'Corps entier': 'Full body', 'Cheveux arrière': 'Hair back', 'Cheveux avant': 'Hair front', Cheveux: 'Hair', Corps: 'Body', 'Tête': 'Head', Haut: 'Top', Nez: 'Nose', Main: 'Hand' };
+const LAYER_HEADS = { 'Corps entier': 'Full body', 'Cheveux arrière': 'Hair back', 'Cheveux avant': 'Hair front', Cheveux: 'Hair', Corps: 'Body', 'Tête': 'Head', Haut: 'Top', Nez: 'Nose', Main: 'Hand', Bas: 'Bottom', Chaussures: 'Shoes' };
 function trName(name) {
   if (getLang() === 'fr') return name;
   const m = name.match(/^(.+?) \((.+?)(, 3\/4|, portrait)?\)$/);
@@ -257,6 +259,14 @@ export function insertPiece(doc, piece, { colors = doc.charColors || DEFAULT_COL
     const top = [...doc.nodes.values()].find((n) => n.part?.category === 'top' && doc.get(n.parent)?.id === 'root');
     const topPiece = top && pieceById(top.part.pieceId);
     if (topPiece?.fitsBody) insertPiece(doc, topPiece, { colors, replace: true });
+    // bas et chaussures : refaits pour un corps entier, retirés pour un buste
+    const lower = [...doc.nodes.values()].filter((n) => n.part?.category === 'bottom' && doc.get(n.parent)?.id === 'root');
+    const tallBody = !!piece.tall;
+    for (const n of lower) {
+      const lp = pieceById(n.part.pieceId);
+      if (tallBody && lp) insertPiece(doc, lp, { colors, replace: true });
+      else doc.remove(n.id);
+    }
   }
   return first;
 }

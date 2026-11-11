@@ -77,6 +77,7 @@ export const ICONS = {
   gradient: s('<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M8 4v16M12 4v16" stroke-dasharray="2 2"/><path d="M16 4v16" stroke-dasharray="1 3"/>'),
   outline: s('<rect x="7" y="7" width="10" height="10" fill="currentColor" stroke="none"/><rect x="4" y="4" width="16" height="16" rx="1"/>'),
   transform: s('<rect x="5" y="5" width="11" height="11" transform="rotate(-15 10.5 10.5)"/><path d="M17 17l4 4M17 21h4v-4"/>'),
+  search: s('<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>'),
   text: s('<path d="M5 7V4h14v3"/><path d="M12 4v16"/><path d="M9 20h6"/>'),
   brush: s('<path d="M18 3l3 3-9 9-3-3z"/><path d="M9 12c-3 0-5 2-5 5 0 1-1 3-2 3 3 1 7 0 8-3"/>'),
 };

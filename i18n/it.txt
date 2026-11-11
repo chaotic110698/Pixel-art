@@ -1365,6 +1365,58 @@ Durata (ms)
 Ignora le celle vuote
 Crea l'animazione
 Nessuna cella da importare
+Costante
+Accelera
+Rallenta
+Accelera poi rallenta
+Rimbalzo all'arrivo
+Spostamento (da A a B)
+Fluttuare (su / giù)
+Respiro (la parte alta si abbassa)
+Tremolio
+Lampeggio
+Comparsa (dissolvenza retinata)
+Scomparsa (dissolvenza retinata)
+Verso destra (px)
+Verso il basso (px)
+Movimento
+Andata e ritorno (ciclo)
+Ampiezza (px)
+Effetto
+Anima il livello
+Anima il livello…
+Il contenuto del livello attivo, al fotogramma corrente, viene animato sui fotogrammi seguenti (aggiunti se serve). Gli altri livelli non si muovono. Un solo passo da annullare.
+Anima
+Anima il livello (spostamento, fluttuare, respiro, dissolvenza…)
+Rifletti orizzontalmente le tessere posate
+Rifletti orizzontalmente
+Rifletti verticalmente le tessere posate
+Rifletti verticalmente
+Anima la mappa (fotogrammi del tuo disegno)
+Anima la mappa
+Mappa animata esportata in GIF
+Pantaloni e scarpe
+Parte inferiore
+Scarpe
+Pantaloni
+Jeans con risvolto
+Bermuda
+Gonna
+Gonna lunga
+Salopette (sotto)
+Scarpe da ginnastica
+Stivali
+Sandali
+Cerca un comando…
+Cerca un comando
+Scrivi un comando (es. esporta, scala, testo…)
+Comandi
+Nessun comando trovato
+Pannello Livelli
+Pannello Colori
+Pannello Espressioni
+Pannello Griglia
+Pannello Cronologia
 #P
 Annullato: {T1}
 Ripetuto: {T1}

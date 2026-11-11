@@ -32,7 +32,7 @@ export const SHORTCUTS = [
     ['0', 'Ajuster à l\'écran'], ['1', 'Taille réelle (100 %)'], ['#', 'Grille on/off'], ['T', 'Mode tuiles on/off'], ['N', 'Onion skin on/off'],
   ]],
   ['Fichier', [
-    ['F1', 'Guide complet (ouvert sur l\'outil actif)'], ['Ctrl+S', 'Enregistrer (navigateur + fichier lié)'], ['Ctrl+Maj+S', 'Enregistrer dans un fichier…'], ['Ctrl+O', 'Projets'], ['Ctrl+Maj+E', 'Exporter'], ['?', 'Cette aide'],
+    ['F1', 'Guide complet (ouvert sur l\'outil actif)'], ['Ctrl+S', 'Enregistrer (navigateur + fichier lié)'], ['Ctrl+Maj+S', 'Enregistrer dans un fichier…'], ['Ctrl+O', 'Projets'], ['Ctrl+Maj+E', 'Exporter'], ['Ctrl+K', 'Rechercher une commande'], ['?', 'Cette aide'],
   ]],
   ['Profils', [
     ['F13 … F24', 'Changer de profil (tenue / personnage), voir onglet Expressions'],
@@ -232,6 +232,7 @@ export function initShortcuts(app) {
       if (k === 's' && e.shiftKey) return run(() => A.saveToComputer(true));
       if (k === 's') return run(() => A.saveAll());
       if (k === 'o') return run(() => A.openProjects());
+      if (k === 'k') return run(() => import('./command-palette.js').then((m) => m.openCommandPalette(app)));
       if (k === 'e' && e.shiftKey) return run(() => A.exportDialog());
       if (k === 'e') return run(() => ops.mergeDown(app));
       if (k === 'j') return run(() => ops.duplicate(app));

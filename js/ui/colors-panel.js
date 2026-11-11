@@ -283,6 +283,14 @@ export function initColorsPanel(app) {
     h('h3', {}, 'Récentes'),
     recentGrid);
 
+  // commandes de palette reprises par la palette de commandes (Ctrl+K)
+  app.paletteCommands = () => [
+    { label: 'Générer une rampe de couleurs…', icon: 'palette', run: () => openRampDialog(app, setPalette) },
+    { label: 'Trier par teinte', icon: 'sliders', run: sortPalette },
+    { label: 'Palette depuis le dessin', icon: 'palette', run: () => app.actions.paletteFromDrawing((c) => setPalette(c, 'Palette extraite du dessin')) },
+    { label: 'Importer (.hex, .gpl, .json, .pal)', icon: 'upload', run: importPalette },
+    { label: 'Extraire d\'une image…', icon: 'image', run: extractFromImage },
+  ];
   app.openColorEditor = (which) => {
     target = which;
     showEditor = true;

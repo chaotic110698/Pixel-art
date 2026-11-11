@@ -2,7 +2,7 @@
 
 import { h, clear, debounce } from '../util/dom.js';
 import { icon } from './icons.js';
-import { composeToCanvas } from '../render/compose.js';
+import { composeOnCtx } from '../render/compose.js';
 import { promptDialog, openDialog } from './dialogs.js';
 
 let initialized = false;
@@ -226,6 +226,7 @@ function init(app, el) {
     tb('✂', 'Délier l\'image courante', () => unlinkFrame(app)),
     tb('chevronRight', 'Déplacer à droite', () => moveFrame(app, 1)),
     tb('trash', 'Supprimer l\'image', () => deleteFrame(app)),
+    tb('✨', 'Animer le calque (déplacement, flottement, respiration, fondu…)', () => import('./animate.js').then((m) => m.openAnimateDialog(app))),
     tb('🏷', 'Nouvelle balise (sur la plage sélectionnée avec Maj+clic, ou l\'image courante)', async () => {
       const doc = app.doc;
       const r = range || { from: doc.frame, to: doc.frame };
@@ -268,7 +269,10 @@ function init(app, el) {
       const g = c.getContext('2d');
       g.imageSmoothingEnabled = false;
       const k = Math.min(80 / doc.width, 80 / doc.height);
-      g.drawImage(composeToCanvas(doc, { frame: i, includeReference: false }), (80 - doc.width * k) / 2, (80 - doc.height * k) / 2, doc.width * k, doc.height * k);
+      // composition directement à la taille de la miniature (pas d'image pleine taille : grands canevas)
+      g.setTransform(k, 0, 0, k, (80 - doc.width * k) / 2, (80 - doc.height * k) / 2);
+      composeOnCtx(g, doc, { frame: i, includeReference: false });
+      g.setTransform(1, 0, 0, 1, 0, 0);
       const inRange = range && i >= range.from && i <= range.to;
       const cell = h('button', {
         class: 'frame-cell' + (i === doc.frame ? ' on' : '') + (inRange ? ' in-range' : ''),

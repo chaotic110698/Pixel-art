@@ -1365,6 +1365,58 @@ Duração (ms)
 Ignorar células vazias
 Criar a animação
 Nenhuma célula para importar
+Constante
+Acelera
+Desacelera
+Acelera e depois desacelera
+Quica na chegada
+Deslocamento (de A a B)
+Flutuar (sobe / desce)
+Respiração (a parte de cima abaixa)
+Tremor
+Piscar
+Aparecer (fade pontilhado)
+Desaparecer (fade pontilhado)
+Para a direita (px)
+Para baixo (px)
+Movimento
+Ida e volta (loop)
+Amplitude (px)
+Efeito
+Animar a camada
+Animar a camada…
+O conteúdo da camada ativa, no quadro atual, é animado nos quadros seguintes (adicionados se preciso). As outras camadas não se mexem. Um só passo para desfazer.
+Animar
+Animar a camada (deslocamento, flutuar, respiração, fade…)
+Espelhar na horizontal os blocos colocados
+Espelhar na horizontal
+Espelhar na vertical os blocos colocados
+Espelhar na vertical
+Animar o mapa (quadros do seu desenho)
+Animar o mapa
+Mapa animado exportado em GIF
+Partes de baixo e calçados
+Parte de baixo
+Calçados
+Calça
+Jeans com barra dobrada
+Bermuda
+Saia
+Saia longa
+Jardineira (parte de baixo)
+Tênis
+Botas
+Sandálias
+Procurar um comando…
+Procurar um comando
+Digite um comando (ex.: exportar, rampa, texto…)
+Comandos
+Nenhum comando encontrado
+Painel Camadas
+Painel Cores
+Painel Expressões
+Painel Grade
+Painel Histórico
 #P
 Desfeito: {T1}
 Refeito: {T1}

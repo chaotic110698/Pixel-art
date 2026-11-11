@@ -10,8 +10,12 @@ import { uid } from '../core/doc.js';
 import { composePixels } from '../render/compose.js';
 import { encodePNG, upscale } from '../export/png.js';
 import { makeZip } from '../export/zip.js';
+import { encodeGIF } from '../export/gif.js';
 
 const MAX = 256;
+// une case de carte : -1 (vide) ou index de tuile + drapeaux de retournement
+export const FLIP_H = 0x10000, FLIP_V = 0x20000;
+export const tileOf = (cell) => (cell < 0 ? -1 : cell & 0xffff);
 
 /** Taille de tuile par défaut : celle de la grille si elle est raisonnable, sinon 16. */
 function defaultTile(doc) {
@@ -39,18 +43,21 @@ export function tileset(doc, tw, th, frame = doc.frame) {
   return { px, cols, rows, count: cols * rows, empty, tw, th, w: doc.width };
 }
 
-/** Pixels exacts de la carte (Uint32Array cols*tw × rows*th). */
+/** Pixels exacts de la carte (Uint32Array cols*tw × rows*th), tuiles retournées comprises. */
 export function renderTilemap(doc, map, ts = tileset(doc, map.tw, map.th)) {
   const W = map.cols * map.tw, Hh = map.rows * map.th;
   const out = new Uint32Array(W * Hh);
   for (let c = 0; c < map.cells.length; c++) {
-    const t = map.cells[c];
+    const cell = map.cells[c];
+    const t = tileOf(cell);
     if (t < 0 || t >= ts.count) continue;
+    const fh = cell & FLIP_H, fv = cell & FLIP_V;
     const sx = (t % ts.cols) * map.tw, sy = Math.floor(t / ts.cols) * map.th;
     const dx = (c % map.cols) * map.tw, dy = Math.floor(c / map.cols) * map.th;
     for (let y = 0; y < map.th; y++) {
-      const s = (sy + y) * ts.w + sx, d = (dy + y) * W + dx;
-      out.set(ts.px.subarray(s, s + map.tw), d);
+      const s = (sy + (fv ? map.th - 1 - y : y)) * ts.w + sx, d = (dy + y) * W + dx;
+      if (!fh) out.set(ts.px.subarray(s, s + map.tw), d);
+      else for (let x = 0; x < map.tw; x++) out[d + x] = ts.px[s + map.tw - 1 - x];
     }
   }
   return { px: out, w: W, h: Hh };
@@ -63,13 +70,30 @@ function toCanvas(px, w, hh) {
   return c;
 }
 
-/** Carte au format Tiled (JSON .tmj), tuiles numérotées à partir de 1 (0 = vide). */
-export function tiledJSON(doc, map, ts, imageName) {
+/**
+ * Carte au format Tiled (JSON .tmj), tuiles numérotées à partir de 1 (0 = vide), drapeaux
+ * de retournement de Tiled. frames > 1 : le jeu de tuiles empile les images d'animation
+ * (une rangée de tuiles par image) et chaque tuile non vide porte son animation.
+ */
+export function tiledJSON(doc, map, ts, imageName, frames = 1) {
+  const gid = (cell) => {
+    const t = tileOf(cell);
+    if (t < 0) return 0;
+    return ((t + 1) + (cell & FLIP_H ? 0x80000000 : 0) + (cell & FLIP_V ? 0x40000000 : 0));
+  };
+  const tset = { firstgid: 1, name: doc.name, image: imageName, imagewidth: ts.cols * map.tw, imageheight: ts.rows * map.th * frames, tilewidth: map.tw, tileheight: map.th, tilecount: ts.count * frames, columns: ts.cols, margin: 0, spacing: 0 };
+  if (frames > 1) {
+    tset.tiles = [];
+    for (let i = 0; i < ts.count; i++) {
+      if (ts.empty[i]) continue;
+      tset.tiles.push({ id: i, animation: Array.from({ length: frames }, (_, f) => ({ tileid: i + f * ts.count, duration: doc.frames[f]?.duration || 100 })) });
+    }
+  }
   return {
     type: 'map', version: '1.10', orientation: 'orthogonal', renderorder: 'right-down', infinite: false,
     width: map.cols, height: map.rows, tilewidth: map.tw, tileheight: map.th, nextlayerid: 2, nextobjectid: 1,
-    layers: [{ id: 1, name: map.name, type: 'tilelayer', visible: true, opacity: 1, x: 0, y: 0, width: map.cols, height: map.rows, data: map.cells.map((t) => (t < 0 ? 0 : t + 1)) }],
-    tilesets: [{ firstgid: 1, name: doc.name, image: imageName, imagewidth: ts.cols * map.tw, imageheight: ts.rows * map.th, tilewidth: map.tw, tileheight: map.th, tilecount: ts.count, columns: ts.cols, margin: 0, spacing: 0 }],
+    layers: [{ id: 1, name: map.name, type: 'tilelayer', visible: true, opacity: 1, x: 0, y: 0, width: map.cols, height: map.rows, data: map.cells.map(gid) }],
+    tilesets: [tset],
   };
 }
 
@@ -87,6 +111,9 @@ export function openTilemap(app) {
   let zoom = app.state.tilemapZoom || 3;
   let showGrid = true;
   let ts = null;
+  let flip = 0; // retournement des tuiles posées (FLIP_H | FLIP_V)
+  let playing = null; // animation de la carte (images du dessin)
+  let animFrame = null;
   const map = () => app.doc.tilemaps.find((m) => m.id === mapId) || app.doc.tilemaps[0];
 
   const tsCanvas = h('canvas', { class: 'tm-tileset', 'aria-label': 'Jeu de tuiles' });
@@ -121,10 +148,18 @@ export function openTilemap(app) {
     }
     g.lineWidth = 1;
   }
+  const animCache = new Map();
   function drawMap() {
     const m = map();
     if (!ts || ts.tw !== m.tw || ts.th !== m.th) ts = tileset(app.doc, m.tw, m.th);
-    const r = renderTilemap(app.doc, m, ts);
+    let use = ts;
+    if (animFrame !== null) {
+      // lecture : jeu de tuiles de l'image d'animation en cours (mis en cache)
+      const key = `${m.tw}x${m.th}:${animFrame}`;
+      if (!animCache.has(key)) animCache.set(key, tileset(app.doc, m.tw, m.th, animFrame));
+      use = animCache.get(key);
+    }
+    const r = renderTilemap(app.doc, m, use);
     mapCanvas.width = r.w * zoom;
     mapCanvas.height = r.h * zoom;
     const g = mapCanvas.getContext('2d');
@@ -138,7 +173,7 @@ export function openTilemap(app) {
       for (let y = 0; y <= m.rows; y++) { g.moveTo(0, y * m.th * zoom + 0.5); g.lineTo(mapCanvas.width, y * m.th * zoom + 0.5); }
       g.stroke();
     }
-    const used = m.cells.filter((t) => t >= 0).length;
+    const used = m.cells.filter((t) => tileOf(t) >= 0).length;
     info.textContent = `${m.cols} × ${m.rows} tuiles de ${m.tw} × ${m.th} px · ${m.cols * m.tw} × ${m.rows * m.th} px · ${used} case(s) remplie(s)`;
   }
   const redraw = debounce(() => { drawTileset(); drawMap(); }, 60);
@@ -185,7 +220,7 @@ export function openTilemap(app) {
       const i = cy * m.cols + cx;
       if (seen[i] || cells[i] !== target) continue;
       seen[i] = 1;
-      cells[i] = value === -1 ? -1 : pick();
+      cells[i] = value === -1 ? -1 : pick() | flip;
       stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
     }
   }
@@ -197,8 +232,8 @@ export function openTilemap(app) {
     const m = map();
     const erase = tool === 'erase' || e.button === 2;
     if (tool === 'pick' || e.altKey) {
-      const t = m.cells[c[1] * m.cols + c[0]];
-      if (t >= 0) { sel = [t]; tool = 'brush'; renderHead(); drawTileset(); }
+      const cell = m.cells[c[1] * m.cols + c[0]];
+      if (cell >= 0) { sel = [tileOf(cell)]; flip = cell & (FLIP_H | FLIP_V); tool = 'brush'; renderHead(); drawTileset(); }
       return;
     }
     stroke = { start: c, last: c, erase, cells: m.cells.slice(), base: m.cells.slice() };
@@ -229,7 +264,7 @@ export function openTilemap(app) {
   function paint([x, y]) {
     const m = map();
     const value = stroke.erase ? -1 : 0;
-    const set = (cx, cy) => { stroke.cells[cy * m.cols + cx] = stroke.erase ? -1 : pick(); };
+    const set = (cx, cy) => { stroke.cells[cy * m.cols + cx] = stroke.erase ? -1 : pick() | flip; };
     if (tool === 'fill' && !stroke.erase) {
       stroke.cells = stroke.base.slice();
       fillArea(stroke.cells, m, x, y, value);
@@ -301,8 +336,12 @@ export function openTilemap(app) {
         h('button', { class: 'icon-btn', title: 'Zoom arrière', 'aria-label': 'Zoom arrière', onclick: () => setZoom(zoom - 1) }, icon('zoomOut')),
         h('span', { class: 'small' }, `×${zoom}`),
         h('button', { class: 'icon-btn', title: 'Zoom avant', 'aria-label': 'Zoom avant', onclick: () => setZoom(zoom + 1) }, icon('zoomIn')),
+        h('button', { class: 'icon-btn toggle' + (flip & FLIP_H ? ' on' : ''), title: 'Retourner horizontalement les tuiles posées', 'aria-label': 'Retourner horizontalement', 'aria-pressed': String(!!(flip & FLIP_H)), onclick: () => { flip ^= FLIP_H; renderHead(); } }, icon('flipH')),
+        h('button', { class: 'icon-btn toggle' + (flip & FLIP_V ? ' on' : ''), title: 'Retourner verticalement les tuiles posées', 'aria-label': 'Retourner verticalement', 'aria-pressed': String(!!(flip & FLIP_V)), onclick: () => { flip ^= FLIP_V; renderHead(); } }, icon('flipV')),
+        app.doc.frames.length > 1 ? h('button', { class: 'icon-btn toggle' + (playing ? ' on' : ''), title: 'Animer la carte (images de votre dessin)', 'aria-label': 'Animer la carte', onclick: () => togglePlay() }, icon(playing ? 'pause' : 'play')) : null,
         h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: showGrid, onchange: (e) => { showGrid = e.target.checked; drawMap(); } }), 'Grille'),
         h('button', { class: 'btn small', onclick: () => exportPNG() }, icon('download'), 'PNG'),
+        app.doc.frames.length > 1 ? h('button', { class: 'btn small', onclick: () => exportGIF() }, icon('download'), 'GIF') : null,
         h('button', { class: 'btn small', onclick: () => exportTiled() }, icon('download'), 'Tiled (ZIP)'),
         h('button', { class: 'btn small', onclick: async () => {
           if (!(await confirmDialog('Vider toute la carte ?', { danger: true, ok: 'Vider' }))) return;
@@ -311,6 +350,31 @@ export function openTilemap(app) {
       h('p', { class: 'hint tm-hint' }, sel.length > 1
         ? `${sel.length} tuiles choisies : le pinceau en pose une au hasard (idéal pour varier herbe, sol, briques).`
         : 'Cliquez une tuile, puis peignez la carte. Maj + clic sur d\'autres tuiles : pose au hasard. Clic droit : gomme. Les tuiles se mettent à jour quand vous modifiez le dessin.'));
+  }
+  /** Lecture de la carte : les tuiles suivent les images d'animation du dessin. */
+  function togglePlay() {
+    if (playing) {
+      clearTimeout(playing);
+      playing = null;
+      animFrame = null;
+    } else {
+      animFrame = app.doc.frame;
+      const step = () => {
+        animFrame = (animFrame + 1) % app.doc.frames.length;
+        drawMap();
+        playing = setTimeout(step, app.doc.frames[animFrame]?.duration || 100);
+      };
+      playing = setTimeout(step, app.doc.frames[animFrame]?.duration || 100);
+    }
+    renderHead();
+    drawMap();
+  }
+  async function exportGIF() {
+    const m = map();
+    const frames = app.doc.frames.map((f, i) => ({ data: renderTilemap(app.doc, m, tileset(app.doc, m.tw, m.th, i)).px, delay: f.duration || 100 }));
+    const gif = encodeGIF(frames, m.cols * m.tw, m.rows * m.th);
+    downloadBlob(new Blob([gif], { type: 'image/gif' }), `${slugify(app.doc.name)}_${slugify(m.name)}.gif`);
+    app.toast('Carte animée exportée en GIF');
   }
   function setZoom(z) {
     zoom = Math.max(1, Math.min(12, z));
@@ -334,14 +398,19 @@ export function openTilemap(app) {
   }
   async function exportTiled() {
     const m = map();
-    const t = tileset(app.doc, m.tw, m.th);
+    const t = tileset(app.doc, m.tw, m.th, 0);
+    const nf = app.doc.frames.length;
     const tsW = t.cols * m.tw, tsH = t.rows * m.th;
-    const crop = new Uint32Array(tsW * tsH);
-    for (let y = 0; y < tsH; y++) crop.set(t.px.subarray(y * app.doc.width, y * app.doc.width + tsW), y * tsW);
+    // une rangée de jeu de tuiles par image d'animation (tuiles animées dans Tiled)
+    const crop = new Uint32Array(tsW * tsH * nf);
+    for (let f = 0; f < nf; f++) {
+      const tf = f ? tileset(app.doc, m.tw, m.th, f) : t;
+      for (let y = 0; y < tsH; y++) crop.set(tf.px.subarray(y * app.doc.width, y * app.doc.width + tsW), (f * tsH + y) * tsW);
+    }
     const img = `${slugify(app.doc.name)}_tuiles.png`;
     const files = [
-      { name: img, data: await encodePNG(crop, tsW, tsH) },
-      { name: `${slugify(m.name)}.tmj`, data: JSON.stringify(tiledJSON(app.doc, m, t, img), null, 1) },
+      { name: img, data: await encodePNG(crop, tsW, tsH * nf) },
+      { name: `${slugify(m.name)}.tmj`, data: JSON.stringify(tiledJSON(app.doc, m, t, img, nf), null, 1) },
       { name: `${slugify(m.name)}.png`, data: await encodePNG(renderTilemap(app.doc, m, t).px, m.cols * m.tw, m.rows * m.th) },
     ];
     downloadBlob(makeZip(files), `${slugify(app.doc.name)}_${slugify(m.name)}_tiled.zip`);
@@ -349,7 +418,7 @@ export function openTilemap(app) {
   }
 
   // le dessin change : les tuiles suivent ; annuler/rétablir : la carte aussi
-  const offs = ['pixels', 'structure', 'meta', 'frame', 'doc', 'history'].map((ev) => app.on(ev, () => { if (!stroke) { ts = null; redraw(); } }));
+  const offs = ['pixels', 'structure', 'meta', 'frame', 'doc', 'history'].map((ev) => app.on(ev, () => { if (!stroke) { ts = null; animCache.clear(); redraw(); } }));
 
   // annuler / rétablir au clavier dans la fenêtre
   const onKey = (e) => {
@@ -368,7 +437,7 @@ export function openTilemap(app) {
         h('div', { class: 'tm-side' }, h('div', { class: 'small muted' }, 'Jeu de tuiles (votre dessin)'), tsCanvas),
         mapWrap),
       info),
-    onClose: () => { for (const off of offs) off?.(); window.removeEventListener('keydown', onKey, true); },
+    onClose: () => { for (const off of offs) off?.(); window.removeEventListener('keydown', onKey, true); clearTimeout(playing); },
   });
   renderHead();
   drawTileset();

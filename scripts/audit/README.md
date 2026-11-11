@@ -22,5 +22,6 @@ Tests de bout en bout pilotés par Playwright (Chromium), sans dépendance dans 
 | sizes | mise en page à 5 tailles d'écran |
 | storage | démarrage sans IndexedDB / localStorage |
 | fuzz | centaines d'actions aléatoires : annuler/rétablir exacts et persistance |
+| visual | 23 rendus au pixel près (personnages des 3 vues, corps entier habillé, tenues, polices, modes de fusion, conversion d'image, animation) comparés à `ref/*.png` ; différences dans `visuel_*_diff.png`. Accepter un changement voulu : `UPDATE_REFS=1 node scripts/audit/visual.js` |
 
 Un détecteur signale aussi tout texte parasite (« null », « undefined », « NaN ») ajouté au DOM.

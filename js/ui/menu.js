@@ -6,9 +6,14 @@ import * as img from '../core/image-ops.js';
 import { LANGS } from './i18n.js';
 
 export function openMainMenu(app, anchor) {
+  popupMenu(anchor, menuItems(app));
+}
+
+/** Entrées du menu principal (aussi utilisées par la palette de commandes, Ctrl+K). */
+export function menuItems(app) {
   const A = app.actions;
   const st = app.state;
-  popupMenu(anchor, [
+  return [
     { heading: 'Fichier' },
     { label: 'Nouveau dessin…', icon: 'plus', action: A.newDocument },
     { label: 'Nouveau personnage (PNGtuber)…', icon: 'user', action: A.newCharacter },
@@ -42,6 +47,7 @@ export function openMainMenu(app, anchor) {
     { label: 'Mode tuiles (mosaïque)', icon: 'tiles', hint: 'T', checked: st.tileMode, action: () => app.toggleTileMode() },
     { label: 'Carte de tuiles (tilemap)…', icon: 'grid', action: () => import('./tilemap.js').then((m) => m.openTilemap(app)) },
     { label: 'Animation (timeline)', icon: 'film', checked: !!app.timelineOpen, action: A.toggleAnimation },
+    { label: 'Animer le calque…', icon: 'film', action: () => import('./animate.js').then((m) => m.openAnimateDialog(app)) },
     { heading: 'Affichage' },
     { label: 'Ajuster à l\'écran', icon: 'fit', hint: '0', action: () => app.viewport.fit() },
     { label: 'Taille réelle (100 %)', icon: 'one', hint: '1', action: () => app.viewport.actualSize() },
@@ -54,5 +60,6 @@ export function openMainMenu(app, anchor) {
     { label: 'Raccourcis clavier et gestes', icon: 'keyboard', hint: '?', action: () => showShortcuts(app) },
     { label: 'Personnaliser les raccourcis…', icon: 'key', action: () => openKeymapDialog(app) },
     { label: 'Revoir le tutoriel', icon: 'help', action: () => app.startTutorial() },
-  ]);
+    { label: 'Rechercher une commande…', icon: 'search', hint: 'Ctrl+K', action: () => import('./command-palette.js').then((m) => m.openCommandPalette(app)) },
+  ];
 }

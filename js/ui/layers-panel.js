@@ -6,7 +6,7 @@ import { h, clear, debounce, keepScroll } from '../util/dom.js';
 import { icon } from './icons.js';
 import { popupMenu, promptDialog, confirmDialog } from './dialogs.js';
 import { celCanvas } from '../render/celcache.js';
-import { composeToCanvas } from '../render/compose.js';
+import { composeOnCtx } from '../render/compose.js';
 import * as ops from '../core/layer-ops.js';
 
 export function initLayersPanel(app) {
@@ -81,7 +81,13 @@ export function initLayersPanel(app) {
       const cel = node.cels[doc.frame];
       if (!cel) return;
       src = celCanvas(cel, doc.width, doc.height);
-    } else src = composeToCanvas(doc, { root: node, ignoreVisibility: false });
+    } else {
+      // groupe : composé directement à la taille de la miniature
+      g.setTransform(k, 0, 0, k, (c.width - w) / 2, (c.height - hh) / 2);
+      composeOnCtx(g, doc, { root: node, ignoreVisibility: false });
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      return;
+    }
     g.drawImage(src, (c.width - w) / 2, (c.height - hh) / 2, w, hh);
   }
 

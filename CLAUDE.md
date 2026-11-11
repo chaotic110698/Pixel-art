@@ -73,6 +73,13 @@ js/export/psd.js      export Photoshop (calques, dossiers « lsct », noms Unico
 js/ui/tilemap.js      carte de tuiles : jeu de tuiles = dessin découpé (tileset), doc.tilemaps [{ id, name, tw, th, cols, rows, cells }] (cells remplacé à chaque trait), export PNG et Tiled (.tmj)
 js/storage/backup.js  sauvegardes : dossier (showDirectoryPicker, handle dans kv « backup:dir »), Google Drive (OAuth jeton via oauth.html, drive.file), ZIP de tous les projets, restauration ; backup-ui.js = onglet Paramètres > Sauvegarde
 js/ui/keycapture.js   raccourcis PNGtuber : touche simple ou combinaison (« Ctrl+Maj+1 »), capture (captureCombo), conflits (keyOwner) ; même lecture que engine.js (chiffres lus sur la touche physique)
+js/core/blend.js      modes de fusion (BLEND_MODES, blendPixel exact = canvas) et masques d'écrêtage (composeEntries) ; calque : blend, clip, alphaLock (verrou de transparence, appliqué aussi dans history.endPixels)
+js/core/fonts.js      polices pixel de l'outil Texte (Classique 5×7 avec accents, Petite 3×5) ; tools/text-tool.js (texte posé comme collage flottant)
+js/core/pixelize.js   conversion image -> pixel art (réduction, palette, tramage, nettoyage) ; ui/import-ui.js : fenêtres « Image en pixel art » et « Planche de sprites »
+js/ui/color-tools.js  rampes de couleurs (makeRamp), couleur de palette liée au dessin (aperçu en direct), vérification niveaux de gris / silhouette (state.checkView)
+js/ui/animate.js      « Animer le calque » : déplacement interpolé, flottement, respiration, tremblement, clignotement, fondus tramés (images ajoutées liées)
+js/ui/command-palette.js  palette de commandes Ctrl+K (menuItems() de menu.js, outils, palette, panneaux)
+js/library/parts/bottoms.js  bas et chaussures des corps entiers (exclusiveKey 'bottom' / 'shoes', needsTall)
 js/ui/guide.js        fenêtre « Guide » (sommaire, recherche, boutons « Essayer ») ; contenu bilingue dans guide-content.js (paires T(fr, en), **gras**, [[touche]])
 js/ui/history-panel.js, js/ui/i18n.js + i18n-en.js, shortcuts.js (touches simples personnalisables : singleKeyActions)
 js/ui/settings.js     fenêtre Paramètres ; thèmes (THEMES) appliqués par applyAppearance() via des variables CSS sur <html> ; SETTING_KEYS = réglages exportables
@@ -114,7 +121,7 @@ Une pièce est `{ id, name, category, build(ctx) => [{ name, z, grid } | { name,
 
 Il n'y a pas de framework de test. On vérifie avec Playwright (Chromium déjà installé dans l'environnement cloud) en servant le dossier avec `python3 -m http.server`. `window.pixelAtelier` expose l'objet `app` pour piloter les outils (`app.tools.current.down/move/up(p)`) et vérifier l'état.
 
-**Avant chaque mise en ligne : `scripts/audit/run.sh`** (≈ 200 vérifications : outils à la souris, exports relus, PNGtuber/OBS/avatar, chaque pièce de la bibliothèque, chaque entrée de menu, mobile et tactile, anglais, accessibilité, hors ligne, stockage indisponible, fuzz annuler/rétablir + persistance). Il démarre lui-même le serveur s'il le faut. Un nouveau texte d'interface oublié dans `i18n-en.js` fait échouer `en` ; un `null` ajouté au DOM (par ex. `el.append(cond ? x : null)` : `append` natif écrit « null », contrairement à `h()`) est signalé comme « texte parasite ».
+**Avant chaque mise en ligne : `scripts/audit/run.sh`** (dont `visual` : rendus comparés au pixel près à `scripts/audit/ref/*.png`, `UPDATE_REFS=1` pour accepter un changement voulu ; GitHub relance toute la batterie à chaque mise en ligne sur main, voir `.github/workflows/audit.yml`) (≈ 200 vérifications : outils à la souris, exports relus, PNGtuber/OBS/avatar, chaque pièce de la bibliothèque, chaque entrée de menu, mobile et tactile, anglais, accessibilité, hors ligne, stockage indisponible, fuzz annuler/rétablir + persistance). Il démarre lui-même le serveur s'il le faut. Un nouveau texte d'interface oublié dans `i18n-en.js` fait échouer `en` ; un `null` ajouté au DOM (par ex. `el.append(cond ? x : null)` : `append` natif écrit « null », contrairement à `h()`) est signalé comme « texte parasite ».
 
 Points à revérifier après une modification importante :
 - tactile : 2 doigts (zoom sans tracé), tape à 2 doigts (annuler) ;
@@ -124,4 +131,4 @@ Points à revérifier après une modification importante :
 
 ## Pistes pour la suite
 
-Tuiles animées et retournées dans la carte de tuiles, pièces dessinées à la main pour le gabarit ×2, vêtements spécifiques aux corps entiers (pantalons, jupes), plus de langues.
+Pièces dessinées à la main pour le gabarit ×2, bas et chaussures pour les vues de 3/4, avatar 3D « pixelisé » (prototype de tête à angles fixes retouchables, voir la discussion), plus de langues.
