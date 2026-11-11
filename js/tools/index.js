@@ -3,12 +3,13 @@
 import { PencilTool, EraserTool, FillTool, PickerTool, ShadeTool, GradientTool } from './paint-tools.js';
 import { LineTool, RectTool, EllipseTool } from './shape-tools.js';
 import { RectSelectTool, LassoTool, WandTool, MoveTool, HandTool } from './select-tools.js';
+import { TextTool } from './text-tool.js';
 
 export class Tools {
   constructor(app) {
     this.app = app;
     const list = [
-      PencilTool, EraserTool, FillTool, PickerTool, ShadeTool, GradientTool, LineTool, RectTool, EllipseTool,
+      PencilTool, EraserTool, FillTool, PickerTool, ShadeTool, GradientTool, LineTool, RectTool, EllipseTool, TextTool,
       RectSelectTool, LassoTool, WandTool, MoveTool, HandTool,
     ].map((C) => new C(app));
     this.list = list;

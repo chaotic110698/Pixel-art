@@ -213,6 +213,19 @@ export const GUIDE = [
         ],
       },
       {
+        id: 'text', icon: 'text', title: T('Texte [[Y]]', 'Text [[Y]]'),
+        body: [
+          p('Cliquez sur le dessin à l\'endroit du texte : une fenêtre s\'ouvre avec un aperçu. Le texte est posé en **couleur A**, comme un collage : déplacez-le, puis validez avec [[Entrée]] (ou annulez avec [[Échap]]).',
+            'Click on the drawing where the text should go: a window opens with a preview. The text is placed in **color A**, like a paste: move it, then confirm with [[Enter]] (or cancel with [[Esc]]).'),
+          list(
+            ['**Polices pixel** : Classique 5×7 (majuscules, minuscules, accents du français) et Petite 3×5 (majuscules seulement, pour les très petits dessins).', '**Pixel fonts**: Classic 5×7 (upper and lower case, French accents) and Small 3×5 (upper case only, for very small drawings).'],
+            ['**Taille ×** agrandit les pixels des lettres, **Espacement** écarte les lettres, plusieurs lignes possibles avec alignement à gauche, centré ou à droite.', '**Size ×** enlarges the letters\' pixels, **Spacing** spreads letters apart, several lines allowed with left, center or right alignment.'],
+            ['**Contour (couleur B)** : un liseré d\'un pixel autour des lettres, pour un titre lisible sur n\'importe quel fond (stream, miniatures).', '**Outline (color B)**: a one-pixel border around the letters, for a title readable on any background (streams, thumbnails).'],
+          ),
+          go('tool:text', 'Prendre l\'outil Texte', 'Pick the Text tool'),
+        ],
+      },
+      {
         id: 'common', icon: 'sliders', title: T('Options communes', 'Common options'),
         body: [
           list(
@@ -222,6 +235,8 @@ export const GUIDE = [
               '**Symmetry** [[S]]: ⇆ left/right, ⇅ top/bottom, ✛ both. Axes are shown on the drawing. Perfect for a front-facing face.'],
             ['**Dessin enroulé** (mode tuiles) : un trait qui sort d\'un bord revient par l\'autre.', '**Wrapped drawing** (tile mode): a stroke leaving one edge comes back on the other.'],
             ['[[X]] échange les couleurs A et B.', '[[X]] swaps colors A and B.'],
+            ['**Pinceau personnalisé** ✿ : sélectionnez un motif (herbe, brique, étoile… 64 × 64 au plus), puis bouton **Utiliser comme pinceau** de la barre d\'options. Le crayon et la gomme le déposent le long du trait, en **couleur A** ou avec ses **couleurs d\'origine**.', '**Custom brush** ✿: select a pattern (grass, brick, star… 64 × 64 at most), then the **Use as brush** button in the options bar. The pencil and eraser stamp it along the stroke, in **color A** or with its **original colors**.'],
+            ['**Pression** (crayon, gomme, ombrage) : avec un stylet, appuyer fort donne la taille choisie, effleurer donne 1 pixel.', '**Pressure** (pencil, eraser, shading): with a stylus, pressing hard gives the chosen size, a light touch gives 1 pixel.'],
           ),
         ],
       },
@@ -836,6 +851,6 @@ export const GUIDE = [
 /** Section d'aide correspondant à un outil (pour le bouton « ? » de la barre d'options). */
 export const TOOL_SECTION = {
   pencil: ['draw', 'pencil'], eraser: ['draw', 'eraser'], shade: ['draw', 'shade'], fill: ['draw', 'fill'], gradient: ['draw', 'gradient'],
-  picker: ['draw', 'picker'], line: ['draw', 'shapes'], rect: ['draw', 'shapes'], ellipse: ['draw', 'shapes'],
+  picker: ['draw', 'picker'], line: ['draw', 'shapes'], rect: ['draw', 'shapes'], ellipse: ['draw', 'shapes'], text: ['draw', 'text'],
   select: ['select', 'select-tools'], lasso: ['select', 'select-tools'], wand: ['select', 'select-tools'], move: ['select', 'move'], hand: ['select', 'move'],
 };

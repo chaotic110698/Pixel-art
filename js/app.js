@@ -27,6 +27,15 @@ export const DEFAULT_STATE = {
   brushSize: 1,
   shapeSize: 1,
   brushShape: 'square',
+  pressureSize: false, // stylet : la pression fait varier la taille
+  customBrush: null, // pinceau personnalisé { w, h, b64 }
+  brushTint: true,
+  textFont: 'std',
+  textScale: 1,
+  textSpacing: 1,
+  textAlign: 'left',
+  textOutline: false,
+  lastText: '',
   dither: false,
   ditherPattern: 'checker',
   ditherSecond: 'transparent',

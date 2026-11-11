@@ -1288,6 +1288,32 @@ Transparenz lösen
 Auf die Ebene darunter beschnitten
 Beschnitten
 Transparenz fixiert
+Text
+Ihr Text (mehrere Zeilen möglich)
+Schrift
+Linksbündig
+Zentrieren
+Rechtsbündig
+Ein-Pixel-Kontur in Farbe B, damit es auf jedem Hintergrund lesbar bleibt
+Kontur (Farbe B)
+Größe ×
+Abstand
+Der Text wird an der angeklickten Stelle in Farbe A eingefügt, wie beim Einfügen: verschieben, dann bestätigen (Eingabe).
+Text einfügen
+Klassisch 5×7
+Klein 3×5
+Zum Schreiben auf die Zeichnung klicken
+Formen und Text
+Eigener Pinsel (aus einer Auswahl)
+Farbe A
+Originalfarben
+Druck
+Stift: Der Druck ändert die Pinselgröße (von 1 bis zur gewählten Größe)
+Als Pinsel verwenden
+Wählen Sie zuerst das Pinselmuster aus
+Die Auswahl ist leer
+Pinsel zu groß: höchstens 64 × 64 Pixel
+Eigener Pinsel bereit (Stift > ✿)
 #P
 Rückgängig: {T1}
 Wiederholt: {T1}

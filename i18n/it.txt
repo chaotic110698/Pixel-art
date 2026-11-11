@@ -1288,6 +1288,32 @@ Sblocca trasparenza
 Ritagliato sul livello sottostante
 Ritagliato
 Trasparenza bloccata
+Testo
+Il tuo testo (anche su più righe)
+Carattere
+Allinea a sinistra
+Centra
+Allinea a destra
+Contorno di un pixel nel colore B, per restare leggibile su ogni sfondo
+Contorno (colore B)
+Dimensione ×
+Spaziatura
+Il testo viene posato dove hai cliccato con il colore A, come un incolla: spostalo, poi conferma (Invio).
+Posa il testo
+Classico 5×7
+Piccolo 3×5
+Clicca sul disegno per scrivere
+Forme e testo
+Pennello personalizzato (da una selezione)
+Colore A
+Colori originali
+Pressione
+Penna: la pressione cambia la dimensione del pennello (da 1 a quella scelta)
+Usa come pennello
+Seleziona prima il motivo del pennello
+La selezione è vuota
+Pennello troppo grande: al massimo 64 × 64 pixel
+Pennello personalizzato pronto (Matita > ✿)
 #P
 Annullato: {T1}
 Ripetuto: {T1}

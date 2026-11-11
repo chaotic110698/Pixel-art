@@ -1,5 +1,6 @@
 // Actions de haut niveau partagées par le menu, les raccourcis et les panneaux.
 
+import { brushFromPixels } from '../tools/painter.js';
 import { h, pickFile, loadImageFromFile, imageToRGBA } from '../util/dom.js';
 import { openDialog, confirmDialog } from './dialogs.js';
 import { Doc } from '../core/doc.js';
@@ -40,6 +41,29 @@ export function createActions(app) {
         c.toBlob((b) => b && navigator.clipboard.write([new ClipboardItem({ 'image/png': b })]).catch(() => {}));
       }
     } catch (_) { /* facultatif */ }
+  };
+
+  /** Sélection (ou contenu flottant) -> pinceau personnalisé (64×64 au plus). */
+  A.brushFromSelection = () => {
+    const d = app.selection.extract();
+    if (!d) return app.toast('Sélectionnez d\'abord le motif du pinceau');
+    // recadrage sur les pixels visibles
+    let x0 = d.w, y0 = d.h, x1 = -1, y1 = -1;
+    for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) {
+      const i = y * d.w + x;
+      if (d.mask[i] && d.data[i] >>> 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    }
+    if (x1 < 0) return app.toast('La sélection est vide');
+    const w = x1 - x0 + 1, hh = y1 - y0 + 1;
+    if (w > 64 || hh > 64) return app.toast('Pinceau trop grand : 64 × 64 pixels au plus');
+    const data = new Uint32Array(w * hh);
+    for (let y = 0; y < hh; y++) for (let x = 0; x < w; x++) {
+      const i = (y0 + y) * d.w + x0 + x;
+      data[y * w + x] = d.mask[i] ? d.data[i] : 0;
+    }
+    app.setState({ customBrush: brushFromPixels(data, w, hh), brushShape: 'stamp' });
+    app.tools.select('pencil');
+    app.toast('Pinceau personnalisé prêt (Crayon > ✿)');
   };
 
   A.paste = () => {

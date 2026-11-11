@@ -1,12 +1,14 @@
 // Barre d'outils + barre d'options contextuelle.
 
+import { FONTS } from '../core/fonts.js';
+import { textOptions } from '../tools/text-tool.js';
 import { h, clear } from '../util/dom.js';
 import { icon } from './icons.js';
 import { DITHER_PATTERNS, ditherFn } from '../core/raster.js';
 
 const TOOL_ICONS = {
   pencil: 'pencil', eraser: 'eraser', fill: 'fill', picker: 'picker', line: 'line', rect: 'rect',
-  ellipse: 'ellipse', select: 'select', lasso: 'lasso', wand: 'wand', move: 'move', hand: 'hand', shade: 'shade', gradient: 'gradient',
+  ellipse: 'ellipse', select: 'select', lasso: 'lasso', wand: 'wand', move: 'move', hand: 'hand', shade: 'shade', gradient: 'gradient', text: 'text',
 };
 // Outils regroupés par famille : un bouton par groupe (dernier outil utilisé),
 // les autres outils du groupe dans un petit menu.
@@ -14,7 +16,7 @@ export const TOOL_GROUPS = [
   { id: 'draw', name: 'Dessin', tools: ['pencil', 'eraser', 'shade'] },
   { id: 'fill', name: 'Remplissage', tools: ['fill', 'gradient'] },
   { id: 'picker', name: 'Pipette', tools: ['picker'] },
-  { id: 'shapes', name: 'Formes', tools: ['line', 'rect', 'ellipse'] },
+  { id: 'shapes', name: 'Formes et texte', tools: ['line', 'rect', 'ellipse', 'text'] },
   { id: 'select', name: 'Sélection', tools: ['select', 'lasso', 'wand'] },
   { id: 'nav', name: 'Déplacer', tools: ['move', 'hand'] },
 ];
@@ -201,8 +203,14 @@ export function renderOptions(app) {
   const paint = ['pencil', 'eraser', 'line', 'rect', 'ellipse'].includes(t.id);
   if (['pencil', 'eraser', 'shade'].includes(t.id)) {
     bar.append(numberStepper('Taille', st.brushSize, 1, 64, (v) => set({ brushSize: v })));
-    bar.append(seg([['square', '■', 'Pinceau carré'], ['round', '●', 'Pinceau rond']], st.brushShape, (v) => set({ brushShape: v })));
+    const shapes = [['square', '■', 'Pinceau carré'], ['round', '●', 'Pinceau rond']];
+    if (st.customBrush) shapes.push(['stamp', '✿', 'Pinceau personnalisé (créé depuis une sélection)']);
+    bar.append(seg(shapes, st.brushShape === 'stamp' && !st.customBrush ? 'square' : st.brushShape, (v) => set({ brushShape: v })));
+    if (st.brushShape === 'stamp' && st.customBrush) {
+      bar.append(seg([[true, 'Couleur A'], [false, 'Couleurs d\'origine']], st.brushTint !== false, (v) => set({ brushTint: v })));
+    }
     bar.append(check('Pixel perfect', !!st.pixelPerfect, (v) => set({ pixelPerfect: v }), 'Supprime les doubles pixels dans les courbes (taille 1)'));
+    bar.append(check('Pression', !!st.pressureSize, (v) => set({ pressureSize: v }), 'Stylet : la pression fait varier la taille du pinceau (de 1 à la taille choisie)'));
   }
   if (t.id === 'pencil') {
     bar.append(seg([['normal', 'Normal'], ['replace', 'Remplacer']], st.pencilMode || 'normal', (v) => set({ pencilMode: v })));
@@ -228,6 +236,13 @@ export function renderOptions(app) {
     bar.append(check('Tous les calques', st.fillSampleAll, (v) => set({ fillSampleAll: v }), 'Délimiter selon l\'image visible'));
     bar.append(h('span', { class: 'opt-group' }, h('span', { class: 'lbl' }, 'Tolérance'),
       h('input', { type: 'range', min: 0, max: 100, value: st.fillTolerance, 'aria-label': 'Tolérance', onchange: (e) => set({ fillTolerance: +e.target.value }) })));
+  }
+  if (t.id === 'text') {
+    const o = textOptions(app);
+    bar.append(h('select', { class: 'input', 'aria-label': 'Police', onchange: (e) => set({ textFont: e.target.value }) }, FONTS.map((f) => h('option', { value: f.id, selected: f.id === o.font }, f.name))));
+    bar.append(numberStepper('Taille ×', o.scale, 1, 8, (v) => set({ textScale: v })));
+    bar.append(check('Contour (couleur B)', o.outline, (v) => set({ textOutline: v })));
+    bar.append(h('span', { class: 'small muted' }, 'Cliquez sur le dessin pour écrire'));
   }
   if (t.id === 'picker') {
     bar.append(seg([[true, 'Image'], [false, 'Calque actif']], st.pickerSampleAll, (v) => set({ pickerSampleAll: v })));
@@ -278,6 +293,7 @@ export function renderOptions(app) {
       tb('rotate', 'Rotation 90° (Maj+R)', () => sel.transformFloating('cw')),
       tb('transform', 'Rotation libre / échelle (Ctrl+T)', () => app.actions.startTransform()),
       tb('copy', 'Copier (Ctrl+C)', () => app.actions.copy(), !has),
+      tb('brush', 'Utiliser comme pinceau', () => app.actions.brushFromSelection(), !has && !sel.floating),
       h('button', { class: 'btn small', onclick: () => app.actions.paste() }, 'Coller'),
       tb('trash', 'Effacer la sélection (Suppr)', () => app.actions.deleteSelection(), !has),
       h('button', { class: 'btn small', disabled: !sel.floating, onclick: () => sel.commitFloating() }, 'Valider'),

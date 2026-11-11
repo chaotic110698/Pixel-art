@@ -29,7 +29,10 @@ export class PencilTool extends Tool {
   cursor = 'crosshair';
   erase = false;
   brushSize() {
-    return this.app.state.brushSize;
+    const st = this.app.state;
+    // pinceau personnalisé : le curseur prend sa taille
+    if (st.brushShape === 'stamp' && st.customBrush) return Math.max(st.customBrush.w, st.customBrush.h);
+    return st.brushSize;
   }
   /** Options propres à l'outil (remplacement, ombrage) — surchargé par les sous-classes. */
   extraOptions(p, token) {

@@ -1288,6 +1288,32 @@ Desbloquear transparência
 Recortada na camada de baixo
 Recortada
 Transparência bloqueada
+Texto
+Seu texto (várias linhas possíveis)
+Fonte
+Alinhar à esquerda
+Centralizar
+Alinhar à direita
+Contorno de um pixel na cor B, para ficar legível em qualquer fundo
+Contorno (cor B)
+Tamanho ×
+Espaçamento
+O texto é colocado onde você clicou, na cor A, como uma colagem: mova-o e confirme (Enter).
+Colocar texto
+Clássica 5×7
+Pequena 3×5
+Clique no desenho para escrever
+Formas e texto
+Pincel personalizado (criado a partir de uma seleção)
+Cor A
+Cores originais
+Pressão
+Caneta: a pressão muda o tamanho do pincel (de 1 ao tamanho escolhido)
+Usar como pincel
+Selecione primeiro o padrão do pincel
+A seleção está vazia
+Pincel grande demais: no máximo 64 × 64 pixels
+Pincel personalizado pronto (Lápis > ✿)
 #P
 Desfeito: {T1}
 Refeito: {T1}
