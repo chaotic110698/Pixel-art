@@ -20,6 +20,8 @@ export function openMainMenu(app, anchor) {
     { label: 'Sauvegardes (dossier, Google Drive, ZIP)…', icon: 'folder', action: () => app.openSettings('backup') },
     { label: 'Importer une image comme calque…', icon: 'image', action: () => A.importImage('layer') },
     { label: 'Importer une image de référence…', icon: 'ref', action: () => A.importImage('reference') },
+    { label: 'Convertir une image en pixel art…', icon: 'image', action: () => import('./import-ui.js').then((m) => m.openPixelizeDialog(app)) },
+    { label: 'Importer une planche de sprites…', icon: 'film', action: () => import('./import-ui.js').then((m) => m.openSpritesheetDialog(app)) },
     { label: 'Exporter…', icon: 'download', hint: 'Ctrl+Maj+E', action: () => A.exportDialog() },
     { heading: 'Image' },
     { label: 'Taille de l\'image / du canevas…', icon: 'crop', action: A.resizeDialog },

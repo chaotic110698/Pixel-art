@@ -1340,6 +1340,31 @@ Este color no se usa en el dibujo.
 Modificar un color de la paleta
 Color de la paleta modificado
 Recolorear el dibujo
+Convertir una imagen en pixel art…
+Importar una hoja de sprites…
+Imagen a pixel art
+Reducción
+Nítida (color dominante)
+Suave (media)
+Extraer los mejores colores
+Paleta del proyecto
+Todos los colores
+Número de colores
+Ninguno (colores planos)
+Ordenado (patrón regular)
+Difusión (degradados finos)
+Saturación
+Limpiar píxeles aislados
+Consejo: una imagen recortada al sujeto, sobre fondo liso, da el mejor resultado. Luego retoca a mano los contornos y los ojos.
+Imagen convertida
+Imagen más grande que el dibujo: amplía el lienzo o crea un nuevo dibujo
+Importar una hoja de sprites
+Ancho de celda
+Alto de celda
+Duración (ms)
+Ignorar celdas vacías
+Crear la animación
+Ninguna celda que importar
 #P
 Deshecho: {T1}
 Rehecho: {T1}
@@ -1406,3 +1431,5 @@ Copia en «{1}» activada ({2} proyecto(s))
 Copia descargada: {1} proyecto(s)
 {1} proyecto(s) restaurado(s)
 {1}×{2} · {3} % · {4}
+{1} imagen(es) de {2} × {3} píxeles
+{1} imagen(es) importada(s)

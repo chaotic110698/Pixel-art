@@ -1340,6 +1340,31 @@ Questo colore non è usato nel disegno.
 Modifica un colore della tavolozza
 Colore della tavolozza modificato
 Ricolora il disegno
+Converti un'immagine in pixel art…
+Importa uno sprite sheet…
+Immagine in pixel art
+Riduzione
+Netta (colore dominante)
+Morbida (media)
+Estrai i colori migliori
+Tavolozza del progetto
+Tutti i colori
+Numero di colori
+Nessuno (campiture)
+Ordinato (motivo regolare)
+Diffusione (sfumature fini)
+Saturazione
+Pulisci i pixel isolati
+Consiglio: un'immagine ritagliata sul soggetto, su sfondo uniforme, dà il risultato migliore. Poi ritocca a mano contorni e occhi.
+Immagine convertita
+Immagine più grande del disegno: allarga la tela o crea un nuovo disegno
+Importa uno sprite sheet
+Larghezza cella
+Altezza cella
+Durata (ms)
+Ignora le celle vuote
+Crea l'animazione
+Nessuna cella da importare
 #P
 Annullato: {T1}
 Ripetuto: {T1}
@@ -1406,3 +1431,5 @@ Backup in «{1}» attivato ({2} progetto/i)
 Backup scaricato: {1} progetto/i
 {1} progetto/i ripristinato/i
 {1}×{2} · {3}% · {4}
+{1} fotogramma/i di {2} × {3} pixel
+{1} fotogramma/i importato/i

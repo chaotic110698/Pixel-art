@@ -1340,6 +1340,31 @@ Diese Farbe wird in der Zeichnung nicht verwendet.
 Palettenfarbe ändern
 Palettenfarbe geändert
 Zeichnung umfärben
+Bild in Pixel Art umwandeln…
+Sprite-Sheet importieren…
+Bild zu Pixel Art
+Verkleinerung
+Scharf (vorherrschende Farbe)
+Weich (Mittelwert)
+Beste Farben ermitteln
+Projektpalette
+Alle Farben
+Anzahl der Farben
+Keins (Flächen)
+Geordnet (regelmäßiges Muster)
+Fehlerstreuung (feine Verläufe)
+Sättigung
+Einzelne Pixel entfernen
+Tipp: Ein auf das Motiv zugeschnittenes Bild mit einfarbigem Hintergrund liefert das beste Ergebnis. Konturen und Augen danach von Hand nacharbeiten.
+Umgewandeltes Bild
+Bild größer als die Zeichnung: Leinwand vergrößern oder eine neue Zeichnung anlegen
+Sprite-Sheet importieren
+Zellenbreite
+Zellenhöhe
+Dauer (ms)
+Leere Zellen überspringen
+Animation erstellen
+Keine Zelle zum Importieren
 #P
 Rückgängig: {T1}
 Wiederholt: {T1}
@@ -1406,3 +1431,5 @@ Sicherung in „{1}“ aktiviert ({2} Projekt(e))
 Sicherung heruntergeladen: {1} Projekt(e)
 {1} Projekt(e) wiederhergestellt
 {1}×{2} · {3} % · {4}
+{1} Bild(er) mit {2} × {3} Pixeln
+{1} Bild(er) importiert

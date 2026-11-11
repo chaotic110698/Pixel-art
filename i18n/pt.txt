@@ -1340,6 +1340,31 @@ Esta cor não é usada no desenho.
 Editar uma cor da paleta
 Cor da paleta alterada
 Recolorir o desenho
+Converter uma imagem em pixel art…
+Importar uma folha de sprites…
+Imagem em pixel art
+Redução
+Nítida (cor dominante)
+Suave (média)
+Extrair as melhores cores
+Paleta do projeto
+Todas as cores
+Número de cores
+Nenhum (cores chapadas)
+Ordenado (padrão regular)
+Difusão (degradês finos)
+Saturação
+Limpar pixels isolados
+Dica: uma imagem recortada no tema, em fundo liso, dá o melhor resultado. Depois retoque à mão os contornos e os olhos.
+Imagem convertida
+Imagem maior que o desenho: aumente a tela ou crie um novo desenho
+Importar uma folha de sprites
+Largura da célula
+Altura da célula
+Duração (ms)
+Ignorar células vazias
+Criar a animação
+Nenhuma célula para importar
 #P
 Desfeito: {T1}
 Refeito: {T1}
@@ -1406,3 +1431,5 @@ Backup em «{1}» ativado ({2} projeto(s))
 Backup baixado: {1} projeto(s)
 {1} projeto(s) restaurado(s)
 {1}×{2} · {3}% · {4}
+{1} quadro(s) de {2} × {3} pixels
+{1} quadro(s) importado(s)

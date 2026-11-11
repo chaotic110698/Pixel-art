@@ -682,6 +682,16 @@ export const GUIDE = [
         ],
       },
       {
+        id: 'convert', icon: 'image', title: T('Image en pixel art, planche de sprites', 'Image to pixel art, sprite sheet'),
+        body: [
+          list(
+            ['**Convertir une image en pixel art** (menu ☰) : une photo ou un dessin devient du pixel art, avec aperçu côte à côte. Réglez la **largeur** (32 à 128 px conseillés), la **réduction** (Nette : garde les contours, Douce : fond les détails), les **couleurs** (meilleures couleurs extraites, palette du projet ou toutes), le **tramage**, la saturation et le contraste ; « Nettoyer les pixels isolés » retire le bruit. Résultat en **nouveau dessin** (avec sa palette) ou en **nouveau calque**.', '**Convert an image to pixel art** (☰ menu): a photo or drawing becomes pixel art, with a side-by-side preview. Set the **width** (32 to 128 px recommended), the **reduction** (Sharp: keeps edges, Soft: blends details), the **colors** (best extracted colors, project palette or all), **dithering**, saturation and contrast; "Clean isolated pixels" removes noise. Result as a **new drawing** (with its palette) or a **new layer**.'],
+            ['**Importer une planche de sprites** (menu ☰) : une image qui contient plusieurs images d\'animation côte à côte. Indiquez la taille d\'une case (devinée automatiquement), le décalage et l\'espacement ; les cases numérotées s\'affichent sur l\'aperçu, les cases vides peuvent être ignorées. Résultat : une animation, une case par image.', '**Import a sprite sheet** (☰ menu): an image holding several animation frames side by side. Set the cell size (guessed automatically), offset and spacing; numbered cells are shown on the preview, empty cells can be skipped. Result: an animation, one cell per frame.'],
+          ),
+          tip('Pour un portrait, recadrez la photo sur le visage et retouchez ensuite les yeux et les contours à la main : c\'est ce qui fait la différence.', 'For a portrait, crop the photo to the face, then retouch the eyes and outlines by hand: that is what makes the difference.'),
+        ],
+      },
+      {
         id: 'backup', icon: 'folder', title: T('Sauvegardes (dossier, Google Drive, ZIP)', 'Backups (folder, Google Drive, ZIP)'),
         body: [
           p('Vos projets sont enregistrés dans le navigateur. Pour ne jamais les perdre (données du site effacées, autre appareil), gardez-en une copie ailleurs : menu ☰ > **Sauvegardes**, ou Paramètres > **Sauvegarde**.',

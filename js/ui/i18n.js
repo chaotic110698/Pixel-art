@@ -94,6 +94,8 @@ const PATTERNS = [
   [/^Sauvegarde téléchargée : (\d+) projets?$/, (m, n) => `Backup downloaded: ${n} project${+n > 1 ? 's' : ''}`],
   [/^(\d+) projets? restaurés?$/, (m, n) => `${n} project${+n > 1 ? 's' : ''} restored`],
   [/^(\d+)×(\d+) · (\d+) % · (.+)$/, (m, w, h, z, rest) => `${w}×${h} · ${z}% · ${rest.replace('sél.', 'sel.').replace(/image (\d+)\/(\d+)/, 'frame $1/$2')}`],
+  [/^(\d+) image\(s\) de (\d+) × (\d+) pixels$/, (m, n, w, h) => `${n} frame(s) of ${w} × ${h} pixels`],
+  [/^(\d+) image\(s\) importée\(s\)$/, (m, n) => `${n} frame(s) imported`],
 ];
 
 const STATUS_I = PATTERNS.findIndex(([rx]) => rx.source.startsWith('^(\\d+)×(\\d+) · '));
