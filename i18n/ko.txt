@@ -1417,6 +1417,17 @@ Stream Deck에서는 키마다 시간을 따로 정하거나(예: 악마 15초) 
 표정 패널
 격자 패널
 기록 패널
+밈(켜져 있는 동안)
+Deal with it(선글라스)
+Forever alone(골판지 가면)
+도지(wow)
+This is fine
+레이저 눈
+Deep fried
+Stonks
+은하 뇌
+봉크!
+광대 분장
 #P
 실행 취소: {T1}
 다시 실행: {T1}

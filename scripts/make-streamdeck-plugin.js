@@ -11,7 +11,7 @@ const { execFileSync } = require('child_process');
 const ROOT = path.join(__dirname, '..');
 const PLUGIN = path.join(ROOT, 'stream-deck', 'plugin', 'com.pixelatelier.avatar.sdPlugin');
 // nouveautés de la version (affichées dans l'inspecteur du plugin à mettre à jour)
-const NOTES = 'effets pendant un nombre de secondes ou tant que la touche est enfoncée, compte à rebours sur la touche, mises à jour en un clic';
+const NOTES = '10 transformations « memes » (Deal with it, Forever alone, Doge, This is fine, yeux laser, deep fried, Stonks, cerveau galactique, Bonk, clown)';
 
 (async () => {
   const b = await chromium.launch();

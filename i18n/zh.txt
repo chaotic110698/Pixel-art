@@ -1417,6 +1417,17 @@ Stream Deck 插件“Pixel Atelier”可控制头像（表情、特效、背景�
 表情面板
 网格面板
 历史面板
+表情包（激活期间）
+Deal with it（墨镜）
+Forever alone（纸板面具）
+Doge（wow）
+This is fine
+激光眼
+Deep fried
+Stonks
+银河大脑
+Bonk！
+小丑妆
 #P
 已撤销：{T1}
 已重做：{T1}

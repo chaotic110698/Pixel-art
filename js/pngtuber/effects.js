@@ -244,7 +244,7 @@ export function createEffects(o) {
       }
     };
     const ring = (cx, cy, rx, ry, c) => { for (let a = 0; a < Math.PI * 2; a += 0.02) px(cx + Math.cos(a) * rx, cy + Math.sin(a) * ry, c); };
-    return { g, px, rect, art, dome, ring, clear };
+    return { g, px, rect, art, dome, ring, clear, k };
   }
   /** Repères ramenés à l'échelle des pixels du dessin (k pixels de l'image par pixel du dessin). */
   function scaled(I, k, ox = 0, oy = 0) {
@@ -318,6 +318,65 @@ export function createEffects(o) {
   }
   /** Torse : seuls les pixels sous les épaules (le cou et le visage restent). */
   const body = (I, y) => y >= I.bodyY;
+  // ---------- memes : police 3×5, repères du visage, traits épais ----------
+  const MFONT = {};
+  'A.#./#.#/###/#.#/#.# B##./#.#/##./#.#/##. C.##/#../#../#../.## D##./#.#/#.#/#.#/##. E###/#../##./#../### F###/#../##./#../#.. G.##/#../#.#/#.#/.## H#.#/#.#/###/#.#/#.# I###/.#./.#./.#./### J..#/..#/..#/#.#/.#. K#.#/#.#/##./#.#/#.# L#../#../#../#../### M#.#/###/###/#.#/#.# N##./#.#/#.#/#.#/#.# O.#./#.#/#.#/#.#/.#. P##./#.#/##./#../#.. Q.#./#.#/#.#/##./.## R##./#.#/##./#.#/#.# S.##/#../.#./..#/##. T###/.#./.#./.#./.#. U#.#/#.#/#.#/#.#/### V#.#/#.#/#.#/#.#/.#. W#.#/#.#/###/###/#.# X#.#/#.#/.#./#.#/#.# Y#.#/#.#/.#./.#./.#. Z###/..#/.#./#../### 0###/#.#/#.#/#.#/### 1.#./##./.#./.#./### 2##./..#/.#./#../### 3##./..#/.#./..#/##. 4#.#/#.#/###/..#/..# 5###/#../##./..#/##. 6.##/#../###/#.#/### 7###/..#/.#./.#./.#. 8###/#.#/###/#.#/### 9###/#.#/###/..#/##. !#/#/#/./# ?##./..#/.#./.../.#. .././././# ,./././#/# \'#/#/././. $.##/##./.#./.##/##. %#.#/..#/.#./#../#.# +.../.#./###/.#./... -.../.../###/.../... :./#/./#/.'.split(' ').forEach((s) => { MFONT[s[0]] = s.slice(1).split('/'); });
+  /** Largeur d'un texte en police 3×5. */
+  const sayW = (txt) => [...String(txt).toUpperCase()].reduce((s, c) => s + (c === ' ' ? 3 : (MFONT[c] || MFONT['?'])[0].length + 1), 0) - 1;
+  /** Texte façon meme : lettres pleines, contour d'un pixel, centré sur cx (reste dans l'image). */
+  function say(p, I, txt, cx, y, fill = '#ffffff', edge = '#000000') {
+    const w = sayW(txt);
+    let W = I.w;
+    // trop long pour les gros pixels du dessin (dessin doublé) : écrit en pixels de l'image
+    if (w > W - 2 && p.k > 1 && p.fine) { const k = p.k; W = I.w * k; cx *= k; y = Math.min(y * k, I.h * k - 6); p = p.fine; }
+    let x = Math.round(Math.max(1, Math.min(W - w - 1, cx - w / 2)));
+    const pts = [];
+    for (const c of [...String(txt).toUpperCase()]) {
+      if (c === ' ') { x += 3; continue; }
+      const gl = MFONT[c] || MFONT['?'];
+      gl.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === '#') pts.push([x + i, y + j]); }));
+      x += gl[0].length + 1;
+    }
+    if (edge) for (const [px, py] of pts) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) p.px(px + dx, py + dy, edge);
+    for (const [px, py] of pts) p.px(px, py, fill);
+  }
+  /** Trait épais (t pixels) de (x0, y0) à (x1, y1). */
+  function seg(p, x0, y0, x1, y1, c, t = 1) {
+    const n = Math.max(1, Math.ceil(Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0))));
+    for (let i = 0; i <= n; i++) {
+      const x = x0 + ((x1 - x0) * i) / n, y = y0 + ((y1 - y0) * i) / n;
+      p.rect(Math.round(x - (t - 1) / 2), Math.round(y - (t - 1) / 2), t, t, c);
+    }
+  }
+  /**
+   * Repères du visage : yeux (une boîte par œil), bouche, nez, d'après les pièces du document
+   * (cfg().features) ou, à défaut, estimés d'après la tête détectée.
+   */
+  function faceOf(I) {
+    const F = I.feat, f = side(I);
+    let eyes = F && F.eyes && F.eyes.length ? F.eyes : null, mouth = F && F.mouth ? F.mouth : null;
+    if (!eyes) {
+      const ey = Math.round(I.y0 + I.headH * 0.55), r = Math.max(1, Math.round(I.headW * 0.07)), ex = I.headW * 0.18;
+      eyes = [[Math.round(I.hcx - ex - r), ey - r, Math.round(I.hcx - ex + r), ey + r], [Math.round(I.hcx + ex - r), ey - r, Math.round(I.hcx + ex + r), ey + r]];
+    }
+    if (!mouth) { const my = Math.round(I.y0 + I.headH * 0.82); mouth = [Math.round(I.hcx - I.headW * 0.12), my, Math.round(I.hcx + I.headW * 0.12), my + 1]; }
+    const ex0 = Math.min(...eyes.map((e) => e[0])), ex1 = Math.max(...eyes.map((e) => e[2]));
+    const ey0 = Math.min(...eyes.map((e) => e[1])), ey1 = Math.max(...eyes.map((e) => e[3]));
+    return { eyes, mouth, ex0, ex1, ey0, ey1, cx: (ex0 + ex1) / 2, f, noseX: f < 0 ? ex0 - 1 : f > 0 ? ex1 + 1 : Math.round((ex0 + ex1) / 2), noseY: Math.round((ey1 + mouth[1]) / 2) };
+  }
+  /** Centre d'un œil. */
+  const eyeC = (e) => [Math.round((e[0] + e[2]) / 2), Math.round((e[1] + e[3]) / 2)];
+  /** Bulle de dialogue blanche (texte noir) en haut de l'image, pointe vers (tx, ty). */
+  function bubble(p, I, txt, tx, ty) {
+    let W = I.w;
+    if (sayW(txt) + 6 > W && p.k > 1 && p.fine) { const k = p.k; W = I.w * k; tx *= k; ty *= k; I = { ...I, w: W, h: I.h * k }; p = p.fine; }
+    const w = sayW(txt) + 4, x0 = Math.round(Math.max(0, Math.min(W - w - 1, tx - w / 2))), y0 = 1;
+    p.rect(x0, y0, w + 1, 9, '#000000');
+    p.rect(x0 + 1, y0 + 1, w - 1, 7, '#ffffff');
+    p.clear(x0, y0); p.clear(x0 + w, y0);
+    for (let k = 0; k < Math.min(3, ty - y0 - 9); k++) { p.px(tx - 1 + k, y0 + 9 + k, '#000000'); p.px(tx + k, y0 + 9 + k, '#ffffff'); }
+    say(p, I, txt, x0 + 1 + w / 2, y0 + 2, '#000000', null);
+  }
   const TF = {
     demon: {
       map: (r, g, b, a, x, y) => { const t = lum(r, g, b); return [...ramp(['#120306', '#3a070d', '#6e0f17', '#a81c22', '#dd3a2a', '#ff8a4a'])(t), a]; },
@@ -527,6 +586,262 @@ export function createEffects(o) {
       },
       poof: '#ffd21a',
     },
+    // ---------- memes (l'avatar reste reconnaissable : on ajoute, on ne remplace pas) ----------
+    deal: {
+      // les lunettes tombent du haut de l'image puis le texte apparaît (une seule fois)
+      once: true, anim: 70, frames: 10, still: 9,
+      deco(p, I, f) {
+        const F = faceOf(I);
+        const t = Math.min(1, f / 7);
+        const drop = Math.round((1 - t * t) * -(F.ey0 + 4));
+        const y0 = F.ey0 - 1 + drop, y1 = F.ey1 + 1 + drop;
+        p.rect(F.ex0 - 2, y0, F.ex1 - F.ex0 + 5, 1, '#000000');
+        for (const e of F.eyes) {
+          p.rect(e[0] - 1, y0, e[2] - e[0] + 3, y1 - y0 + 1, '#000000');
+          p.px(e[0], y0 + 1, '#ffffff');
+          if (e[2] - e[0] >= 2) p.px(e[0] + 1, Math.min(y1, y0 + 2), '#8a8aa0');
+        }
+        // branche vers l'oreille (côté nuque de profil)
+        if (F.f) p.rect(F.f < 0 ? F.ex1 + 2 : F.ex0 - 5, y0, 4, 1, '#000000');
+        if (f >= 8) say(p, I, 'DEAL WITH IT', I.w / 2, I.h - 7);
+      },
+      poof: '#ffffff',
+    },
+    alone: {
+      // teinte grise et bleutée, masque en carton au visage triste, petit nuage de pluie
+      anim: 130, frames: 4,
+      map: (r, g, b, a) => { const t = lum(r, g, b) * 255; return [Math.round(r * 0.55 + t * 0.35), Math.round(g * 0.55 + t * 0.38), Math.round(b * 0.6 + t * 0.45 + 10), a]; },
+      deco(p, I, f) {
+        const F = faceOf(I);
+        const x0 = Math.min(F.ex0, F.mouth[0]) - 4, x1 = Math.max(F.ex1, F.mouth[2]) + 4, y0 = F.ey0 - 7, y1 = F.mouth[3] + 4;
+        const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, rx = (x1 - x0) / 2 + 0.5, ry = (y1 - y0) / 2 + 0.5;
+        const inside = (x, y) => ((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2 <= 1;
+        // élastique jusqu'à l'arrière de la tête
+        const back = F.f < 0 ? I.hx1 - 1 : F.f > 0 ? I.hx0 + 1 : null;
+        const ey = Math.round(cy - ry * 0.25);
+        if (back !== null) seg(p, F.f < 0 ? Math.round(cx + rx) : back, ey, F.f < 0 ? back : Math.round(cx - rx), ey, '#efe6d0');
+        else { seg(p, x0 - 2, ey, x0, ey, '#efe6d0'); seg(p, x1, ey, x1 + 2, ey, '#efe6d0'); }
+        // carton : bord foncé, cannelures, un coin plié
+        for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) {
+          if (!inside(x, y)) continue;
+          const edge = !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1);
+          p.px(x, y, edge ? '#6e4c22' : (x * 2 + y) % 6 === 0 ? '#bf9356' : '#d8af6e');
+        }
+        const ink = '#1c140e';
+        // yeux plissés de chagrin et larmes qui coulent
+        const eyY = Math.round(cy - ry * 0.3), dx = Math.max(2, Math.round(rx * 0.42));
+        for (const s of [-1, 1]) {
+          const ex = Math.round(cx + s * dx);
+          p.px(ex - 2, eyY + 1, ink); p.px(ex - 1, eyY, ink); p.px(ex, eyY, ink); p.px(ex + 1, eyY, ink); p.px(ex + 2, eyY + 1, ink);
+          for (let k = 2; k <= 3 + (f % 2); k++) p.px(ex + s, eyY + k, '#5fb8ff');
+        }
+        // grande bouche crispée, dents serrées
+        const my = Math.round(cy + ry * 0.3), mw = Math.max(3, Math.round(rx * 0.62));
+        p.rect(Math.round(cx) - mw, my, mw * 2 + 1, 3, ink);
+        p.rect(Math.round(cx) - mw + 1, my + 1, mw * 2 - 1, 1, '#ffffff');
+        for (let x = -mw + 2; x < mw; x += 2) p.px(Math.round(cx) + x, my + 1, ink);
+        // petit nuage de pluie au-dessus de la tête
+        const ccx = Math.round(I.hcx), cyy = Math.max(2, I.y0 - 6);
+        p.rect(ccx - 5, cyy, 11, 3, '#8a93a8'); p.rect(ccx - 3, cyy - 1, 6, 1, '#8a93a8'); p.rect(ccx - 4, cyy + 2, 9, 1, '#6c748a');
+        for (let k = 0; k < 4; k++) p.px(ccx - 4 + k * 3, cyy + 4 + ((f + k) % 4), '#5fb8ff');
+        say(p, I, 'FOREVER ALONE', I.w / 2, I.h - 7);
+      },
+      poof: '#d8af6e',
+    },
+    doge: {
+      // oreilles de shiba, mots colorés qui clignotent autour du personnage
+      anim: 520, frames: 2,
+      deco(p, I, f) {
+        const S = skull(I, 0.35);
+        for (const s of [-1, 1]) {
+          const bx = Math.round(S.cx + s * S.w * 0.3), by = S.top + 3, hgt = Math.max(6, Math.round(S.w * 0.36)), hw = Math.max(3, Math.round(S.w * 0.2));
+          for (let j = 0; j < hgt; j++) {
+            const half = Math.round((j / (hgt - 1)) * hw);
+            for (let x = -half; x <= half; x++) {
+              const edge = Math.abs(x) === half || j === 0;
+              p.px(bx + x + s * Math.round((hgt - 1 - j) * 0.25), by - hgt + 1 + j, edge ? '#4a2a10' : Math.abs(x) < half - 1 && j > 1 ? '#f6dfb4' : '#d98a3a');
+            }
+          }
+        }
+        const words = f === 0
+          ? [['WOW', '#ffe14a', 0.18, 0.08], ['SUCH PIXEL', '#ff5ad1', 0.72, 0.30], ['VERY AVATAR', '#59e0ff', 0.30, 0.86]]
+          : [['MUCH STREAM', '#9cff59', 0.62, 0.08], ['AMAZE', '#ff9a3a', 0.2, 0.52], ['WOW', '#ffe14a', 0.8, 0.78]];
+        // mots tous à la même taille : en pixels de l'image si le dessin est doublé
+        const q = p.k > 1 && p.fine ? p.fine : p, J = q === p ? I : { ...I, w: I.w * p.k, h: I.h * p.k };
+        for (const [t, c, rx, ry] of words) say(q, J, t, J.w * rx, Math.round((J.h - 6) * ry), c, '#1a1426');
+      },
+      poof: '#d98a3a',
+    },
+    fine: {
+      // tout brûle autour, l'avatar sirote son café, imperturbable
+      anim: 140, frames: 4, still: 1,
+      map: (r, g, b, a) => [Math.min(255, Math.round(r * 1.04 + 22)), Math.min(255, Math.round(g * 0.97 + 8)), Math.round(b * 0.82), a],
+      deco(p, I, f) {
+        const F = faceOf(I);
+        // tasse fumante devant le torse, côté visage
+        const mx = Math.round(F.f < 0 ? F.ex0 - 1 : F.f > 0 ? F.ex1 - 4 : F.cx - 2), my = Math.min(I.h - 7, Math.max(F.mouth[3] + 4, I.bodyY + 2));
+        p.rect(mx, my, 5, 5, '#2a2a30'); p.rect(mx + 1, my, 3, 4, '#f4f0ea'); p.rect(mx + 1, my, 3, 1, '#7a4a28');
+        p.px(mx + (F.f > 0 ? -1 : 5), my + 1, '#2a2a30'); p.px(mx + (F.f > 0 ? -1 : 5), my + 2, '#2a2a30');
+        for (let k = 0; k < 3; k++) p.px(mx + 1 + ((k + f) % 3), my - 2 - k, '#d8d8e0');
+        bubble(p, I, 'THIS IS FINE', Math.round(I.hcx), I.y0 - 1);
+      },
+      behind(p, I, f) {
+        // flammes tout autour (derrière l'avatar)
+        for (let x = 0; x < I.w; x++) {
+          const hgt = Math.round(I.h * 0.28 + noise(x >> 1, f) * I.h * 0.22 + Math.sin(x * 0.7 + f) * 2);
+          for (let j = 0; j < hgt; j++) {
+            const t = j / hgt;
+            p.px(x, I.h - 1 - j, t < 0.35 ? '#ffe97a' : t < 0.7 ? '#ff9a2a' : t < 0.92 ? '#e8401e' : '#9a1a10');
+          }
+        }
+      },
+      tick: (dt) => { if (Math.random() < dt * 6) { const b = H().body; add({ kind: 'px', x: rnd(b.l - 6, b.r + 6), y: b.bottom - rnd(0, 6), vy: -rnd(10, 22), sway: rnd(0, 5), life: rnd(0.8, 1.4), fade: true, color: pick(['#ffb43a', '#ff6a2a', '#ffe97a']), layer: 2 }); } },
+      poof: '#ff9a2a',
+    },
+    laser: {
+      // regard laser : lueurs rouges sur les yeux (rayons vers l'avant de profil)
+      anim: 90, frames: 3,
+      map: (r, g, b, a) => [Math.min(255, Math.round(r * 0.9 + 18)), Math.round(g * 0.72), Math.round(b * 0.72), a],
+      deco(p, I, f) {
+        const F = faceOf(I);
+        for (const e of F.eyes) {
+          const [cx, cy] = eyeC(e);
+          if (F.f) {
+            // rayon jusqu'au bord de l'image, du côté du regard
+            const end = F.f < 0 ? 0 : I.w - 1;
+            seg(p, cx, cy, end, cy, '#ff2a2a', 3);
+            seg(p, cx, cy, end, cy, '#ffd0d0', 1);
+          }
+          const L = 4 + f + Math.round((e[2] - e[0]) / 2);
+          seg(p, cx - L, cy, cx + L, cy, '#ff2a2a'); seg(p, cx, cy - L + 2, cx, cy + L - 2, '#ff2a2a');
+          seg(p, cx - 2, cy - 2, cx + 2, cy + 2, '#ff6a6a'); seg(p, cx - 2, cy + 2, cx + 2, cy - 2, '#ff6a6a');
+          p.rect(cx - 1, cy - 1, 3, 3, '#ff9a9a'); p.px(cx, cy, '#ffffff');
+        }
+      },
+      poof: '#ff2a2a',
+    },
+    fried: {
+      // « deep fried » : couleurs saturées et écrasées, bruit, émoji et « 100 »
+      anim: 160, frames: 2,
+      map: (r, g, b, a, x, y) => {
+        const l = (r + g + b) / 3, n = (noise(x >> 1, y >> 1) - 0.5) * 70;
+        const q = (v) => Math.max(0, Math.min(255, Math.round((((v - l) * 2.6 + l - 128) * 1.5 + 128 + n) / 51) * 51));
+        return [q(r + 30), q(g + 6), q(b - 30), a];
+      },
+      deco(p, I, f) {
+        const F = faceOf(I);
+        for (const e of F.eyes) { const [cx, cy] = eyeC(e); seg(p, cx - 3, cy, cx + 3, cy, '#ff3a1a'); seg(p, cx, cy - 2, cx, cy + 2, '#ff3a1a'); p.px(cx, cy, '#ffffff'); }
+        // « 100 » souligné, en haut à droite
+        say(p, I, '100', I.w - 8, 2 + f, '#ff1a1a', null);
+        seg(p, I.w - 14, 9 + f, I.w - 3, 9 + f, '#ff1a1a'); seg(p, I.w - 13, 11 + f, I.w - 4, 11 + f, '#ff1a1a');
+        // émoji qui pleure de rire, en haut à gauche
+        const ex = 6, ey = 7 - f;
+        for (let y = -4; y <= 4; y++) for (let x = -4; x <= 4; x++) { const d = x * x + y * y; if (d <= 18) p.px(ex + x, ey + y, d > 12 ? '#b07a10' : '#ffd23a'); }
+        p.px(ex - 2, ey - 1, '#3a2410'); p.px(ex - 1, ey - 2, '#3a2410'); p.px(ex + 1, ey - 2, '#3a2410'); p.px(ex + 2, ey - 1, '#3a2410');
+        p.rect(ex - 2, ey + 1, 5, 2, '#5a1a10'); p.rect(ex - 1, ey + 1, 3, 1, '#ffffff');
+        p.px(ex - 4, ey, '#5fb8ff'); p.px(ex - 5, ey + 1, '#5fb8ff'); p.px(ex + 4, ey, '#5fb8ff'); p.px(ex + 5, ey + 1, '#5fb8ff');
+      },
+      poof: '#ff9a2a',
+    },
+    stonks: {
+      // cravate, flèche verte qui grimpe, « STONKS »
+      deco(p, I) {
+        if (I.bodyY + 4 <= I.y1) {
+          const r = I.rows[Math.min(I.y1, I.bodyY + 1)];
+          const cx = Math.round(I.facing ? I.hcx : (r[0] + r[1]) / 2), y = I.bodyY - 1;
+          p.px(cx - 2, y, '#ffffff'); p.px(cx - 1, y + 1, '#ffffff'); p.px(cx + 2, y, '#ffffff'); p.px(cx + 1, y + 1, '#ffffff');
+          p.rect(cx - 1, y, 3, 2, '#1c2a6a');
+          for (let j = 2; j < 11 && y + j <= I.y1; j++) { const hw = j < 4 ? 1 : j < 9 ? 2 : 1; p.rect(cx - hw, y + j, hw * 2 + 1, 1, j % 3 === 1 ? '#e04848' : '#2a3a8a'); p.px(cx - hw - 1, y + j, '#10163a'); p.px(cx + hw + 1, y + j, '#10163a'); }
+        }
+        say(p, I, 'STONKS', I.w / 2, I.h - 7);
+      },
+      behind(p, I) {
+        const P = [[1, I.h * 0.85], [I.w * 0.28, I.h * 0.55], [I.w * 0.42, I.h * 0.66], [I.w * 0.7, I.h * 0.28], [I.w - 6, I.h * 0.1]].map(([x, y]) => [Math.round(x), Math.round(y)]);
+        for (let i = 0; i < P.length - 1; i++) { seg(p, P[i][0], P[i][1], P[i + 1][0], P[i + 1][1], '#1a6a34', 4); }
+        for (let i = 0; i < P.length - 1; i++) { seg(p, P[i][0], P[i][1], P[i + 1][0], P[i + 1][1], '#3ad46a', 2); }
+        const [ax, ay] = P[P.length - 1];
+        for (let j = 0; j < 5; j++) seg(p, ax - 5 + j, ay + j - 5 + 5, ax + 1, ay - 1, '#3ad46a', 2);
+      },
+      tick: (dt) => { if (Math.random() < dt * 2.5) { const h = H(); add({ kind: 'px', x: rnd(h.l - 8, h.r + 8), y: h.top, vy: -rnd(6, 12), life: 1.2, fade: true, color: '#3ad46a', layer: 2 }); } },
+      poof: '#3ad46a',
+    },
+    brain: {
+      // cerveau galactique : un cerveau lumineux au-dessus du crâne, teintes cosmiques
+      anim: 180, frames: 4,
+      map: (r, g, b, a) => { const c = ramp(['#1a0b3a', '#3d1f8a', '#7a3fd0', '#c070ff', '#ffe0ff'])(lum(r, g, b)); return [Math.round(r * 0.45 + c[0] * 0.6), Math.round(g * 0.45 + c[1] * 0.6), Math.round(b * 0.45 + c[2] * 0.6), a]; },
+      deco(p, I, f) {
+        const cx = I.hcx, rx = Math.max(6, Math.round(I.headW * 0.4)), ry = Math.max(4, Math.round(rx * 0.68)), base = I.y0 + Math.round(ry * 0.6);
+        const inside = (x, y) => y <= base && ((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - base) / ry) ** 2 <= 1;
+        // halo qui tourne
+        for (let k = 0; k < 6; k++) { const a = f * 0.5 + k * 1.05; p.px(cx + Math.cos(a) * (rx + 3), base - ry * 0.4 + Math.sin(a) * (ry + 2), k % 2 ? '#ffffff' : '#8fe8ff'); }
+        for (let y = Math.floor(base - ry); y <= base; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) {
+          if (!inside(x, y)) continue;
+          const edge = !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1);
+          const fold = (x + Math.round(Math.sin(y * 1.1) * 1.5) + 40) % 4 === 0 || Math.abs(x + 0.5 - cx) < 0.6;
+          p.px(x, y, edge ? '#7a2a6a' : fold ? '#c4559a' : x < cx - rx * 0.3 && y < base - ry * 0.5 ? '#ffd6ef' : '#ff9ad5');
+        }
+      },
+      tick: (dt) => { if (Math.random() < dt * 4) { const h = H(); add({ kind: 'twinkle', x: rnd(h.l - 10, h.r + 10), y: rnd(h.top - 10, h.bottom), life: rnd(0.5, 0.9) }); } },
+      poof: '#c070ff',
+    },
+    bonk: {
+      // une batte s'abat sur la tête : « BONK! », étoiles qui tournent
+      anim: 110, frames: 9, still: 4,
+      deco(p, I, f) {
+        const S = skull(I, 0.3);
+        const pivX = Math.round(Math.min(I.w - 3, S.r + Math.max(6, S.w * 0.45))), pivY = Math.round(S.top + 2);
+        const L = Math.round(S.w * 0.95);
+        const ang = f < 3 ? 1.35 - f * 0.25 : f < 6 ? 0 : (f - 5) * 0.35; // levée -> frappe -> remontée
+        const dx = -Math.cos(ang), dy = -Math.sin(ang);
+        for (let s = 0; s <= L; s++) {
+          const x = pivX + dx * s, y = pivY + dy * s;
+          if (s < L * 0.25) p.rect(Math.round(x), Math.round(y), 2, 2, '#2a2a30');
+          else { const t = s > L * 0.55 ? 3 : 2; p.rect(Math.round(x - (t - 2) / 2), Math.round(y - (t - 2) / 2), t, t, s > L * 0.55 && s % 3 === 0 ? '#a8723c' : '#c88f52'); }
+        }
+        if (f >= 3 && f < 6) {
+          const hx = Math.round(pivX + dx * L), hy = pivY;
+          for (const [ux, uy] of [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0]]) seg(p, hx + ux * 3, hy + uy * 3, hx + ux * 5, hy + uy * 5, '#ffffff');
+          say(p, I, 'BONK!', I.w / 2, 1, '#ffffff', '#000000');
+        }
+        if (f >= 5) for (let k = 0; k < 3; k++) {
+          const a = f * 0.9 + k * 2.1, x = S.cx + Math.cos(a) * S.w * 0.55, y = S.top - 2 + Math.sin(a) * 2;
+          p.px(x, y, '#ffe14a'); p.px(x - 1, y, '#ffb43a'); p.px(x + 1, y, '#ffb43a'); p.px(x, y - 1, '#ffb43a'); p.px(x, y + 1, '#ffb43a');
+        }
+      },
+      poof: '#ffe14a',
+    },
+    clown: {
+      // maquillage de clown : visage blanc, nez rouge, bouche peinte, perruque arc-en-ciel
+      prep(I) { I.face = faceOf(I); },
+      map: (r, g, b, a, x, y, I) => {
+        const F = I.face;
+        if (!F) return null;
+        const fx0 = Math.min(F.ex0, F.mouth[0]) - 4 * I.k, fx1 = Math.max(F.ex1, F.mouth[2]) + 4 * I.k, fy0 = F.ey0 - 6 * I.k, fy1 = F.mouth[3] + 3 * I.k;
+        if (x < fx0 || x > fx1 || y < fy0 || y > fy1) return null;
+        const l = lum(r, g, b);
+        if (!(r > g && g >= b * 0.8 && r - b > 20 && l > 0.5)) return null; // peau seulement
+        return [...ramp(['#cfc6d2', '#ebe4ee', '#ffffff'])(l), a];
+      },
+      deco(p, I) {
+        const F = faceOf(I);
+        const S = skull(I, 0.5);
+        const rain = ['#e8303a', '#ff9a2a', '#ffe14a', '#4ad46a', '#3aa0ff', '#a05aff'];
+        for (const sx of F.f ? [F.f < 0 ? S.r + 1 : S.l - 1] : [S.l - 1, S.r + 1]) {
+          for (let k = 0; k < 9; k++) { const a = k * 0.7; p.rect(Math.round(sx + Math.cos(a) * 2.5) - 1, Math.round(S.L - 2 + Math.sin(a) * 3) - 1, 3, 3, rain[k % rain.length]); }
+        }
+        // bouche peinte en rouge, coins relevés
+        const m = F.mouth;
+        for (let x = m[0] - 1; x <= m[2] + 1; x++) { p.px(x, m[1] - 1, '#d81e3a'); p.px(x, m[3] + 1, '#d81e3a'); }
+        p.px(m[0] - 2, m[1] - 2, '#d81e3a'); p.px(m[2] + 2, m[1] - 2, '#d81e3a');
+        // losanges bleus au-dessus et au-dessous des yeux
+        for (const e of F.eyes) { const [cx] = eyeC(e); p.px(cx, e[1] - 2, '#3a6ad8'); p.px(cx, e[3] + 2, '#3a6ad8'); p.px(cx, e[3] + 3, '#3a6ad8'); }
+        // nez rouge
+        const nx = F.noseX, ny = F.noseY;
+        p.rect(nx - 1, ny - 1, 3, 3, '#e8242c'); p.px(nx, ny - 2, '#e8242c'); p.px(nx, ny + 2, '#b0141c'); p.px(nx - 2, ny, '#e8242c'); p.px(nx + 2, ny, '#e8242c');
+        p.px(nx - 1, ny - 1, '#ffb0b0');
+      },
+      poof: '#ffe14a',
+    },
   };
   const lookCache = new WeakMap();
   /** Image de l'avatar transformée (mise en cache par image, transformation et image d'animation). */
@@ -549,7 +864,15 @@ export function createEffects(o) {
     // taille d'un pixel du dessin : gros pixels de l'image (dessin doublé…), sinon d'après la tête
     const B = blockSize(data.data, w, hh, I) || { k: Math.max(1, Math.round(I.headW / 24)), ox: 0, oy: 0 };
     I.k = B.k; I.ox = B.ox; I.oy = B.oy; I.facing = facing;
+    // repères du visage (yeux, bouche) donnés par le document : pixels de l'image
+    const feats = cfg().features || null;
+    I.feat = feats;
     const Ik = scaled(I, I.k, B.ox, B.oy);
+    if (feats && I.k > 1) {
+      const sb = (b) => b && [Math.floor((b[0] - B.ox) / I.k), Math.floor((b[1] - B.oy) / I.k), Math.floor((b[2] - B.ox) / I.k), Math.floor((b[3] - B.oy) / I.k)];
+      Ik.feat = { eyes: (feats.eyes || []).map(sb), mouth: sb(feats.mouth) };
+    }
+    if (def.prep) def.prep(I);
     if (def.map) {
       const d = data.data;
       for (let y = 0; y < hh; y++) for (let x = 0; x < w; x++) {
@@ -561,6 +884,7 @@ export function createEffects(o) {
       g.putImageData(data, 0, 0);
     }
     const p = pen(g, I.k, I.ox, I.oy);
+    p.fine = pen(g, 1); // textes trop longs pour les gros pixels du dessin
     if (def.deco) def.deco(p, Ik, f);
     if (def.behind) { g.globalCompositeOperation = 'destination-over'; def.behind(p, Ik, f); g.globalCompositeOperation = 'source-over'; }
     if (def.post) def.post(pen(g), I, f);
@@ -1008,12 +1332,21 @@ export function createEffects(o) {
       const id = currentTransform();
       if (!id) return null;
       const def = TF[id];
-      const f = def.anim ? Math.floor(now / def.anim) % (def.frames || 4) : 0;
+      // once : animation jouée une fois depuis l'activation (puis dernière image)
+      if (st.lookId !== id) { st.lookId = id; st.lookT0 = now; }
+      const f = !def.anim ? 0 : def.once ? Math.min((def.frames || 4) - 1, Math.floor((now - st.lookT0) / def.anim)) : Math.floor(now / def.anim) % (def.frames || 4);
       const dy = def.float ? Math.round(Math.sin(now / 600) * def.float) : 0;
       return { key: id + ':' + f + ':' + dy, alpha: def.alpha || 1, dy, img: (img) => transformed(img, id, f) };
     },
     /** Image transformée (icônes Stream Deck, aperçus). */
-    transformImage: (img, id) => (TF[id] ? transformed(img, id, 0) : img),
+    transformImage: (img, id) => (TF[id] ? transformed(img, id, TF[id].still ?? 0) : img),
+    /** Images d'animation d'une transformation : [{ img, delay (ms) }] (aperçus, GIF). */
+    transformFrames(img, id) {
+      const def = TF[id];
+      if (!def) return [];
+      const n = def.anim ? def.frames || 4 : 1;
+      return Array.from({ length: n }, (_, f) => ({ img: transformed(img, id, f), delay: def.anim || 1000 }));
+    },
     /** Vignette d'un décor (w×h pixels d'art, instant t en secondes) : icônes Stream Deck. */
     sceneThumb(id, w, h, t = 2) {
       if (!SCENES[id]) return null;
@@ -1077,6 +1410,16 @@ export const EFFECTS = [
   { id: 'pilot', name: 'Pilote d\'avion', kind: 'transform' },
   { id: 'astronaut', name: 'Pilote de vaisseau', kind: 'transform' },
   { id: 'worker', name: 'Ouvrier du bâtiment', kind: 'transform' },
+  { id: 'deal', name: 'Deal with it (lunettes)', kind: 'transform', meme: true },
+  { id: 'alone', name: 'Forever alone (masque en carton)', kind: 'transform', meme: true },
+  { id: 'doge', name: 'Doge (wow)', kind: 'transform', meme: true },
+  { id: 'fine', name: 'This is fine', kind: 'transform', meme: true },
+  { id: 'laser', name: 'Yeux laser', kind: 'transform', meme: true },
+  { id: 'fried', name: 'Deep fried', kind: 'transform', meme: true },
+  { id: 'stonks', name: 'Stonks', kind: 'transform', meme: true },
+  { id: 'brain', name: 'Cerveau galactique', kind: 'transform', meme: true },
+  { id: 'bonk', name: 'Bonk !', kind: 'transform', meme: true },
+  { id: 'clown', name: 'Maquillage de clown', kind: 'transform', meme: true },
   { id: 'aura', name: 'Aura de voix', kind: 'voice' },
   { id: 'rainbow', name: 'Contour arc-en-ciel', kind: 'voice' },
   { id: 'notes', name: 'Notes de musique', kind: 'voice' },

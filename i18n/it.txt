@@ -1417,6 +1417,17 @@ Pannello Colori
 Pannello Espressioni
 Pannello Griglia
 Pannello Cronologia
+Meme (finché attivi)
+Deal with it (occhiali)
+Forever alone (maschera di cartone)
+Doge (wow)
+This is fine
+Occhi laser
+Deep fried
+Stonks
+Cervello galattico
+Bonk!
+Trucco da clown
 #P
 Annullato: {T1}
 Ripetuto: {T1}

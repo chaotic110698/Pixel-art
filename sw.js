@@ -1,7 +1,7 @@
 // Service worker : fonctionnement hors ligne.
 // Pensez à incrémenter VERSION à chaque mise en ligne et à régénérer la liste
 // avec : node scripts/sw-files.mjs --write
-const VERSION = 'v30';
+const VERSION = 'v31';
 const CACHE = 'pixel-atelier-' + VERSION;
 const PRECACHE = [
   "./",

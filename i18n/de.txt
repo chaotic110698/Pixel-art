@@ -1417,6 +1417,17 @@ Bedienfeld Farben
 Bedienfeld Ausdrücke
 Bedienfeld Raster
 Bedienfeld Verlauf
+Memes (solange aktiv)
+Deal with it (Sonnenbrille)
+Forever alone (Pappmaske)
+Doge (wow)
+This is fine
+Laseraugen
+Deep fried
+Stonks
+Galaxiegehirn
+Bonk!
+Clown-Schminke
 #P
 Rückgängig: {T1}
 Wiederholt: {T1}

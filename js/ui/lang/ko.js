@@ -1419,6 +1419,17 @@ export const DICT = {
   "Panneau Expressions": "색 패널",
   "Panneau Grille": "표정 패널",
   "Panneau Historique": "격자 패널",
+  "Memes (le temps de l'activation)": "기록 패널",
+  "Deal with it (lunettes)": "밈(켜져 있는 동안)",
+  "Forever alone (masque en carton)": "Deal with it(선글라스)",
+  "Doge (wow)": "Forever alone(골판지 가면)",
+  "This is fine": "도지(wow)",
+  "Yeux laser": "This is fine",
+  "Deep fried": "레이저 눈",
+  "Stonks": "Deep fried",
+  "Cerveau galactique": "Stonks",
+  "Bonk !": "은하 뇌",
+  "Maquillage de clown": "봉크!",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

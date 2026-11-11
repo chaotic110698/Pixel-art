@@ -1417,6 +1417,17 @@ Painel Cores
 Painel Expressões
 Painel Grade
 Painel Histórico
+Memes (enquanto ativos)
+Deal with it (óculos)
+Forever alone (máscara de papelão)
+Doge (wow)
+This is fine
+Olhos de laser
+Deep fried
+Stonks
+Cérebro galáctico
+Bonk!
+Maquiagem de palhaço
 #P
 Desfeito: {T1}
 Refeito: {T1}

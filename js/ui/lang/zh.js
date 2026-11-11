@@ -1419,6 +1419,17 @@ export const DICT = {
   "Panneau Expressions": "颜色面板",
   "Panneau Grille": "表情面板",
   "Panneau Historique": "网格面板",
+  "Memes (le temps de l'activation)": "历史面板",
+  "Deal with it (lunettes)": "表情包（激活期间）",
+  "Forever alone (masque en carton)": "Deal with it（墨镜）",
+  "Doge (wow)": "Forever alone（纸板面具）",
+  "This is fine": "Doge（wow）",
+  "Yeux laser": "This is fine",
+  "Deep fried": "激光眼",
+  "Stonks": "Deep fried",
+  "Cerveau galactique": "Stonks",
+  "Bonk !": "银河大脑",
+  "Maquillage de clown": "Bonk！",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

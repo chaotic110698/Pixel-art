@@ -56,6 +56,21 @@ const UPDATE = process.env.UPDATE_REFS === '1';
         await put(`tenue_${name}_${id}`, new Uint32Array(data.buffer.slice(0)), d.width, d.height);
       }
     }
+    // memes sur le portrait détaillé (repères du visage donnés par le document)
+    {
+      const { faceFeatures } = await import('./js/pngtuber/assets.js');
+      const d = docs.portrait_detaille;
+      const src = document.createElement('canvas');
+      src.width = d.width; src.height = d.height;
+      src.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(composePixels(d, { includeReference: false }).buffer), d.width, d.height), 0, 0);
+      const cfgM = { facing: docFacing(d), features: faceFeatures(d) };
+      const fx = createEffects({ stage: document.body, back: document.createElement('canvas'), front: document.createElement('canvas'), width: d.width, height: d.height, cfg: () => cfgM });
+      for (const id of ['deal', 'alone', 'doge', 'fine', 'laser', 'fried', 'stonks', 'brain', 'bonk', 'clown']) {
+        const c = fx.transformImage(src, id);
+        const data = c.getContext('2d').getImageData(0, 0, d.width, d.height).data;
+        await put(`meme_${id}`, new Uint32Array(data.buffer.slice(0)), d.width, d.height);
+      }
+    }
     // polices
     for (const f of ['std', 'small']) {
       const t = renderText('Pixel Atelier 2026 !\nÉté, ça va ? àéèêç', f, {});

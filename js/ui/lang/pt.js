@@ -1419,6 +1419,17 @@ export const DICT = {
   "Panneau Expressions": "Painel Cores",
   "Panneau Grille": "Painel Expressões",
   "Panneau Historique": "Painel Grade",
+  "Memes (le temps de l'activation)": "Painel Histórico",
+  "Deal with it (lunettes)": "Memes (enquanto ativos)",
+  "Forever alone (masque en carton)": "Deal with it (óculos)",
+  "Doge (wow)": "Forever alone (máscara de papelão)",
+  "This is fine": "Doge (wow)",
+  "Yeux laser": "This is fine",
+  "Deep fried": "Olhos de laser",
+  "Stonks": "Deep fried",
+  "Cerveau galactique": "Stonks",
+  "Bonk !": "Cérebro galáctico",
+  "Maquillage de clown": "Bonk!",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

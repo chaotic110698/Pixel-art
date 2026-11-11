@@ -67,7 +67,7 @@ const fs = require('fs');
     const off = await avatarHash();
     if (on === base || off !== base) trBad.push(`${e.name} (${on === base ? 'inchangé' : 'pas revenu'})`);
   }
-  check('16 transformations et tenues : l\'avatar change puis revient', trBad.length === 0, trBad.join(', '));
+  check('26 transformations, tenues et memes : l\'avatar change puis revient', trBad.length === 0, trBad.join(', '));
   // durée : la transformation s'arrête toute seule
   await ev(() => { const app = window.pixelAtelier; app.doc.pngtuber.effects = { ...(app.doc.pngtuber.effects || {}), transformDuration: 1 }; });
   await p.locator('.fx-grid .fx-row button.grow', { hasText: 'Démon' }).first().click();

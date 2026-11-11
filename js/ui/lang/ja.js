@@ -1419,6 +1419,17 @@ export const DICT = {
   "Panneau Expressions": "カラーパネル",
   "Panneau Grille": "表情パネル",
   "Panneau Historique": "グリッドパネル",
+  "Memes (le temps de l'activation)": "履歴パネル",
+  "Deal with it (lunettes)": "ミーム（有効な間）",
+  "Forever alone (masque en carton)": "Deal with it（サングラス）",
+  "Doge (wow)": "Forever alone（段ボールのお面）",
+  "This is fine": "ドージ（wow）",
+  "Yeux laser": "This is fine",
+  "Deep fried": "レーザーアイ",
+  "Stonks": "Deep fried",
+  "Cerveau galactique": "Stonks",
+  "Bonk !": "銀河脳",
+  "Maquillage de clown": "ボンク！",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

@@ -58,7 +58,7 @@ const fs = require('fs');
   const zbuf = fs.readFileSync(zipPath);
   let pngs = 0;
   for (let i = 0; i + 30 < zbuf.length; i++) if (zbuf.readUInt32LE(i) === 0x04034b50) { const n = zbuf.readUInt16LE(i + 26); if (zbuf.slice(i + 30, i + 30 + n).toString().endsWith('.png')) pngs++; }
-  check('Pack Stream Deck : 53 icônes PNG (39 effets, 14 décors)', pngs === 53, pngs);
+  check('Pack Stream Deck : 63 icônes PNG (49 effets, 14 décors)', pngs === 63, pngs);
   await p.selectOption('select[aria-label="Format de la scène"]', 'free');
   await p.keyboard.press('Escape');
   await p.waitForTimeout(300);

@@ -1417,6 +1417,17 @@ Stream Deck では、キーごとに時間を設定（例：悪魔を 15 秒）�
 表情パネル
 グリッドパネル
 履歴パネル
+ミーム（有効な間）
+Deal with it（サングラス）
+Forever alone（段ボールのお面）
+ドージ（wow）
+This is fine
+レーザーアイ
+Deep fried
+Stonks
+銀河脳
+ボンク！
+ピエロメイク
 #P
 元に戻しました: {T1}
 やり直しました: {T1}

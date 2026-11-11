@@ -91,7 +91,51 @@ export function effectsConfig(doc, profileId = null) {
     intensity: e.intensity || 1,
     transformDuration: e.transformDuration || 0, // transformations : 0 = jusqu'au prochain appui
     facing: docFacing(doc), // sens du personnage de profil (chapeaux des tenues) : 'left', 'right' ou null (face)
+    features: faceFeatures(doc), // yeux et bouche (effets « memes »)
   };
+}
+
+/**
+ * Repères du visage pour les effets (lunettes, lasers, nez de clown…) : boîtes des yeux
+ * (une par œil, dans l'ordre gauche-droite), de la bouche et du visage, en pixels du
+ * document, d'après les groupes de variantes « yeux » et « bouche » ; null sans pièces.
+ */
+export function faceFeatures(doc) {
+  const box = (group) => {
+    if (!group) return null;
+    const W = doc.width, H = doc.height;
+    const cols = new Uint8Array(W);
+    let x0 = W, y0 = H, x1 = -1, y1 = -1;
+    const layers = [];
+    doc.walk((n) => { if (n.type === 'layer') layers.push(n); }, group);
+    for (const l of layers) {
+      const c = l.cels[0];
+      if (!c) continue;
+      for (let i = 0; i < c.length; i++) {
+        if (!(c[i] >>> 24)) continue;
+        const x = i % W, y = (i / W) | 0;
+        cols[x] = 1;
+        if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      }
+    }
+    if (x1 < 0) return null;
+    // morceaux séparés par au moins une colonne vide (un par œil)
+    const parts = [];
+    for (let x = x0; x <= x1; x++) {
+      if (!cols[x]) continue;
+      let e = x;
+      while (e + 1 <= x1 && cols[e + 1]) e++;
+      parts.push([x, y0, e, y1]);
+      x = e;
+    }
+    return { all: [x0, y0, x1, y1], parts };
+  };
+  const byRole = (role) => [...doc.nodes.values()].find((n) => n.type === 'group' && n.role === role);
+  const eyes = box(byRole('eyes')), mouth = box(byRole('mouth'));
+  if (!eyes && !mouth) return null;
+  // deux plus grands morceaux pour les yeux (les sourcils ou détails fins sont ignorés)
+  let ep = eyes ? [...eyes.parts].sort((a, b) => (b[2] - b[0]) - (a[2] - a[0])).slice(0, 2).sort((a, b) => a[0] - b[0]) : [];
+  return { eyes: ep, eyesAll: eyes ? eyes.all : null, mouth: mouth ? mouth.all : null };
 }
 
 /** Réglages utiles au moteur (copie), pour un profil donné. */

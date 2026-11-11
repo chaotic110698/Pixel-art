@@ -211,6 +211,14 @@ export function openPngtuber(app) {
   function renderFx() {
     keepScroll(fxBox, renderFxNow);
   }
+  /** Ligne d'une transformation (tenue, meme) : bouton allumer / éteindre + touche. */
+  function tfRow(x) {
+    const c = effectsConfig(doc, engine?.state.profile);
+    const on = fx.ambientOn().includes(x.id);
+    return h('div', { class: 'fx-row' },
+      h('button', { class: 'btn small grow' + (on ? ' primary' : ''), 'aria-pressed': String(on), onclick: () => { fx.trigger(x.id); renderFx(); } }, on ? '■ ' : '▶ ', x.name),
+      h('button', { class: 'btn small fx-key', title: 'Associer une touche ou une combinaison (ex. Ctrl+Maj+C ; Retour arrière : retirer, Échap : annuler)', 'aria-label': `Touche pour ${x.name}`, onclick: (ev) => captureKey('fx', x.id, ev.currentTarget, (k) => setFxKey(x.id, k)) }, c.keys[x.id] ? h('kbd', {}, formatCombo(c.keys[x.id])) : 'Touche…'));
+  }
   function renderFxNow() {
     clear(fxBox);
     const c = effectsConfig(doc, engine?.state.profile);
@@ -228,12 +236,9 @@ export function openPngtuber(app) {
       h('div', { class: 'fx-sub' }, prof ? h('span', {}, 'Ambiance en continu · profil ', h('b', { translate: 'no' }, prof.name)) : 'Ambiance en continu'),
       chipsOf(fxOf('ambient'), c.ambient, (id) => setAmbient(toggleIn(c.ambient, id))),
       h('div', { class: 'fx-sub' }, 'Transformations et tenues (le temps de l\'activation)'),
-      h('div', { class: 'fx-grid' }, fxOf('transform').map((x) => {
-        const on = fx.ambientOn().includes(x.id);
-        return h('div', { class: 'fx-row' },
-          h('button', { class: 'btn small grow' + (on ? ' primary' : ''), 'aria-pressed': String(on), onclick: () => { fx.trigger(x.id); renderFx(); } }, on ? '■ ' : '▶ ', x.name),
-          h('button', { class: 'btn small fx-key', title: 'Associer une touche ou une combinaison (ex. Ctrl+Maj+C ; Retour arrière : retirer, Échap : annuler)', 'aria-label': `Touche pour ${x.name}`, onclick: (ev) => captureKey('fx', x.id, ev.currentTarget, (k) => setFxKey(x.id, k)) }, c.keys[x.id] ? h('kbd', {}, formatCombo(c.keys[x.id])) : 'Touche…'));
-      })),
+      h('div', { class: 'fx-grid' }, fxOf('transform').filter((x) => !x.meme).map(tfRow)),
+      h('div', { class: 'fx-sub' }, 'Memes (le temps de l\'activation)'),
+      h('div', { class: 'fx-grid' }, fxOf('transform').filter((x) => x.meme).map(tfRow)),
       h('div', { class: 'row' }, h('span', { class: 'small' }, 'Durée'),
         h('div', { class: 'seg' }, [[0, 'Jusqu\'au prochain appui'], [5, '5 s'], [10, '10 s'], [30, '30 s']].map(([v, l]) => h('button', { class: (c.transformDuration || 0) === v ? 'on' : '', onclick: () => setFx({ transformDuration: v }) }, l))),
         h('input', { type: 'number', class: 'input num', min: 0, max: 3600, step: 1, value: c.transformDuration || 0, title: 'Autre durée, en secondes (0 : jusqu\'au prochain appui)', 'aria-label': 'Durée en secondes', onchange: (ev) => setFx({ transformDuration: Math.max(0, Math.min(3600, Math.round(+ev.target.value || 0))) }) })),

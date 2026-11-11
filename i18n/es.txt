@@ -1417,6 +1417,17 @@ Panel Colores
 Panel Expresiones
 Panel Cuadrícula
 Panel Historial
+Memes (mientras están activos)
+Deal with it (gafas)
+Forever alone (máscara de cartón)
+Doge (wow)
+This is fine
+Ojos láser
+Deep fried
+Stonks
+Cerebro galáctico
+¡Bonk!
+Maquillaje de payaso
 #P
 Deshecho: {T1}
 Rehecho: {T1}
