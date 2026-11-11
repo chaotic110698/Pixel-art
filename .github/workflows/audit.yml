@@ -1,0 +1,43 @@
+# Batterie de tests de Pixel Atelier (scripts/audit/run.sh) lancée par GitHub à chaque
+# mise en ligne sur main, à chaque demande de fusion, ou à la main (onglet Actions).
+# Playwright, Chromium et Pillow ne servent qu'aux tests : le site reste sans dépendance.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Outils de test (Playwright + Chromium, Pillow)
+        run: |
+          npm install --no-save --no-package-lock --prefix "$RUNNER_TEMP/pw" playwright@1.63.0
+          echo "NODE_PATH=$RUNNER_TEMP/pw/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+          pip install pillow
+      - name: Batterie de tests
+        run: scripts/audit/run.sh
+        env:
+          AUDIT_OUT: ${{ runner.temp }}/pixel-atelier-audit
+      - name: Captures et images des tests (en cas d'échec)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit
+          path: ${{ runner.temp }}/pixel-atelier-audit
+          retention-days: 7
