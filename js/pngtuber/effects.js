@@ -1056,10 +1056,11 @@ export function createEffects(o) {
     // un écho agrandi juste derrière, puis des clones de chaque côté qui s'éloignent
     g.globalAlpha = 0.28;
     g.drawImage(geom.img, cx - (w * 1.12) / 2, cy - h * 0.45 * 1.12, w * 1.12, h * 1.12);
+    // les clones naissent sur l'avatar puis filent vers le fond : plus petits, plus transparents
     for (let i = 5; i >= 1; i--) {
-      const k = i - ph;
+      const k = i - 1 + ph;
       const sc = Math.max(0.3, 1 - 0.1 * k);
-      g.globalAlpha = Math.max(0, 0.6 * Math.pow(0.62, k));
+      g.globalAlpha = Math.max(0, 0.6 * Math.pow(0.62, k) * Math.min(1, k * 2.5));
       for (const sd of [-1, 1]) g.drawImage(geom.img, cx + sd * k * w * 0.42 - (w * sc) / 2, cy - h * 0.45 * sc, w * sc, h * sc);
     }
     g.restore();
