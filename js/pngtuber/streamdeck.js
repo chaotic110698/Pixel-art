@@ -2,6 +2,7 @@
 // et pack ZIP téléchargeable. Les mêmes icônes sont rangées dans le dossier
 // stream-deck/ du dépôt (générées par scripts/make-streamdeck.js).
 
+import { renderText } from '../core/fonts.js';
 import { EFFECTS, SCENE_NAMES, createEffects } from './effects.js';
 import { encodePNG } from '../export/png.js';
 import { makeZip } from '../export/zip.js';
@@ -127,11 +128,42 @@ export function effectIcon(id) {
   if (e?.kind === 'transform') {
     const img = sampleAvatar();
     const fx = createEffects({ stage: document.body, back: document.createElement('canvas'), front: document.createElement('canvas'), width: img.width, height: img.height, cfg: () => ({}) });
-    return finish(fx.transformImage(img, id), 'transform', Math.floor(ICON_SIZE / Math.max(img.width, img.height)));
+    const art = fx.transformImage(img, id);
+    const stage = fx.transformStage(id);
+    if (stage && stage.scene) return stageIcon(fx, img, art, stage);
+    return finish(art, 'transform', Math.floor(ICON_SIZE / Math.max(img.width, img.height)));
   }
   const t = grid();
   (DRAW[id] || (() => {}))(t);
   return finish(t.c, e?.kind || 'oneshot', ICON_SIZE / N);
+}
+
+/** Icône d'une transformation qui change toute la scène (Plan subtil) : fond, clones, texte. */
+function stageIcon(fx, img, art, stage) {
+  const S = ICON_SIZE;
+  const c = document.createElement('canvas');
+  c.width = c.height = S;
+  const g = c.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  g.drawImage(fx.sceneThumb(stage.scene, 48, 48, 2), 0, 0, S, S);
+  const sc = 2, w = img.width * sc, h = img.height * sc;
+  if (stage.echo) {
+    for (const [dx, a, s2] of [[-52, 0.3, 1.5], [52, 0.3, 1.5], [-30, 0.5, 1.75], [30, 0.5, 1.75]]) {
+      g.globalAlpha = a;
+      g.drawImage(art, Math.round((S - img.width * s2) / 2 + dx), Math.round(S - img.height * s2), img.width * s2, img.height * s2);
+    }
+    g.globalAlpha = 1;
+  }
+  g.drawImage(art, Math.round((S - w) / 2), S - h, w, h);
+  if (stage.banner) {
+    const t = renderText(stage.banner, 'small', { scale: 2 });
+    const x0 = Math.round((S - t.w) / 2), y0 = 8;
+    g.globalAlpha = 0.75;
+    g.fillStyle = '#ffffff';
+    for (let y = 0; y < t.h; y++) for (let x = 0; x < t.w; x++) if (t.mask[y * t.w + x]) g.fillRect(x0 + x, y0 + y, 1, 1);
+    g.globalAlpha = 1;
+  }
+  return c;
 }
 
 /** Icône 144×144 d'un décor (vignette animée figée). */

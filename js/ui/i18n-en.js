@@ -1401,4 +1401,5 @@ export const EN = {
   'Cerveau galactique': 'Galaxy brain',
   'Bonk !': 'Bonk!',
   'Maquillage de clown': 'Clown makeup',
+  'Plan subtil': 'Subtle plan',
 };

@@ -65,7 +65,7 @@ const UPDATE = process.env.UPDATE_REFS === '1';
       src.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(composePixels(d, { includeReference: false }).buffer), d.width, d.height), 0, 0);
       const cfgM = { facing: docFacing(d), features: faceFeatures(d) };
       const fx = createEffects({ stage: document.body, back: document.createElement('canvas'), front: document.createElement('canvas'), width: d.width, height: d.height, cfg: () => cfgM });
-      for (const id of ['deal', 'alone', 'doge', 'fine', 'laser', 'fried', 'stonks', 'brain', 'bonk', 'clown']) {
+      for (const id of ['deal', 'alone', 'fine', 'laser', 'fried', 'stonks', 'brain', 'bonk', 'clown', 'subtil']) {
         const c = fx.transformImage(src, id);
         const data = c.getContext('2d').getImageData(0, 0, d.width, d.height).data;
         await put(`meme_${id}`, new Uint32Array(data.buffer.slice(0)), d.width, d.height);

@@ -133,9 +133,12 @@ export function faceFeatures(doc) {
   const byRole = (role) => [...doc.nodes.values()].find((n) => n.type === 'group' && n.role === role);
   const eyes = box(byRole('eyes')), mouth = box(byRole('mouth'));
   if (!eyes && !mouth) return null;
+  // nez : pièce « nez » de la bibliothèque (sinon estimé par les effets d'après le profil)
+  const noseNode = [...doc.nodes.values()].find((n) => n.part?.category === 'nose' && doc.get(n.parent)?.id === 'root');
+  const nose = noseNode ? box(noseNode.type === 'group' ? noseNode : { children: [noseNode.id] }) : null;
   // deux plus grands morceaux pour les yeux (les sourcils ou détails fins sont ignorés)
   let ep = eyes ? [...eyes.parts].sort((a, b) => (b[2] - b[0]) - (a[2] - a[0])).slice(0, 2).sort((a, b) => a[0] - b[0]) : [];
-  return { eyes: ep, eyesAll: eyes ? eyes.all : null, mouth: mouth ? mouth.all : null };
+  return { eyes: ep, eyesAll: eyes ? eyes.all : null, mouth: mouth ? mouth.all : null, nose: nose ? nose.all : null };
 }
 
 /** Réglages utiles au moteur (copie), pour un profil donné. */

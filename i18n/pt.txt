@@ -1428,6 +1428,7 @@ Stonks
 Cérebro galáctico
 Bonk!
 Maquiagem de palhaço
+Plano sutil
 #P
 Desfeito: {T1}
 Refeito: {T1}

@@ -1430,6 +1430,7 @@ export const DICT = {
   "Cerveau galactique": "Stonks",
   "Bonk !": "Галактический мозг",
   "Maquillage de clown": "Бонк!",
+  "Plan subtil": "Грим клоуна",
 };
 
 // Messages dynamiques (dans l'ordre des motifs de i18n.js)

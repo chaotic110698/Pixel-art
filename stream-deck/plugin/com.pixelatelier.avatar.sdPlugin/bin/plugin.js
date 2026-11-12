@@ -15,7 +15,7 @@ const ws = require('./ws.js');
 
 const ROOT = path.join(__dirname, '..');
 const AVATAR_PORT = Number(process.env.PIXEL_ATELIER_PORT) || 39217;
-const VERSION = '1.2.1';
+const VERSION = '1.2.2';
 // mises à jour : fichier de version publié avec le site (aucune donnée envoyée)
 const SITE = process.env.PIXEL_ATELIER_SITE || 'https://chaotic110698.github.io/Pixel-art/';
 const UPDATE_EVERY = 6 * 3600 * 1000;
@@ -34,9 +34,9 @@ const EFFECTS = [
   ['golden', 'Doré légendaire', 'transform'], ['zombie', 'Zombie', 'transform'], ['shadow', 'Ombre', 'transform'], ['glitch', 'Glitch', 'transform'], ['retro', 'Rétro 4 couleurs', 'transform'],
   ['knight', 'Chevalier', 'transform'], ['paladin', 'Paladin au bouclier', 'transform'], ['soldier', 'Soldat', 'transform'], ['pilot', 'Pilote d\'avion', 'transform'],
   ['astronaut', 'Pilote de vaisseau', 'transform'], ['worker', 'Ouvrier du bâtiment', 'transform'],
-  ['deal', 'Deal with it (lunettes)', 'transform'], ['alone', 'Forever alone (masque en carton)', 'transform'], ['doge', 'Doge (wow)', 'transform'],
+  ['deal', 'Deal with it (lunettes)', 'transform'], ['alone', 'Forever alone (masque en carton)', 'transform'],
   ['fine', 'This is fine', 'transform'], ['laser', 'Yeux laser', 'transform'], ['fried', 'Deep fried', 'transform'], ['stonks', 'Stonks', 'transform'],
-  ['brain', 'Cerveau galactique', 'transform'], ['bonk', 'Bonk !', 'transform'], ['clown', 'Maquillage de clown', 'transform'],
+  ['brain', 'Cerveau galactique', 'transform'], ['bonk', 'Bonk !', 'transform'], ['clown', 'Maquillage de clown', 'transform'], ['subtil', 'Plan subtil', 'transform'],
 ].map(([id, name, kind]) => ({ id, name, kind }));
 const BACKGROUNDS = [
   ['transparent', 'Transparent'], ['green', 'Vert'], ['blue', 'Bleu'], ['magenta', 'Magenta'], ['black', 'Noir'], ['white', 'Blanc'],
